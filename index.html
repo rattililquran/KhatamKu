@@ -1,0 +1,3082 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KhatamKu - Sistem Manajemen Bacaan Al-Quran</title>
+  
+  <!-- Preconnect untuk mempercepat loading aset eksternal -->
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0ea5e9">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="KhatamKu">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+  <!-- API adapter (pengganti google.script.run) -->
+  <script src="api.js"></script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { 
+            primary: '#0ea5e9', // Fresh Sky Blue
+            secondary: '#3b82f6', // Bright Blue
+            dark: '#1e293b', // Slate 800
+            light: '#f8fafc' // Slate 50
+          },
+          fontFamily: { sans: ['Inter', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { 
+      background-color: #f8fafc;
+      color: #1e293b; 
+      position: relative;
+    }
+    
+    /* Animated Background Glows for Light Glassmorphism */
+    .bg-blobs {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      overflow: hidden; z-index: -1; pointer-events: none;
+    }
+    .blob {
+      position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.5;
+    }
+    .blob-1 { top: -10%; left: -10%; width: 400px; height: 400px; background: #bae6fd; animation: float 15s ease-in-out infinite; }
+    .blob-2 { top: 40%; right: -20%; width: 500px; height: 500px; background: #bfdbfe; animation: float 20s ease-in-out infinite reverse; }
+    .blob-3 { bottom: -10%; left: 20%; width: 400px; height: 400px; background: #99f6e4; animation: float 18s ease-in-out infinite; }
+    
+    @keyframes float {
+      0% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-20px) scale(1.05); }
+      100% { transform: translateY(0) scale(1); }
+    }
+
+    /* Light Frosted Glass Classes */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      box-shadow: 0 10px 40px -10px rgba(14, 165, 233, 0.15);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .glass-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 40px -10px rgba(14, 165, 233, 0.25);
+    }
+    
+    /* Specific Dark Glass for contrast elements */
+    .glass-card-dark {
+      background: linear-gradient(135deg, #0ea5e9, #3b82f6);
+      color: white;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 10px 30px -10px rgba(14, 165, 233, 0.5);
+    }
+
+    .glass-btn {
+      background: linear-gradient(135deg, #0ea5e9, #2563eb);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      box-shadow: 0 4px 15px rgba(14, 165, 233, 0.4);
+      transition: all 0.3s ease;
+    }
+    .glass-btn:hover {
+      background: linear-gradient(135deg, #38bdf8, #3b82f6);
+      box-shadow: 0 8px 25px rgba(14, 165, 233, 0.5);
+      transform: translateY(-2px);
+    }
+    
+    .glass-input {
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(14, 165, 233, 0.2);
+      color: #1e293b;
+      transition: all 0.3s;
+    }
+    .glass-input:focus {
+      background: #ffffff;
+      border-color: #0ea5e9;
+      box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.15);
+    }
+    
+    /* Professional Recessed Ring */
+    .conic-ring { transition: background 1s ease-out; }
+    .inner-circle-recessed {
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(8px);
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+      border: 1px solid rgba(255,255,255,0.8);
+    }
+    .outer-ring-base {
+      box-shadow: inset 0 2px 10px rgba(0,0,0,0.1), 0 5px 15px rgba(0,0,0,0.05);
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9);
+      opacity: 0; pointer-events: none;
+      background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(10px);
+      color: white; padding: 24px 28px; width: 90vw; max-width: 360px;
+      border-radius: 24px; font-size: 14px; font-weight: 600;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); z-index: 9999;
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      text-align: center; line-height: 1.7; border: 1px solid rgba(255,255,255,0.1);
+      white-space: pre-wrap;
+    }
+    .toast.show { 
+      transform: translate(-50%, -50%) scale(1); 
+      opacity: 1; 
+      pointer-events: auto; 
+    }
+    
+    #loadingOverlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); z-index: 50;
+      display: flex; justify-content: center; align-items: center; flex-direction: column;
+    }
+    .spinner {
+      border: 4px solid rgba(14, 165, 233, 0.2); border-top: 4px solid #0ea5e9;
+      border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* Modal Handlers */
+    .modal-overlay { 
+      background: rgba(15, 23, 42, 0.4); 
+      backdrop-filter: blur(8px); 
+    }
+    .modal-content {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 1);
+      box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    /* ===== #1 Skeleton Loading Shimmer ===== */
+    .skeleton { position: relative; overflow: hidden; border-radius: 1rem; background: #e2e8f0; }
+    .skeleton::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.6) 50%, transparent 100%);
+      animation: shimmer 1.5s infinite;
+    }
+    @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+
+    /* ===== #5 View Transitions ===== */
+    .view-enter { animation: viewSlideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .view-exit { animation: viewSlideOut 0.3s ease-in forwards; }
+    @keyframes viewSlideIn { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes viewSlideOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-16px); } }
+
+    /* ===== #10 Toast Top Bar ===== */
+    .toast-top {
+      position: fixed; top: 0; left: 50%; transform: translateX(-50%) translateY(-100%);
+      opacity: 0; pointer-events: none; width: 100%; max-width: 480px;
+      background: linear-gradient(135deg, #0ea5e9, #2563eb);
+      color: white; padding: 16px 24px; font-size: 13px; font-weight: 700;
+      box-shadow: 0 8px 30px rgba(14, 165, 233, 0.35); z-index: 9999;
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      text-align: center; line-height: 1.6;
+      border-radius: 0 0 1.5rem 1.5rem;
+      white-space: pre-wrap; letter-spacing: 0.01em;
+    }
+    .toast-top.toast-error { background: linear-gradient(135deg, #ef4444, #dc2626); }
+    .toast-top.toast-success { background: linear-gradient(135deg, #10b981, #059669); }
+    .toast-top.show { transform: translateX(-50%) translateY(0); opacity: 1; pointer-events: auto; }
+
+    /* ===== #14 Bottom Navigation ===== */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+      width: 100%; max-width: 480px; z-index: 40;
+      background: rgba(255, 255, 255, 0.60);
+      backdrop-filter: blur(60px) saturate(180%);
+      -webkit-backdrop-filter: blur(60px) saturate(180%);
+      border-top: 1px solid rgba(255, 255, 255, 0.75);
+      box-shadow: 0 -8px 32px rgba(14, 165, 233, 0.08), 0 -1px 0 rgba(255,255,255,0.9) inset;
+      padding: 6px 0 env(safe-area-inset-bottom, 8px);
+    }
+    .bottom-nav-item {
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      font-size: 9px; font-weight: 700; letter-spacing: 0.03em;
+      color: #94a3b8; padding: 6px 2px; border-radius: 12px;
+      transition: all 0.25s ease; cursor: pointer; flex: 1; text-align: center;
+    }
+    .bottom-nav-item:hover { color: #0ea5e9; }
+    .bottom-nav-item.active { color: #0ea5e9; }
+    .bottom-nav-item.active i { transform: scale(1.15); }
+    .bottom-nav-item i { font-size: 17px; transition: transform 0.25s ease; }
+
+    /* ===== #12 Range Slider ===== */
+    .range-slider {
+      -webkit-appearance: none; appearance: none; width: 100%; height: 8px;
+      border-radius: 999px; outline: none; transition: all 0.3s;
+      background: linear-gradient(to right, #0ea5e9 0%, #e2e8f0 0%);
+    }
+    .range-slider::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none; width: 28px; height: 28px;
+      border-radius: 50%; background: linear-gradient(135deg, #0ea5e9, #2563eb);
+      cursor: pointer; box-shadow: 0 2px 8px rgba(14, 165, 233, 0.4);
+      border: 3px solid white; transition: transform 0.2s;
+    }
+    .range-slider::-webkit-slider-thumb:active { transform: scale(1.2); }
+    .range-slider::-moz-range-thumb {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: linear-gradient(135deg, #0ea5e9, #2563eb);
+      cursor: pointer; box-shadow: 0 2px 8px rgba(14, 165, 233, 0.4);
+      border: 3px solid white;
+    }
+
+    /* ===== #2 Pull to Refresh ===== */
+    .pull-indicator {
+      text-align: center; padding: 12px; overflow: hidden; max-height: 0;
+      transition: max-height 0.3s ease, opacity 0.3s ease; opacity: 0;
+    }
+    .pull-indicator.visible { max-height: 60px; opacity: 1; }
+
+    /* ===== Potret Filter Buttons ===== */
+    .potret-filter-btn.active {
+      background: linear-gradient(135deg, #0ea5e9, #2563eb);
+      color: white;
+      box-shadow: 0 4px 12px rgba(14, 165, 233, 0.35);
+    }
+    .scrollbar-none { scrollbar-width: none; -ms-overflow-style: none; }
+    .scrollbar-none::-webkit-scrollbar { display: none; }
+
+    /* ===== Surah Journey Grid ===== */
+    .surah-grid {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 3px;
+      align-items: center;
+    }
+    .surah-cell {
+      aspect-ratio: 1;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 7.5px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.15s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.15s ease;
+      border: 1px solid transparent;
+      letter-spacing: -0.02em;
+      min-width: 0;
+      overflow: hidden;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .surah-cell:active, .surah-cell.selected {
+      transform: scale(0.85);
+      z-index: 2;
+    }
+    .surah-cell.selected {
+      outline: 2px solid #0ea5e9;
+      outline-offset: 1px;
+    }
+    .surah-tooltip-bar {
+      height: 3px;
+      border-radius: 999px;
+      background: linear-gradient(to right, #bfdbfe, #1e3a8a);
+      position: relative;
+    }
+    @keyframes surahCellIn {
+      from { opacity: 0; transform: scale(0.7); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    .surah-cell { animation: surahCellIn 0.3s ease both; }
+  </style>
+</head>
+<body class="antialiased selection:bg-sky-200 selection:text-sky-900 min-h-screen">
+
+  <!-- Background Blobs -->
+  <div class="bg-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" style="display: none;">
+    <div class="spinner mb-4"></div>
+    <p class="text-sky-600 font-bold animate-pulse tracking-wider" id="loadingText">MEMUAT DATA...</p>
+  </div>
+
+  <!-- VIEW: LOGIN -->
+  <div id="loginView" class="min-h-screen flex items-center justify-center p-3">
+    <div class="glass-card w-full max-w-sm rounded-[2rem] relative z-10 overflow-hidden">
+
+      <!-- Header branding (compact) -->
+      <div class="bg-gradient-to-br from-sky-400 to-blue-600 px-6 pt-6 pb-5 text-center">
+        <div class="inline-flex items-center justify-center w-14 h-14 bg-white/20 rounded-2xl shadow-inner mb-3">
+          <i class="fa-solid fa-book-open text-white text-2xl"></i>
+        </div>
+        <h1 class="text-2xl font-black text-white tracking-tight">KhatamKu</h1>
+        <p class="text-sky-100 text-[11px] font-semibold tracking-wide mt-0.5">Sistem Pelacak Bacaan Al-Quran</p>
+      </div>
+
+      <!-- Tab switcher -->
+      <div class="flex p-1.5 bg-slate-100 mx-4 mt-4 rounded-xl">
+        <button type="button" id="tabMasuk"
+          onclick="switchAuthTab('masuk')"
+          class="flex-1 py-2 text-xs font-extrabold tracking-widest uppercase rounded-lg bg-white shadow text-sky-600 transition-all">
+          Masuk
+        </button>
+        <button type="button" id="tabDaftar"
+          onclick="switchAuthTab('daftar')"
+          class="flex-1 py-2 text-xs font-extrabold tracking-widest uppercase rounded-lg text-slate-400 hover:text-slate-600 transition-all">
+          Daftar Baru
+        </button>
+      </div>
+
+      <!-- FORM: LOGIN -->
+      <form id="loginForm" class="px-4 pb-5 pt-4 space-y-3" autocomplete="on">
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">NIS RATTIL / Username</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-sky-400 text-sm"><i class="fa-solid fa-user"></i></div>
+            <input type="text" id="loginUsername" required autocomplete="username"
+              class="w-full pl-10 pr-4 py-3 glass-input rounded-xl outline-none transition-all placeholder-slate-300 font-medium text-sm"
+              placeholder="Masukkan NIS/username">
+          </div>
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">Password</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-sky-400 text-sm"><i class="fa-solid fa-lock"></i></div>
+            <input type="password" id="loginPassword" required autocomplete="current-password"
+              class="w-full pl-10 pr-4 py-3 glass-input rounded-xl outline-none transition-all placeholder-slate-300 font-medium text-sm"
+              placeholder="••••">
+          </div>
+        </div>
+        <!-- Ingat saya -->
+        <label class="flex items-center gap-2 cursor-pointer select-none">
+          <input type="checkbox" id="loginRemember" class="w-4 h-4 rounded accent-sky-500">
+          <span class="text-xs font-semibold text-slate-500">Ingat saya</span>
+        </label>
+        <button type="submit" class="w-full glass-btn font-extrabold py-3 rounded-xl tracking-widest text-sm shadow-lg mt-1">Masuk</button>
+        <!-- Demo hint -->
+        <p class="text-center text-[11px] text-slate-400 font-medium pt-1">
+          Demo: <span class="font-bold text-slate-500">rattil</span> / <span class="font-bold text-slate-500">1234</span>
+        </p>
+      </form>
+
+      <!-- FORM: REGISTER -->
+      <form id="registerForm" class="px-4 pb-5 pt-4 space-y-3 hidden" autocomplete="off">
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">Nama Lengkap</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-sky-400 text-sm"><i class="fa-solid fa-id-card"></i></div>
+            <input type="text" id="regName" required
+              class="w-full pl-10 pr-4 py-3 glass-input rounded-xl outline-none transition-all placeholder-slate-300 font-medium text-sm"
+              placeholder="Nama Anda">
+          </div>
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">NIS RATTIL / Username</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-sky-400 text-sm"><i class="fa-solid fa-user"></i></div>
+            <input type="text" id="regUsername" required
+              class="w-full pl-10 pr-4 py-3 glass-input rounded-xl outline-none transition-all placeholder-slate-300 font-medium text-sm"
+              placeholder="Minimal 3 karakter">
+          </div>
+          <p class="text-[10px] text-slate-400 mt-1 ml-1">Hanya huruf, angka, dan underscore (_)</p>
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">Password</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-sky-400 text-sm"><i class="fa-solid fa-lock"></i></div>
+            <input type="password" id="regPassword" required
+              class="w-full pl-10 pr-4 py-3 glass-input rounded-xl outline-none transition-all placeholder-slate-300 font-medium text-sm"
+              placeholder="Minimal 4 karakter">
+          </div>
+        </div>
+        <button type="submit" class="w-full glass-btn font-extrabold py-3 rounded-xl tracking-widest text-sm shadow-lg mt-1">Daftar Sekarang</button>
+        <p class="text-center text-[11px] text-slate-400 font-medium pt-0.5">
+          Sudah punya akun?
+          <button type="button" onclick="switchAuthTab('masuk')" class="font-extrabold text-sky-500 hover:text-sky-600">Masuk di sini</button>
+        </p>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- VIEW: MAIN APP -->
+  <div id="mainAppView" class="hidden min-h-screen pb-24">
+    
+    <!-- Top Nav -->
+    <nav class="sticky top-0 z-30 pt-6 pb-4 px-5 max-w-md mx-auto flex justify-between items-center bg-white/50 backdrop-blur-xl border-b border-white/50 shadow-sm">
+      <div class="font-bold text-slate-800 text-lg flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-sky-400 to-blue-600 text-white flex items-center justify-center shadow-md shrink-0">
+          <i class="fa-solid fa-user text-sm"></i>
+        </div>
+        <div class="flex flex-col">
+          <span id="navUserName">Ahlan, Fulan</span>
+          <span class="text-[10px] text-slate-500 font-medium leading-tight mt-0.5">Mari berjuang membaca pesan cinta Pencipta kita</span>
+        </div>
+      </div>
+      <button onclick="doLogout()" class="text-slate-500 bg-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-red-50 hover:text-red-500 shadow-sm transition-all border border-slate-100" title="Keluar">
+        <i class="fa-solid fa-right-from-bracket text-sm"></i>
+      </button>
+    </nav>
+
+    <!-- CONTENT: STUDENT VIEW -->
+    <main id="studentView" class="max-w-md mx-auto px-5 hidden pt-6 pb-24 relative z-10">
+      
+      <!-- #2 Pull to Refresh Indicator -->
+      <div id="pullRefreshIndicator" class="pull-indicator">
+        <i class="fa-solid fa-arrows-rotate text-sky-400 animate-spin"></i>
+        <span class="text-xs font-bold text-sky-500 ml-2">Memuat ulang data...</span>
+      </div>
+
+      <!-- #1 Skeleton Loading Placeholder -->
+      <div id="studentSkeleton">
+        <div class="flex justify-between items-center mb-5">
+          <div class="skeleton h-8 w-36"></div>
+          <div class="skeleton h-9 w-24 rounded-xl"></div>
+        </div>
+        <div class="skeleton h-8 w-40 rounded-xl mb-3"></div>
+        <div class="grid grid-cols-2 gap-4 mb-5">
+          <div class="skeleton h-28 rounded-3xl"></div>
+          <div class="skeleton h-28 rounded-3xl"></div>
+        </div>
+        <div class="skeleton h-52 rounded-[1.75rem] mb-2"></div>
+        <div class="skeleton h-4 w-56 rounded-xl mb-8"></div>
+        <div class="skeleton h-8 w-36 mb-6"></div>
+        <div class="space-y-4 mb-8">
+          <div class="skeleton h-36 rounded-[2rem]"></div>
+          <div class="skeleton h-36 rounded-[2rem]"></div>
+          <div class="skeleton h-36 rounded-[2rem]"></div>
+        </div>
+      </div>
+
+      <!-- Actual Student Content (initially hidden, shown after data loads) -->
+      <div id="studentContent" class="hidden">
+      <!-- KhatamKu Header -->
+      <div class="flex justify-between items-center mb-5">
+        <h2 class="text-2xl font-black text-slate-800 flex items-center gap-2">
+          <i class="fa-solid fa-book-quran text-sky-500"></i> KhatamKu
+        </h2>
+        <button class="text-emerald-600 hover:text-emerald-700 transition-colors font-bold text-sm bg-white px-4 py-2 rounded-xl border border-emerald-100 shadow-sm" onclick="openRiwayatModal()"><i class="fa-solid fa-clock-rotate-left mr-1"></i> Riwayat</button>
+      </div>
+
+      <!-- Progress khatam ke-X -->
+      <h3 class="font-bold text-[12px] text-slate-500 mb-3 tracking-widest uppercase">Progress Khatam Ke-<span id="uiKhatamCycle" class="font-black text-sky-600">1</span></h3>
+      <div class="grid grid-cols-2 gap-4 mb-5">
+        <!-- Card Aksi: Udzur -->
+        <button id="btnToggleUdzur" onclick="openModal('modalUdzur')" class="glass-card-dark p-5 rounded-3xl relative overflow-hidden text-left w-full transition-all">
+          <div class="absolute -right-2 -bottom-2 opacity-10 text-6xl"><i class="fa-solid fa-bed"></i></div>
+          <div class="text-sky-200 mb-2 text-xl"><i class="fa-solid fa-bed"></i></div>
+          <div class="text-lg font-black text-white mb-1 tracking-tight">Udzur</div>
+          <div class="text-[11px] font-semibold text-sky-100 uppercase tracking-wider">Syar'i</div>
+        </button>
+        <!-- Card Aksi: Target -->
+        <button onclick="openModal('modalTarget')" class="glass-card-dark p-5 rounded-3xl relative overflow-hidden text-left w-full transition-all">
+          <div class="absolute -right-2 -bottom-2 opacity-10 text-6xl"><i class="fa-solid fa-bullseye"></i></div>
+          <div class="text-sky-200 mb-2 text-xl"><i class="fa-solid fa-bullseye"></i></div>
+          <div class="text-lg font-black text-white mb-1 tracking-tight">Target</div>
+          <div class="text-[11px] font-semibold text-sky-100 uppercase tracking-wider">Target Saya</div>
+        </button>
+      </div>
+      <!-- Hidden: preserve JS references -->
+      <span id="uiTotalProgressPct" class="hidden"></span>
+      <span id="uiDaysRemaining" class="hidden"></span>
+
+      <!-- Gabungan: Posisi Bacaan + Progress Hari Ini -->
+      <div class="relative overflow-hidden rounded-[1.75rem] shadow-lg mb-2" style="background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);">
+        <!-- Decorative circles -->
+        <div class="absolute -top-8 -right-8 w-32 h-32 bg-white/10 rounded-full"></div>
+        <div class="absolute -bottom-5 -left-5 w-24 h-24 bg-black/10 rounded-full"></div>
+        <div class="relative z-10 p-5">
+          <!-- Posisi Bacaan Terakhir -->
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-[11px] font-black text-white uppercase tracking-widest">📖 Posisi Bacaan Terakhir</p>
+            <button
+              onclick="confirmResetReadingData()"
+              class="flex items-center gap-1 text-[10px] font-bold text-white/70 hover:text-white bg-white/10 hover:bg-red-500/40 border border-white/20 hover:border-red-300/50 px-2.5 py-1 rounded-lg transition-all duration-200"
+              title="Reset semua data bacaan"
+            ><i class="fa-solid fa-rotate-left text-[9px]"></i> Reset</button>
+          </div>
+          <div class="flex items-center gap-3 mb-2 flex-wrap">
+            <div class="flex items-baseline gap-1.5">
+              <span class="text-3xl font-black text-amber-400 tracking-tight drop-shadow-sm">HAL</span>
+              <span class="text-3xl font-black text-amber-400 tracking-tight drop-shadow-sm" id="smartBookmarkPage">0</span>
+            </div>
+            <span id="smartBookmarkJuz" class="text-[11px] font-black bg-amber-400/90 text-slate-900 px-2.5 py-1 rounded-lg shadow-sm">Juz 1</span>
+          </div>
+          <div class="flex items-center justify-between gap-2 flex-wrap mb-4">
+            <p class="text-xs font-semibold text-white" id="smartBookmarkCaption">Mulai bacaan pertamamu dari halaman 1</p>
+            <p class="text-[10px] font-semibold text-white/75 flex items-center gap-1" id="smartBookmarkLastUpdate"><i class="fa-regular fa-clock text-[9px]"></i> -</p>
+          </div>
+
+          <!-- Divider -->
+          <div class="border-t border-white/20 mb-4"></div>
+
+          <!-- Progress Hari Ini -->
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-12 h-12 bg-white/15 rounded-2xl flex items-center justify-center border border-white/20 shrink-0">
+              <i class="fa-solid fa-book-open-reader text-white text-xl"></i>
+            </div>
+            <div class="flex-1">
+              <h4 class="font-extrabold text-white text-base mb-1.5" id="uiDailyTargetPages">Progres: 0/0 Halaman</h4>
+              <div class="flex items-center gap-3">
+                <span class="text-sm font-extrabold text-amber-300" id="uiDailyProgressPct">0%</span>
+                <div class="flex-1 h-2.5 bg-white/30 rounded-full overflow-hidden">
+                  <div class="h-full rounded-full transition-all duration-1000" id="uiDailyProgressBar" style="width: 0%; background: #fbbf24; opacity: 0.9;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button id="btnLanjutkanBacaan" class="w-full py-3.5 rounded-2xl bg-white/25 hover:bg-white/40 border border-white/50 font-extrabold text-white text-sm tracking-widest transition-all shadow-sm" onclick="openModal('modalProgress')">LANJUTKAN BACAAN</button>
+        </div>
+      </div>
+      <p class="text-[11px] text-slate-400 font-medium mb-8 flex items-center gap-1.5 ml-2"><i class="fa-regular fa-clock"></i> Target harian akan direset setiap pukul 00:00 WIB</p>
+
+      <!-- Hidden: preserve JS references -->
+      <span id="uiKhatamCount" class="hidden">0</span>
+      <span id="uiTargetDateHeader" class="hidden"></span>
+
+
+      <!-- DIAGRAM PROGRESS KHATAM -->
+      <div id="sectionRekap" class="flex justify-between items-center mb-6 px-1">
+        <h2 class="text-2xl font-black tracking-tight flex items-center gap-2"><i class="fa-solid fa-chart-pie text-sky-500 text-xl"></i> Rekap Bacaan</h2>
+      </div>
+
+
+      <div class="space-y-4 mb-8">
+        <!-- Progress hari ini -->
+        <div class="glass-card rounded-[2rem] p-6 flex justify-between items-center">
+          <div>
+            <div class="text-slate-500 text-[11px] uppercase tracking-widest font-bold mb-2 flex items-center gap-2"><i class="fa-solid fa-book-open text-sky-500"></i> Progress hari ini</div>
+            <div class="text-[48px] font-black text-slate-800 mb-1 leading-none tracking-tight"><span id="circDailyPages">0</span><span class="text-xl font-bold ml-1.5 text-slate-400">Hal</span></div>
+            <div class="text-[12px] text-slate-500 font-semibold flex items-center gap-2"><div class="w-2.5 h-2.5 rounded-full" id="circDailyDot"></div> <span id="circDailyRemain">0 halaman tersisa</span></div>
+          </div>
+          
+          <!-- Circular Bar Professional (Dynamic Color & Recessed Inner) -->
+          <div class="relative w-[100px] h-[100px] rounded-full flex items-center justify-center conic-ring outer-ring-base" style="background: conic-gradient(#cbd5e1 100%, transparent 0%);" id="circDailyRing">
+            <div class="w-[70px] h-[70px] rounded-full inner-circle-recessed flex items-center justify-center">
+               <!-- Opsional ikon di tengah lingkaran -->
+               <i class="fa-solid fa-bolt text-slate-600 opacity-50"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Total Progress -->
+        <div class="glass-card rounded-[2rem] p-6 flex justify-between items-center">
+          <div>
+            <div class="text-slate-500 text-[11px] uppercase tracking-widest font-bold mb-2 flex items-center gap-2"><i class="fa-solid fa-bullseye text-sky-500"></i> Total Progress</div>
+            <div class="text-[48px] font-black text-slate-800 mb-1 leading-none tracking-tight"><span id="circTotalPct">0</span><span class="text-2xl font-bold text-slate-400">%</span></div>
+            <div class="text-[12px] text-slate-500 font-semibold flex items-center gap-2"><div class="w-2.5 h-2.5 rounded-full" id="circTotalDot"></div> <span id="circTotalRemain">604 halaman tersisa</span></div>
+          </div>
+          <div class="relative w-[100px] h-[100px] rounded-full flex items-center justify-center conic-ring outer-ring-base" style="background: conic-gradient(#cbd5e1 100%, transparent 0%);" id="circTotalRing">
+            <div class="w-[70px] h-[70px] rounded-full inner-circle-recessed flex items-center justify-center">
+              <i class="fa-solid fa-trophy text-slate-600 opacity-50"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hitung Mundur -->
+        <div class="glass-card rounded-[2rem] p-6">
+          <div class="text-slate-500 text-[11px] uppercase tracking-widest font-bold mb-4 flex items-center gap-2">
+            <i class="fa-regular fa-calendar-check text-sky-500"></i> Hitung Mundur
+          </div>
+
+          <!-- Empty State: belum ada target -->
+          <div id="hitungMundurEmpty" class="hidden text-center py-4">
+            <div class="w-14 h-14 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
+              <i class="fa-solid fa-bullseye text-amber-400 text-2xl"></i>
+            </div>
+            <p class="text-[12px] font-bold text-slate-500 mb-1">Belum Ada Target</p>
+            <p class="text-[11px] text-slate-400 mb-3">Atur target harianmu agar estimasi khatam bisa dihitung.</p>
+            <button onclick="openModal('modalTarget')" class="text-[11px] font-extrabold text-sky-600 bg-sky-50 border border-sky-100 px-4 py-2 rounded-xl tracking-widest uppercase">
+              <i class="fa-solid fa-plus mr-1"></i> Atur Target
+            </button>
+          </div>
+
+          <!-- Normal Content -->
+          <div id="hitungMundurContent" class="space-y-3">
+            <!-- Info 1: Tanggal Estimasi -->
+            <div class="flex items-center justify-between bg-slate-50 rounded-2xl px-3 py-3 border border-slate-100 gap-2">
+              <div class="flex items-center gap-1.5 shrink-0">
+                <i class="fa-regular fa-calendar text-sky-400 text-[13px]"></i>
+                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider whitespace-nowrap">Estimasi Khatam</span>
+              </div>
+              <span class="text-[15px] sm:text-base font-black text-amber-500 tracking-tight drop-shadow-sm text-right leading-tight" id="circGoalDate">-</span>
+            </div>
+            <!-- Info 2: Sisa Hari -->
+            <div class="flex items-center justify-between bg-slate-50 rounded-2xl px-3 py-3 border border-slate-100 gap-2">
+              <div class="flex items-center gap-1.5 shrink-0">
+                <i class="fa-solid fa-hourglass-half text-sky-400 text-[13px]"></i>
+                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider whitespace-nowrap">Sisa Waktu</span>
+              </div>
+              <div class="flex items-baseline gap-1.5 shrink-0">
+                <span class="text-[24px] leading-none font-black text-amber-500 tracking-tight drop-shadow-sm" id="circGoalDays">-</span>
+                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">hari lagi</span>
+              </div>
+            </div>
+            <!-- Progress bar -->
+            <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div class="h-full rounded-full transition-all duration-1000" id="circGoalBar" style="width:0%; background: linear-gradient(to right, #f59e0b, #fbbf24);"></div>
+            </div>
+          </div>
+
+          <!-- Hidden: preserve JS references -->
+          <div id="circGoalRing" class="hidden" style="background:none;"></div>
+          <div id="circGoalDot" class="hidden"></div>
+        </div>
+      </div>
+
+      <!-- ===== PETA PERJALANAN AL-QUR'AN ===== -->
+      <div class="mb-8" id="sectionSurahMap">
+
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-4 px-1">
+          <div>
+            <h2 class="text-2xl font-black text-slate-800 flex items-center gap-2">
+              <i class="fa-solid fa-map-location-dot text-sky-500 text-xl"></i> Peta Perjalanan
+            </h2>
+            <p class="text-[10px] text-slate-400 font-semibold tracking-widest uppercase mt-0.5">114 Surah Al-Qur'an</p>
+          </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-2 gap-3 mb-4">
+          <div class="glass-card rounded-2xl p-4">
+            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Surat Selesai</p>
+            <div class="flex items-baseline gap-1 mb-2">
+              <span class="text-[28px] font-black text-slate-800 leading-none" id="gridSurahDone">0</span>
+              <span class="text-xs font-bold text-slate-400">/114</span>
+            </div>
+            <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+              <div class="h-full rounded-full transition-all duration-1000" id="gridSurahBar" style="width:0%; background:linear-gradient(to right,#2563eb,#1e3a8a)"></div>
+            </div>
+            <p class="text-[9px] font-black mt-1.5" id="gridSurahPct" style="color:#1d4ed8">0%</p>
+          </div>
+          <div class="glass-card rounded-2xl p-4">
+            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Halaman Dibaca</p>
+            <div class="flex items-baseline gap-1 mb-2">
+              <span class="text-[28px] font-black text-slate-800 leading-none" id="gridHalDone">0</span>
+              <span class="text-[9px] font-bold text-slate-400">/604</span>
+            </div>
+            <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+              <div class="h-full rounded-full transition-all duration-1000" id="gridHalBar" style="width:0%; background:linear-gradient(to right,#38bdf8,#0ea5e9)"></div>
+            </div>
+            <p class="text-[9px] font-black mt-1.5" id="gridHalPct" style="color:#0ea5e9">0%</p>
+          </div>
+        </div>
+
+        <!-- Surah Info Tooltip (tap on cell) -->
+        <div id="surahTooltip" class="hidden mb-3 bg-white/90 backdrop-blur-md border border-sky-100 rounded-2xl px-4 py-3.5 shadow-lg">
+          <div class="flex items-center justify-between gap-3">
+            <div class="flex-1 min-w-0">
+              <p class="text-[10px] font-black text-sky-500 uppercase tracking-widest" id="tooltipSurahNum">Surah 1</p>
+              <p class="text-sm font-black text-slate-800 truncate" id="tooltipSurahName">Al-Faatiha</p>
+              <p class="text-[11px] text-slate-500 font-semibold mt-0.5" id="tooltipSurahDetail">Hal 1 · Juz 1 · 7 ayat</p>
+            </div>
+            <div class="text-right shrink-0">
+              <p class="text-2xl font-black leading-none mb-0.5" id="tooltipSurahPct">0%</p>
+              <div class="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg" id="tooltipSurahBadge" style="background:#e2eef9; color:#94a3b8">Belum</div>
+            </div>
+          </div>
+          <div class="mt-2.5 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+            <div class="h-full rounded-full transition-all duration-500" id="tooltipSurahProgressBar" style="width:0%; background:#1e3a8a"></div>
+          </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="flex items-center justify-end gap-1 mb-3">
+          <span class="text-[9px] text-slate-400 font-semibold mr-0.5">Sedikit</span>
+          <div class="w-4 h-4 rounded-[3px] border border-slate-200" style="background:#e8f2fc"></div>
+          <div class="w-4 h-4 rounded-[3px]" style="background:#93c5fd"></div>
+          <div class="w-4 h-4 rounded-[3px]" style="background:#3b82f6"></div>
+          <div class="w-4 h-4 rounded-[3px]" style="background:#1d4ed8"></div>
+          <div class="w-4 h-4 rounded-[3px]" style="background:#1e3a8a"></div>
+          <span class="text-[9px] text-slate-400 font-semibold ml-0.5">Selesai</span>
+        </div>
+
+        <!-- Surah Grid -->
+        <div class="glass-card rounded-[1.5rem] p-3.5">
+          <div id="surahGrid" class="surah-grid">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+      </div>
+      <!-- ===== END PETA PERJALANAN ===== -->
+
+      <!-- Hikmah & Footer -->
+      <div class="mt-8 mb-4 text-center px-2">
+        <p class="text-[13px] text-slate-500 italic font-medium leading-relaxed">"Bacalah Al-Qur'an, karena sesungguhnya ia akan datang pada hari kiamat sebagai pemberi syafa'at untuk para sahabatnya."<br><span class="text-xs font-bold mt-2 inline-block text-slate-400">(HR. Muslim)</span></p>
+      </div>
+      <div class="text-center pt-4 pb-8">
+        <p class="text-[10px] text-slate-400 font-bold tracking-widest uppercase mb-2">Khatamku By Rattililqur'an @2026</p>
+        <p class="text-[10px] text-slate-400 font-medium leading-relaxed px-6">"Khatamku hanyalah wasilah, tujuan utama kita adalah mencari ridha-Nya. Semoga Allah mudahkan. Baarakallahu fiikum"</p>
+      </div>
+
+      </div><!-- /studentContent -->
+    </main>
+
+    <!-- CONTENT: TEACHER VIEW -->
+    <main id="teacherView" class="max-w-md mx-auto px-5 hidden pt-6 pb-24 relative z-10">
+      <div class="flex justify-between items-center mb-6">
+        <div>
+          <h2 class="text-2xl font-black text-slate-800">Portal Guru</h2>
+          <select id="tcHalaqahSelect" onchange="filterTeacherView()" class="mt-2 text-[12px] font-black text-sky-600 uppercase tracking-widest bg-sky-50 border border-sky-100 rounded-xl px-4 py-2 outline-none appearance-none cursor-pointer shadow-sm">
+            <option value="Semua">Memuat...</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div class="glass-card p-5 rounded-[1.5rem] shadow-sm">
+          <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Murid</p>
+          <p class="text-4xl font-black text-slate-800" id="tcTotalStudents">0</p>
+        </div>
+        <div class="glass-card p-5 rounded-[1.5rem] shadow-sm">
+          <p class="text-[11px] font-bold text-emerald-500 uppercase tracking-widest mb-1">Setor Hari Ini</p>
+          <p class="text-4xl font-black text-emerald-600" id="tcStudentsDone">0</p>
+        </div>
+      </div>
+
+      <button onclick="generateGroupReport()" class="w-full mb-8 bg-sky-50 hover:bg-sky-100 text-sky-600 border border-sky-200 font-extrabold py-4 rounded-[1.5rem] flex justify-center items-center gap-3 transition-colors shadow-sm">
+        <i class="fa-solid fa-copy text-lg"></i> SALIN REKAP HARI INI
+      </button>
+
+      <h3 class="font-bold text-[12px] text-slate-500 mb-4 tracking-widest uppercase">Daftar Murid</h3>
+      <div class="space-y-4 mb-8" id="tcStudentList">
+        <!-- Injected via JS -->
+      </div>
+    </main>
+
+  </div>
+
+  <!-- #14 Bottom Navigation Bar -->
+  <div id="bottomNav" class="bottom-nav hidden">
+    <div class="flex justify-around items-center">
+      <div class="bottom-nav-item active" onclick="scrollToSection('top')" id="navHome">
+        <i class="fa-solid fa-house"></i>
+        <span>Beranda</span>
+      </div>
+      <div class="bottom-nav-item" onclick="openModal('modalJournal')" id="navJurnal">
+        <i class="fa-solid fa-book"></i>
+        <span>Jurnal</span>
+      </div>
+
+      <div class="bottom-nav-item" onclick="openPotretModal()" id="navPotret">
+        <i class="fa-solid fa-scroll"></i>
+        <span>Potret</span>
+      </div>
+      <div class="bottom-nav-item" onclick="openTentangModal()" id="navTentang">
+        <i class="fa-solid fa-circle-info"></i>
+        <span>Tentang</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODALS -->
+
+  <!-- Modal: Update Progress (Sistem Halaman Terakhir) -->
+  <div id="modalProgress" class="fixed inset-0 z-50 modal-overlay hidden flex items-end justify-center sm:items-center">
+    <div class="modal-content w-full max-w-md rounded-t-[2.5rem] sm:rounded-3xl p-8 transform transition-transform translate-y-full text-slate-800" id="modalProgressContent">
+      <div class="flex justify-between items-center mb-5 border-b border-slate-100 pb-5">
+        <h3 class="text-2xl font-black tracking-tight">Lanjutkan Bacaan</h3>
+        <button onclick="closeModal('modalProgress')" class="text-slate-400 bg-slate-100 hover:bg-slate-200 w-10 h-10 rounded-full flex items-center justify-center transition-colors shadow-inner"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <!-- Titik Mulai Bacaan -->
+      <div class="bg-sky-50 border border-sky-100 rounded-2xl p-4 mb-6 flex items-center gap-3">
+        <div class="w-10 h-10 bg-sky-100 rounded-xl flex items-center justify-center shrink-0">
+          <i class="fa-solid fa-bookmark text-sky-500"></i>
+        </div>
+        <div>
+          <p class="text-[11px] font-bold text-sky-400 uppercase tracking-widest mb-0.5">Mulai baca dari</p>
+          <p class="text-lg font-black text-sky-700">Halaman <span id="modalStartPage">1</span></p>
+        </div>
+      </div>
+
+      <form id="progressForm" class="space-y-5">
+        <input type="hidden" id="progressStartPage" value="0">
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Tanggal</label>
+          <input type="date" id="progressDate" class="w-full px-5 py-4 glass-input rounded-2xl outline-none font-bold" required>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Hari ini selesai di halaman berapa?</label>
+          <input type="number" id="progressLastPage" min="1" max="604"
+            class="w-full px-5 py-5 glass-input rounded-2xl outline-none font-black text-3xl text-center text-sky-600 tracking-wider"
+            placeholder="Contoh: 25" required>
+          <!-- #12 Range Slider -->
+          <div class="mt-4 px-1">
+            <input type="range" id="progressSlider" min="1" max="604" value="1" class="range-slider w-full">
+            <div class="flex justify-between text-[10px] font-bold text-slate-400 mt-1 px-0.5">
+              <span>Hal 1</span>
+              <span id="sliderJuzLabel" class="text-sky-500">Juz 1</span>
+              <span>Hal 604</span>
+            </div>
+          </div>
+          <!-- Live Feedback -->
+          <div id="progressLiveFeedback" class="mt-3 text-center hidden">
+            <p class="text-sm font-bold" id="progressFeedbackText"></p>
+            <p class="text-[11px] text-slate-400 mt-0.5" id="progressFeedbackSub"></p>
+          </div>
+          <!-- Error Message -->
+          <div id="progressErrorMsg" class="mt-3 bg-red-50 border border-red-200 text-red-600 text-sm font-semibold px-4 py-3 rounded-xl hidden"></div>
+        </div>
+        <button type="submit" class="w-full glass-btn font-extrabold py-5 rounded-2xl mt-4 tracking-widest text-sm shadow-lg">SIMPAN BACAAN</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Set Target -->
+  <div id="modalTarget" class="fixed inset-0 z-50 modal-overlay hidden flex items-end justify-center sm:items-center">
+    <div class="modal-content w-full max-w-md rounded-t-[2.5rem] sm:rounded-3xl p-8 transform transition-transform translate-y-full text-slate-800" id="modalTargetContent">
+      <div class="flex justify-between items-center mb-5 border-b border-slate-100 pb-5">
+        <h3 class="text-2xl font-black tracking-tight">Atur Target Baru</h3>
+        <button onclick="closeModal('modalTarget')" class="text-slate-400 bg-slate-100 hover:bg-slate-200 w-10 h-10 rounded-full flex items-center justify-center transition-colors shadow-inner"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      
+      <!-- Info Pintar -->
+      <div class="bg-indigo-50 border border-indigo-100 p-4 rounded-2xl mb-6 shadow-sm">
+        <details class="group cursor-pointer">
+          <summary class="flex justify-between items-center font-bold text-sm text-indigo-700 outline-none">
+            <div class="flex items-center gap-2"><i class="fa-solid fa-lightbulb text-amber-500"></i> Tahukah Kamu? Tips Target</div>
+            <span class="transition group-open:rotate-180"><i class="fa-solid fa-chevron-down text-xs"></i></span>
+          </summary>
+          <div class="text-[12px] text-indigo-800 mt-3 space-y-3 leading-relaxed">
+            <p>Al-Qur'an standar Madinah memiliki <strong>604 halaman</strong> (sekitar 20 halaman per juz).</p>
+            <ul class="list-disc pl-5 space-y-1">
+              <li><strong>Khatam 1 Bulan:</strong> 20 hal/hari (4 hal setiap selesai salat fardu).</li>
+              <li><strong>Khatam 2 Bulan:</strong> 10 hal/hari (2 hal setiap selesai salat fardu).</li>
+              <li><strong>Khatam 3 Bulan:</strong> 6–7 hal/hari.</li>
+            </ul>
+            <div class="bg-indigo-100/60 p-3 rounded-xl text-[11px] border border-indigo-200/50">
+              <p class="font-bold mb-1">Note:</p>
+              <p class="mb-2">Sesuaikan target dengan kemampuanmu. walaupun sehari baru mampu satu halaman.</p>
+              <p class="italic font-medium text-indigo-900 leading-snug">"Maka bertakwalah kamu kepada Allah menurut kesanggupanmu" <br><span class="font-bold">(QS.At-Taghabun:16)</span></p>
+            </div>
+          </div>
+        </details>
+      </div>
+
+      <!-- Tabs -->
+      <div class="flex p-1 bg-slate-100 rounded-xl mb-4">
+        <button type="button" id="tabTargetReguler" class="flex-1 py-2.5 text-[11px] font-bold tracking-widest uppercase rounded-lg bg-white shadow-sm text-sky-600 transition-all" onclick="switchTargetMode('reguler')">Mode Reguler</button>
+        <button type="button" id="tabTargetPintar" class="flex-1 py-2.5 text-[11px] font-bold tracking-widest uppercase rounded-lg text-slate-400 hover:text-slate-600 transition-all" onclick="switchTargetMode('pintar')">Khatam Pintar 💡</button>
+      </div>
+
+      <form id="targetForm" class="space-y-6">
+        <!-- Mode Reguler -->
+        <div id="targetModeReguler">
+          <p class="text-[11px] text-slate-500 mb-4 leading-relaxed font-medium">Santai & konsisten. Kamu tentukan kemampuan membaca harianmu, sistem akan menghitung estimasi khatamnya.</p>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Target Halaman per Hari</label>
+          <input type="number" id="inputTargetPages" min="1" max="604" class="w-full px-5 py-4 glass-input rounded-2xl outline-none text-3xl font-black text-center text-sky-600" placeholder="Contoh: 10" required>
+          <div class="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-xl hidden shadow-sm" id="targetPagesCalc">
+            <p class="text-sm text-slate-600 flex justify-between items-center font-medium">Estimasi khatam: <span id="calcEstDate" class="font-bold text-sky-600 text-base bg-white px-3 py-1 rounded-lg border border-sky-100 shadow-sm"></span></p>
+          </div>
+        </div>
+
+        <!-- Mode Pintar (Event-Based) -->
+        <div id="targetModePintar" class="hidden">
+          <p class="text-[11px] text-slate-500 mb-4 leading-relaxed font-medium">Punya target acara khusus? Pilih tanggal spesifik kapan kamu ingin khatam (misal: bulan Ramadhan).</p>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Pilih Tanggal Target Khatam</label>
+          <input type="date" id="inputTargetDate" class="w-full px-5 py-4 glass-input rounded-2xl outline-none text-xl font-bold text-center text-sky-600">
+          <div class="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-xl hidden shadow-sm" id="targetDateCalc">
+            <p class="text-[13px] text-slate-700 leading-relaxed font-medium">Agar selesai tepat waktu, kamu harus membaca minimal:</p>
+            <p class="text-2xl font-black text-amber-600 mt-2 text-center" id="calcEstPages">0 Hal / Hari</p>
+          </div>
+        </div>
+
+        <button type="submit" class="w-full glass-btn font-extrabold py-5 rounded-2xl mt-4 tracking-widest text-[13px] shadow-lg">TERAPKAN TARGET</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Milestone Celebration -->
+  <div id="modalMilestone" class="fixed inset-0 z-[100] modal-overlay hidden flex items-center justify-center p-5">
+    <div class="modal-content w-full max-w-sm rounded-[2.5rem] p-8 transform transition-transform scale-95 opacity-0 text-center" id="modalMilestoneContent">
+      <div class="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+        <i class="fa-solid fa-crown text-4xl text-amber-500"></i>
+      </div>
+      <h3 class="text-2xl font-black tracking-tight text-slate-800 mb-2">Masya Allah! Alhamdulillah 🥳</h3>
+      <p class="text-[14px] text-slate-500 font-medium leading-relaxed mb-8">
+        Selamat, perjuanganmu luar biasa! Kamu baru saja resmi melangkah masuk ke <br>
+        <span class="text-2xl font-black text-sky-600 block mt-3">Juz <span id="milestoneJuzNumber"></span></span>
+      </p>
+      <button onclick="closeModal('modalMilestone')" class="w-full glass-btn font-extrabold py-5 rounded-2xl tracking-widest text-[13px] shadow-lg">LANJUTKAN PERJUANGAN</button>
+    </div>
+  </div>
+
+  <!-- Modal: Udzur Syar'i -->
+  <div id="modalUdzur" class="fixed inset-0 z-[60] modal-overlay hidden flex items-center justify-center p-5">
+    <div class="modal-content w-full max-w-sm rounded-[2.5rem] p-8 transform transition-transform scale-95 opacity-0 text-center" id="modalUdzurContent">
+      <div class="w-16 h-16 bg-pink-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+        <i class="fa-solid fa-spa text-3xl text-pink-400"></i>
+      </div>
+      <h3 class="text-2xl font-black tracking-tight text-slate-800 mb-3">Istirahatlah Sejenak 🌸</h3>
+      <p class="text-[13px] text-slate-500 font-medium leading-relaxed mb-6 text-left">
+        Fitur ini akan menjeda target bacaan dan memberitahukan gurumu agar kamu tidak mendapat peringatan.<br><br>
+        <span class="font-bold text-pink-500">Jika sedang udzur (haid/nifas)</span>, perbanyaklah dzikir sebagai gantinya.<br><br>
+        <span class="font-bold text-sky-600">Jika sedang sakit atau safar</span>, tetaplah berusaha meluangkan waktu membaca Al-Qur'an walau hanya satu ayat jika mampu. Semoga Allah mudahkan.
+      </p>
+      
+      <div class="space-y-3 mb-6">
+        <button onclick="handleUdzurSubmit('Haid')" class="w-full bg-pink-50 hover:bg-pink-100 text-pink-600 font-bold py-3 rounded-xl transition-colors border border-pink-100 text-sm shadow-sm">🩸 Sedang Udzur (Haid/Nifas)</button>
+        <button onclick="handleUdzurSubmit('Sakit')" class="w-full bg-amber-50 hover:bg-amber-100 text-amber-600 font-bold py-3 rounded-xl transition-colors border border-amber-100 text-sm shadow-sm">🤒 Sedang Sakit</button>
+        <button onclick="handleUdzurSubmit('Safar')" class="w-full bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold py-3 rounded-xl transition-colors border border-blue-100 text-sm shadow-sm">✈️ Sedang Safar (Perjalanan)</button>
+      </div>
+
+      <button onclick="closeModal('modalUdzur')" class="text-xs font-bold text-slate-400 hover:text-slate-600 uppercase tracking-widest">Batal</button>
+    </div>
+  </div>
+
+  <!-- Modal: Journal -->
+  <div id="modalJournal" class="fixed inset-0 z-50 modal-overlay hidden flex flex-col justify-end sm:justify-center items-center">
+    <div class="modal-content w-full max-w-md h-[90vh] sm:h-[85vh] rounded-t-[2.5rem] sm:rounded-3xl p-7 flex flex-col transform transition-transform translate-y-full text-slate-800" id="modalJournalContent">
+      <div class="flex justify-between items-center mb-5 shrink-0 border-b border-slate-100 pb-5">
+        <h3 class="text-2xl font-black tracking-tight">Jurnal Refleksi</h3>
+        <button onclick="closeModal('modalJournal')" class="text-slate-400 bg-slate-100 hover:bg-slate-200 w-10 h-10 rounded-full flex items-center justify-center transition-colors shadow-inner"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      
+      <div class="flex-1 overflow-y-auto mb-4 pr-3 space-y-4" id="journalList">
+      </div>
+
+      <form id="journalForm" class="shrink-0 pt-6 border-t border-slate-100 space-y-4">
+        <input type="hidden" id="journalId">
+        <div class="grid grid-cols-2 gap-3">
+          <select id="journalSurah" class="w-full px-4 py-4 text-sm glass-input rounded-2xl outline-none font-bold text-sky-600"></select>
+          <div class="flex gap-2">
+            <input type="number" id="journalAyahStart" class="w-full px-4 py-4 text-sm glass-input rounded-2xl outline-none text-center font-bold" placeholder="Dari">
+            <input type="number" id="journalAyahEnd" class="w-full px-4 py-4 text-sm glass-input rounded-2xl outline-none text-center font-bold" placeholder="Sampai">
+          </div>
+        </div>
+        <textarea id="journalNote" rows="2" class="w-full px-5 py-4 text-sm glass-input rounded-2xl outline-none font-medium leading-relaxed" placeholder="Tuliskan hikmah/catatan hari ini..." required></textarea>
+        <div class="flex gap-3">
+          <button type="button" class="w-1/3 py-4 text-sm font-bold text-slate-500 bg-slate-100 border border-slate-200 rounded-2xl hover:bg-slate-200 transition-colors hidden" id="btnCancelJournal" onclick="resetJournalForm()">BATAL</button>
+          <button type="submit" class="flex-1 glass-btn py-4 text-sm font-extrabold rounded-2xl tracking-widest shadow-lg" id="btnSaveJournal">SIMPAN JURNAL</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Riwayat Bacaan Lengkap (Student) -->
+  <div id="modalRiwayat" class="fixed inset-0 z-50 modal-overlay hidden flex flex-col justify-end sm:justify-center items-center">
+    <div class="modal-content w-full max-w-md h-[92vh] sm:h-[88vh] rounded-t-[2.5rem] sm:rounded-3xl p-0 flex flex-col transform transition-transform translate-y-full text-slate-800 overflow-hidden" id="modalRiwayatContent">
+
+      <!-- Header bergradient -->
+      <div class="relative overflow-hidden shrink-0" style="background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);">
+        <div class="absolute -top-6 -right-6 w-32 h-32 bg-white/10 rounded-full"></div>
+        <div class="absolute -bottom-4 -left-4 w-24 h-24 bg-black/10 rounded-full"></div>
+        <div class="relative z-10 px-7 pt-7 pb-6">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-[10px] font-black text-sky-200 uppercase tracking-widest mb-1 flex items-center gap-1.5">
+                <i class="fa-solid fa-clock-rotate-left"></i> Catatan Perjalanan
+              </p>
+              <h3 class="text-2xl font-black text-white tracking-tight">Riwayat Bacaan</h3>
+              <p class="text-[11px] text-sky-200/80 font-semibold mt-1 italic">"Semoga setiap huruf yang sudah dibaca diterima oleh-Nya"</p>
+            </div>
+            <button onclick="closeModal('modalRiwayat')" class="text-white/70 hover:text-white bg-white/15 hover:bg-white/25 w-10 h-10 rounded-full flex items-center justify-center transition-colors shrink-0 mt-0.5"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+
+          <!-- Statistik dalam header -->
+          <div class="grid grid-cols-3 gap-2 mt-5">
+            <div class="bg-white/15 backdrop-blur-sm rounded-2xl px-3 py-3 text-center border border-white/20">
+              <i class="fa-regular fa-calendar-check text-sky-200 text-sm mb-1"></i>
+              <p class="text-xl font-black text-white leading-none" id="riwayatStatHari">--</p>
+              <p class="text-[9px] font-bold text-sky-200 uppercase tracking-wider mt-0.5">Hari Aktif</p>
+            </div>
+            <div class="bg-white/15 backdrop-blur-sm rounded-2xl px-3 py-3 text-center border border-white/20">
+              <i class="fa-solid fa-book-open text-sky-200 text-sm mb-1"></i>
+              <p class="text-xl font-black text-white leading-none" id="riwayatStatHal">--</p>
+              <p class="text-[9px] font-bold text-sky-200 uppercase tracking-wider mt-0.5">Total Hal</p>
+            </div>
+            <div class="bg-white/15 backdrop-blur-sm rounded-2xl px-3 py-3 text-center border border-white/20">
+              <i class="fa-solid fa-chart-line text-sky-200 text-sm mb-1"></i>
+              <p class="text-xl font-black text-amber-300 leading-none" id="riwayatStatRata">--</p>
+              <p class="text-[9px] font-bold text-sky-200 uppercase tracking-wider mt-0.5">Rata-rata/Hari</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter Bulan -->
+      <div class="px-5 pt-4 pb-2 shrink-0 flex gap-2 overflow-x-auto scrollbar-none" id="riwayatFilterBar">
+        <!-- Diisi JS -->
+      </div>
+
+      <!-- List -->
+      <div class="flex-1 overflow-y-auto px-5 pb-6 pt-1 space-y-2.5" id="riwayatList">
+        <div id="riwayatSkeleton" class="space-y-2.5">
+          <div class="skeleton h-[72px] rounded-2xl"></div>
+          <div class="skeleton h-[72px] rounded-2xl"></div>
+          <div class="skeleton h-[72px] rounded-2xl"></div>
+          <div class="skeleton h-[72px] rounded-2xl"></div>
+          <div class="skeleton h-[72px] rounded-2xl"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Modal: Student History (Teacher View) -->
+  <div id="modalHistory" class="fixed inset-0 z-50 modal-overlay hidden flex flex-col justify-end sm:justify-center items-center">
+    <div class="modal-content w-full max-w-md h-[75vh] sm:h-[auto] sm:max-h-[85vh] rounded-t-[2.5rem] sm:rounded-3xl p-7 flex flex-col transform transition-transform translate-y-full text-slate-800" id="modalHistoryContent">
+      <div class="flex justify-between items-center mb-5 shrink-0 border-b border-slate-100 pb-5">
+        <div>
+          <h3 class="text-2xl font-black tracking-tight" id="histStudentName">Nama Murid</h3>
+          <p class="text-xs font-semibold text-slate-500 mt-1 uppercase tracking-widest">Riwayat 7 Hari Terakhir</p>
+        </div>
+        <button onclick="closeModal('modalHistory')" class="text-slate-400 bg-slate-100 hover:bg-slate-200 w-10 h-10 rounded-full flex items-center justify-center transition-colors shadow-inner"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="flex-1 overflow-y-auto pr-2 space-y-3" id="histList">
+        <!-- Injected via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Custom Alert -->
+  <div id="modalAlert" class="fixed inset-0 z-[200] modal-overlay hidden flex items-center justify-center p-5">
+    <div class="modal-content w-full max-w-sm rounded-[2.5rem] p-8 transform transition-transform scale-95 opacity-0 text-center" id="modalAlertContent">
+      <div id="alertIconContainer" class="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+        <i id="alertIcon" class="fa-solid fa-triangle-exclamation text-4xl text-amber-500"></i>
+      </div>
+      <h3 class="text-2xl font-black tracking-tight text-slate-800 mb-2" id="alertTitle">Peringatan</h3>
+      <p class="text-[14px] text-slate-500 font-medium leading-relaxed mb-8" id="alertMessage">Pesan peringatan</p>
+      <button onclick="closeModal('modalAlert')" class="w-full glass-btn font-extrabold py-4 rounded-2xl tracking-widest text-[13px] shadow-lg">MENGERTI</button>
+    </div>
+  </div>
+
+  <!-- Modal: Register Error Popup -->
+  <div id="modalRegisterError" class="fixed inset-0 z-[210] modal-overlay hidden flex items-center justify-center p-5">
+    <div class="modal-content w-full max-w-sm rounded-[2.5rem] p-8 transform transition-transform scale-95 opacity-0 text-center" id="modalRegisterErrorContent">
+      <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-5 shadow-inner">
+        <i class="fa-solid fa-user-xmark text-4xl text-red-500"></i>
+      </div>
+      <h3 class="text-xl font-black tracking-tight text-slate-800 mb-2">Pendaftaran Gagal</h3>
+      <p class="text-[13px] text-slate-500 font-medium leading-relaxed mb-2" id="registerErrorPopupMsg">Terjadi kesalahan.</p>
+      <p class="text-[11px] text-red-400 font-bold mb-7">Silakan coba username yang berbeda.</p>
+      <button onclick="closeModal('modalRegisterError')" class="w-full glass-btn font-extrabold py-4 rounded-2xl tracking-widest text-[13px] shadow-lg" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+        <i class="fa-solid fa-rotate-left mr-2"></i>DAFTAR KEMBALI
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal: Custom Confirm -->
+  <div id="modalConfirm" class="fixed inset-0 z-[200] modal-overlay hidden flex items-center justify-center p-5">
+    <div class="modal-content w-full max-w-sm rounded-[2.5rem] p-8 transform transition-transform scale-95 opacity-0 text-center" id="modalConfirmContent">
+      <div id="confirmIconContainer" class="w-20 h-20 bg-sky-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+        <i id="confirmIcon" class="fa-solid fa-circle-question text-4xl text-sky-500"></i>
+      </div>
+      <h3 class="text-2xl font-black tracking-tight text-slate-800 mb-2" id="confirmTitle">Konfirmasi</h3>
+      <p class="text-[14px] text-slate-500 font-medium leading-relaxed mb-8" id="confirmMessage">Pesan konfirmasi</p>
+      <div class="flex gap-3">
+        <button onclick="closeModal('modalConfirm')" class="flex-1 py-4 text-sm font-bold text-slate-500 bg-slate-100 border border-slate-200 rounded-2xl hover:bg-slate-200 transition-colors shadow-sm">BATAL</button>
+        <button id="btnConfirmAction" class="flex-1 glass-btn py-4 text-sm font-extrabold rounded-2xl tracking-widest shadow-lg">YA, LANJUTKAN</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Tentang KhatamKu & Rattilil Qur'an -->
+  <div id="modalTentang" class="fixed inset-0 z-50 modal-overlay hidden flex flex-col justify-end sm:justify-center items-center">
+    <div class="modal-content w-full max-w-md h-[88vh] sm:h-[85vh] rounded-t-[2.5rem] sm:rounded-3xl p-0 flex flex-col transform transition-transform translate-y-full text-slate-800 overflow-hidden" id="modalTentangContent">
+      
+      <!-- Header fixed -->
+      <div class="flex justify-between items-center px-7 pt-7 pb-5 shrink-0 border-b border-slate-100/80">
+        <div>
+          <h3 class="text-2xl font-black tracking-tight">Tentang</h3>
+          <p class="text-[10px] text-slate-400 font-semibold tracking-widest uppercase mt-0.5">KhatamKu & Rattilil Qur'an</p>
+        </div>
+        <button onclick="closeModal('modalTentang')" class="text-slate-400 bg-slate-100 hover:bg-slate-200 w-10 h-10 rounded-full flex items-center justify-center transition-colors shadow-inner"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <!-- Scrollable Content -->
+      <div class="flex-1 overflow-y-auto px-7 py-5 space-y-5 pb-8">
+
+        <!-- App Header Card -->
+        <div class="relative overflow-hidden rounded-[1.75rem] p-6 text-center" style="background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);">
+          <div class="absolute -top-8 -right-8 w-32 h-32 bg-white/10 rounded-full"></div>
+          <div class="absolute -bottom-6 -left-6 w-24 h-24 bg-black/10 rounded-full"></div>
+          <div class="relative z-10">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl shadow-lg mb-3 border border-white/30">
+              <i class="fa-solid fa-book-open text-white text-2xl"></i>
+            </div>
+            <h2 class="text-2xl font-black text-white mb-1" id="tentangJudul">KhatamKu</h2>
+            <span class="text-[11px] font-bold text-sky-200 bg-white/20 px-3 py-1 rounded-full border border-white/30" id="tentangVersi">v1.0.0</span>
+          </div>
+        </div>
+
+        <!-- Tentang Aplikasi -->
+        <div class="bg-sky-50 border border-sky-100 rounded-[1.5rem] p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <div class="w-8 h-8 bg-sky-500 rounded-lg flex items-center justify-center shadow-sm shrink-0">
+              <i class="fa-solid fa-mobile-screen-button text-white text-xs"></i>
+            </div>
+            <h4 class="text-[11px] font-black text-sky-600 uppercase tracking-widest">Tentang Aplikasi</h4>
+          </div>
+          <p class="text-sm text-slate-600 leading-relaxed font-medium" id="tentangDeskApp">Memuat konten...</p>
+        </div>
+
+        <!-- Tentang Rattilil Qur'an -->
+        <div class="bg-amber-50 border border-amber-100 rounded-[1.5rem] p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <div class="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center shadow-sm shrink-0">
+              <i class="fa-solid fa-star-and-crescent text-white text-xs"></i>
+            </div>
+            <h4 class="text-[11px] font-black text-amber-600 uppercase tracking-widest">Program Rattilil Qur'an</h4>
+          </div>
+          <p class="text-sm text-slate-600 leading-relaxed font-medium" id="tentangDeskRattil">Memuat konten...</p>
+        </div>
+
+        <!-- Ikuti Kami / Social Media -->
+        <div class="bg-white border border-slate-200 rounded-[1.5rem] p-5 shadow-sm">
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-8 h-8 bg-slate-700 rounded-lg flex items-center justify-center shadow-sm shrink-0">
+              <i class="fa-solid fa-share-nodes text-white text-xs"></i>
+            </div>
+            <h4 class="text-[11px] font-black text-slate-600 uppercase tracking-widest">Ikuti Kami</h4>
+          </div>
+          <div class="flex gap-3 justify-center">
+            <!-- WhatsApp -->
+            <a id="tentangWA" href="#" target="_blank" rel="noopener noreferrer"
+              class="flex flex-col items-center gap-2 flex-1 py-4 px-2 bg-slate-50 rounded-2xl border border-slate-200 hover:border-green-300 hover:bg-green-50 transition-all group shadow-sm">
+              <div class="w-11 h-11 bg-[#25D366] rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 group-hover:shadow-lg transition-all">
+                <i class="fa-brands fa-whatsapp text-white text-xl"></i>
+              </div>
+              <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest group-hover:text-green-600 transition-colors">WhatsApp</span>
+            </a>
+            <!-- Instagram -->
+            <a id="tentangIG" href="#" target="_blank" rel="noopener noreferrer"
+              class="flex flex-col items-center gap-2 flex-1 py-4 px-2 bg-slate-50 rounded-2xl border border-slate-200 hover:border-pink-300 hover:bg-pink-50 transition-all group shadow-sm">
+              <div class="w-11 h-11 rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 group-hover:shadow-lg transition-all"
+                style="background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)">
+                <i class="fa-brands fa-instagram text-white text-xl"></i>
+              </div>
+              <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest group-hover:text-pink-600 transition-colors">Instagram</span>
+            </a>
+            <!-- YouTube -->
+            <a id="tentangYT" href="#" target="_blank" rel="noopener noreferrer"
+              class="flex flex-col items-center gap-2 flex-1 py-4 px-2 bg-slate-50 rounded-2xl border border-slate-200 hover:border-red-300 hover:bg-red-50 transition-all group shadow-sm">
+              <div class="w-11 h-11 bg-[#FF0000] rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 group-hover:shadow-lg transition-all">
+                <i class="fa-brands fa-youtube text-white text-xl"></i>
+              </div>
+              <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest group-hover:text-red-600 transition-colors">YouTube</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center pt-2 pb-2">
+          <p class="text-[11px] text-slate-400 font-medium leading-relaxed" id="tentangFooter">Dibuat dengan ❤️ untuk para pecinta Al-Qur'an</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Potret - Panduan & Kisah Quran -->
+  <div id="modalPotret" class="fixed inset-0 z-50 modal-overlay hidden flex flex-col justify-end sm:justify-center items-center">
+    <div class="modal-content w-full max-w-md h-[92vh] sm:h-[88vh] rounded-t-[2.5rem] sm:rounded-3xl p-0 flex flex-col transform transition-transform translate-y-full text-slate-800 overflow-hidden" id="modalPotretContent">
+
+      <!-- Header fixed -->
+      <div class="flex justify-between items-center px-7 pt-7 pb-5 shrink-0 border-b border-slate-100/80">
+        <div>
+          <h3 class="text-2xl font-black tracking-tight">Potret</h3>
+          <p class="text-[10px] text-slate-400 font-semibold tracking-widest uppercase mt-0.5">Panduan & Kisah Qurani</p>
+        </div>
+        <button onclick="closeModal('modalPotret')" class="text-slate-400 bg-slate-100 hover:bg-slate-200 w-10 h-10 rounded-full flex items-center justify-center transition-colors shadow-inner"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <!-- Filter Kategori -->
+      <div class="px-6 pt-4 pb-3 shrink-0 flex gap-2 overflow-x-auto scrollbar-none" id="potretFilterBar">
+        <button onclick="filterPotret('Semua')" class="potret-filter-btn active shrink-0 px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded-full bg-sky-500 text-white shadow-sm transition-all">Semua</button>
+        <button onclick="filterPotret('Panduan')" class="potret-filter-btn shrink-0 px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded-full bg-slate-100 text-slate-500 transition-all">Panduan</button>
+        <button onclick="filterPotret('Kisah Sahabat')" class="potret-filter-btn shrink-0 px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded-full bg-slate-100 text-slate-500 transition-all">Kisah Sahabat</button>
+        <button onclick="filterPotret('Kisah Ulama')" class="potret-filter-btn shrink-0 px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded-full bg-slate-100 text-slate-500 transition-all">Kisah Ulama</button>
+      </div>
+
+      <!-- Scrollable Content -->
+      <div class="flex-1 overflow-y-auto px-5 pb-8 pt-2 space-y-4" id="potretList">
+        <!-- Skeleton loading -->
+        <div id="potretSkeleton" class="space-y-4">
+          <div class="skeleton h-36 rounded-[1.75rem]"></div>
+          <div class="skeleton h-36 rounded-[1.75rem]"></div>
+          <div class="skeleton h-36 rounded-[1.75rem]"></div>
+        </div>
+        <!-- Injected via JS -->
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Modal: Detail Artikel Potret -->
+  <div id="modalPotretDetail" class="fixed inset-0 z-[60] modal-overlay hidden flex flex-col justify-end sm:justify-center items-center">
+    <div class="modal-content w-full max-w-md h-[88vh] sm:h-[85vh] rounded-t-[2.5rem] sm:rounded-3xl p-0 flex flex-col transform transition-transform translate-y-full text-slate-800 overflow-hidden" id="modalPotretDetailContent">
+      <div class="flex justify-between items-center px-7 pt-7 pb-5 shrink-0 border-b border-slate-100/80">
+        <div class="flex-1 pr-3">
+          <p id="potretDetailKategori" class="text-[10px] font-black uppercase tracking-widest text-sky-500 mb-1">Panduan</p>
+          <h3 class="text-xl font-black tracking-tight leading-snug" id="potretDetailJudul">Judul Artikel</h3>
+        </div>
+        <button onclick="closeModal('modalPotretDetail')" class="text-slate-400 bg-slate-100 hover:bg-slate-200 w-10 h-10 rounded-full flex items-center justify-center transition-colors shadow-inner shrink-0"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="flex-1 overflow-y-auto px-7 py-6">
+        <p class="text-sm text-slate-500 font-semibold mb-5 flex items-center gap-2" id="potretDetailMeta">
+          <i class="fa-regular fa-calendar text-sky-400"></i> <span id="potretDetailTanggal"></span>
+          <span class="mx-1 text-slate-300">·</span>
+          <i class="fa-regular fa-user text-sky-400"></i> <span id="potretDetailPenulis"></span>
+        </p>
+        <div class="text-[14px] text-slate-600 leading-relaxed font-medium whitespace-pre-wrap" id="potretDetailIsi"></div>
+        <div id="potretDetailReferensi" class="mt-6 pt-5 border-t border-slate-100 hidden">
+          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Referensi</p>
+          <p class="text-xs text-slate-500 italic font-medium" id="potretDetailRefText"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <?!= include('QuranData'); ?>
+
+  <script>
+    function handleUdzurSubmit(type) {
+      showLoading("MENGAKTIFKAN...");
+      gscript.saveUdzurStatus(currentUser.id, type)
+        .then(p => { appProfile = p; updateDashboard(); hideLoading(); closeModal('modalUdzur'); saveToCache(); showToast("Mode Udzur berhasil diaktifkan. Beristirahatlah! 🌸", 'success'); })
+        .catch(onError);
+    }
+    
+    function endUdzur() {
+      customConfirm('Akhiri Masa Udzur', 'Apakah masa udzurmu sudah selesai dan ingin melanjutkan bacaan?', () => {
+        showLoading("MEMATIKAN MODE...");
+        gscript.saveUdzurStatus(currentUser.id, '')
+          .then(p => { appProfile = p; updateDashboard(); hideLoading(); saveToCache(); showToast("Alhamdulillah! Mari lanjutkan perjuanganmu membaca Al-Qur'an.", 'success'); })
+          .catch(onError);
+      }, 'question');
+    }
+
+    function customAlert(title, message, type = 'warning') {
+      const container = document.getElementById('alertIconContainer');
+      const icon = document.getElementById('alertIcon');
+      if (type === 'error') {
+        container.className = 'w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner';
+        icon.className = 'fa-solid fa-circle-xmark text-4xl text-red-500';
+      } else if (type === 'success') {
+        container.className = 'w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner';
+        icon.className = 'fa-solid fa-circle-check text-4xl text-emerald-500';
+      } else if (type === 'info') {
+        container.className = 'w-20 h-20 bg-sky-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner';
+        icon.className = 'fa-solid fa-circle-info text-4xl text-sky-500';
+      } else {
+        container.className = 'w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner';
+        icon.className = 'fa-solid fa-triangle-exclamation text-4xl text-amber-500';
+      }
+      document.getElementById('alertTitle').textContent = title;
+      document.getElementById('alertMessage').textContent = message;
+      openModal('modalAlert');
+    }
+
+    function customConfirm(title, message, onConfirm, type = 'warning') {
+      const container = document.getElementById('confirmIconContainer');
+      const icon = document.getElementById('confirmIcon');
+      if (type === 'error') {
+        container.className = 'w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner';
+        icon.className = 'fa-solid fa-circle-xmark text-4xl text-red-500';
+      } else if (type === 'question') {
+        container.className = 'w-20 h-20 bg-sky-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner';
+        icon.className = 'fa-solid fa-circle-question text-4xl text-sky-500';
+      } else {
+        container.className = 'w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner';
+        icon.className = 'fa-solid fa-triangle-exclamation text-4xl text-amber-500';
+      }
+      document.getElementById('confirmTitle').textContent = title;
+      document.getElementById('confirmMessage').textContent = message;
+      document.getElementById('btnConfirmAction').onclick = () => { closeModal('modalConfirm'); onConfirm(); };
+      openModal('modalConfirm');
+    }
+
+    let currentUser = null;
+    let appProfile = null;
+    let appJournals = [];
+    let todayProgressCount = 0;
+    let tentangData = {}; // Data halaman Tentang dari spreadsheet
+
+    // ===== Tentang: Load & Tampilkan =====
+    function loadTentangData() {
+      gscript.getTentangContent()
+        .then(data => { tentangData = data; })
+        .catch(() => {}); // Silent fail, pakai default
+    }
+
+    function openTentangModal() {
+      // Isi konten dari data spreadsheet (atau fallback ke teks default)
+      document.getElementById('tentangJudul').textContent = tentangData.judul_app || 'KhatamKu';
+      document.getElementById('tentangVersi').textContent = 'v' + (tentangData.versi_app || '1.0.0');
+      document.getElementById('tentangDeskApp').textContent = tentangData.deskripsi_app ||
+        'KhatamKu adalah aplikasi pelacak bacaan Al-Quran berbasis Google Sheets.';
+      document.getElementById('tentangDeskRattil').textContent = tentangData.tentang_rattil ||
+        'Rattilil Quran adalah program tahsin dan tilawah Al-Quran.';
+      document.getElementById('tentangFooter').textContent = tentangData.footer_text ||
+        'Dibuat dengan ❤️ untuk para pecinta Al-Qur\'an';
+
+      // Sosial media links
+      const wa = document.getElementById('tentangWA');
+      const ig = document.getElementById('tentangIG');
+      const yt = document.getElementById('tentangYT');
+      if (wa) wa.href = tentangData.wa_link || '#';
+      if (ig) ig.href = tentangData.ig_link || '#';
+      if (yt) yt.href = tentangData.yt_link || '#';
+
+      openModal('modalTentang');
+      updateActiveNav('navTentang');
+    }
+
+    // ===== FITUR 8: RIWAYAT BACAAN LENGKAP =====
+    let riwayatCache = null;
+    let riwayatFilterAktif = null;
+
+    function openRiwayatModal() {
+      openModal('modalRiwayat');
+      if (!riwayatCache) {
+        loadRiwayatData();
+      } else {
+        renderRiwayat(riwayatCache, riwayatFilterAktif);
+      }
+    }
+
+    function loadRiwayatData() {
+      document.getElementById('riwayatSkeleton').classList.remove('hidden');
+      document.getElementById('riwayatList').innerHTML = '<div id="riwayatSkeleton" class="space-y-2"><div class="skeleton h-16 rounded-2xl"></div><div class="skeleton h-16 rounded-2xl"></div><div class="skeleton h-16 rounded-2xl"></div><div class="skeleton h-16 rounded-2xl"></div><div class="skeleton h-16 rounded-2xl"></div></div>';
+
+      if (currentUser) {
+        gscript.getFullHistory(currentUser.id)
+          .then(data => {
+            riwayatCache = data;
+            const bulanIni = new Date().toISOString().substring(0, 7);
+            riwayatFilterAktif = bulanIni;
+            buildRiwayatFilterBar(data);
+            renderRiwayat(data, bulanIni);
+          })
+          .catch(err => {
+            document.getElementById('riwayatList').innerHTML = `<p class="text-center text-slate-400 py-8 text-sm font-medium">Gagal memuat riwayat.<br>${err.message || err}</p>`;
+          });
+      } else {
+        // Preview mode dummy
+        const dummy = generateRiwayatDummy();
+        riwayatCache = dummy;
+        const bulanIni = new Date().toISOString().substring(0, 7);
+        riwayatFilterAktif = bulanIni;
+        buildRiwayatFilterBar(dummy);
+        renderRiwayat(dummy, bulanIni);
+      }
+    }
+
+    function generateRiwayatDummy() {
+      const logs = [];
+      const today = new Date();
+      for (let i = 0; i < 45; i++) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        if (Math.random() > 0.25) {
+          logs.push({
+            tanggal: d.toISOString().substring(0, 10),
+            halamanDibaca: Math.floor(Math.random() * 12) + 2,
+            halamanAkhir: 10 + (45 - i) * 3
+          });
+        }
+      }
+      return logs;
+    }
+
+    function buildRiwayatFilterBar(logs) {
+      const bulanSet = new Set();
+      logs.forEach(l => { if (l.tanggal) bulanSet.add(l.tanggal.substring(0, 7)); });
+      const bulanArr = Array.from(bulanSet).sort().reverse();
+
+      let html = '';
+      bulanArr.forEach((b, i) => {
+        const [y, m] = b.split('-');
+        const label = new Date(parseInt(y), parseInt(m) - 1, 1).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+        const active = b === riwayatFilterAktif ? 'potret-filter-btn active' : 'potret-filter-btn bg-slate-100 text-slate-500';
+        html += `<button onclick="filterRiwayat('${b}')" class="${active} shrink-0 px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded-full transition-all">${label}</button>`;
+      });
+      document.getElementById('riwayatFilterBar').innerHTML = html;
+    }
+
+    function filterRiwayat(bulan) {
+      riwayatFilterAktif = bulan;
+      buildRiwayatFilterBar(riwayatCache);
+      renderRiwayat(riwayatCache, bulan);
+    }
+
+    function renderRiwayat(logs, bulanFilter) {
+      const filtered = bulanFilter ? logs.filter(l => l.tanggal && l.tanggal.startsWith(bulanFilter)) : logs;
+      filtered.sort((a, b) => b.tanggal.localeCompare(a.tanggal));
+
+      const totalHal = filtered.reduce((s, l) => s + (l.halamanDibaca || 0), 0);
+      const hariAktif = filtered.filter(l => l.halamanDibaca > 0).length;
+      const rata = hariAktif > 0 ? Math.round(totalHal / hariAktif) : 0;
+      document.getElementById('riwayatStatHari').textContent = hariAktif;
+      document.getElementById('riwayatStatHal').textContent = totalHal;
+      document.getElementById('riwayatStatRata').textContent = rata;
+
+      if (filtered.length === 0) {
+        document.getElementById('riwayatList').innerHTML = `
+          <div class="flex flex-col items-center justify-center py-16 text-center">
+            <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+              <i class="fa-solid fa-book-open text-slate-300 text-2xl"></i>
+            </div>
+            <p class="font-black text-slate-400 text-sm">Belum ada catatan di bulan ini</p>
+            <p class="text-[11px] text-slate-300 font-medium mt-1">Yuk, mulai catat bacaanmu hari ini!</p>
+          </div>`;
+        return;
+      }
+
+      const today = getLocalDateString();
+      const yesterday = (() => { const d = new Date(); d.setDate(d.getDate()-1); return getLocalDateString(d); })();
+      const maxHal = Math.max(...filtered.map(l => l.halamanDibaca || 0), 1);
+
+      let html = '';
+      filtered.forEach(log => {
+        const tgl = log.tanggal;
+        const hal = log.halamanDibaca || 0;
+        const akhir = log.halamanAkhir || '-';
+        const hasRead = hal > 0;
+        const barPct = Math.round((hal / maxHal) * 100);
+
+        let labelTgl, subTgl;
+        if (tgl === today) {
+          labelTgl = 'Hari Ini';
+          subTgl = '<span class="inline-flex items-center gap-1 text-[9px] font-black bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded-full uppercase tracking-wider">● Live</span>';
+        } else if (tgl === yesterday) {
+          labelTgl = 'Kemarin';
+          subTgl = `<span class="text-[10px] text-slate-400 font-semibold">${formatDateID(tgl)}</span>`;
+        } else {
+          const d = new Date(tgl + 'T00:00:00');
+          labelTgl = d.toLocaleDateString('id-ID', { weekday: 'long' });
+          subTgl = `<span class="text-[10px] text-slate-400 font-semibold">${formatDateID(tgl)}</span>`;
+        }
+
+        let iconBg, iconEl, halColor, barColor;
+        if (!hasRead) {
+          iconBg = 'bg-slate-100';
+          iconEl = '<i class="fa-solid fa-minus text-slate-300 text-xs"></i>';
+          halColor = 'text-slate-300';
+          barColor = '#e2e8f0';
+        } else if (hal >= 15) {
+          iconBg = 'bg-gradient-to-br from-amber-400 to-orange-500';
+          iconEl = '<i class="fa-solid fa-fire text-white text-xs"></i>';
+          halColor = 'text-amber-600';
+          barColor = 'linear-gradient(to right, #f59e0b, #f97316)';
+        } else if (hal >= 8) {
+          iconBg = 'bg-gradient-to-br from-emerald-400 to-teal-500';
+          iconEl = '<i class="fa-solid fa-check text-white text-xs"></i>';
+          halColor = 'text-emerald-600';
+          barColor = 'linear-gradient(to right, #10b981, #14b8a6)';
+        } else {
+          iconBg = 'bg-gradient-to-br from-sky-400 to-blue-500';
+          iconEl = '<i class="fa-solid fa-book-open text-white text-xs"></i>';
+          halColor = 'text-sky-600';
+          barColor = 'linear-gradient(to right, #38bdf8, #3b82f6)';
+        }
+
+        html += `
+        <div class="glass-card rounded-[1.4rem] px-4 py-3.5 border border-white/80">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 ${iconBg} rounded-xl flex items-center justify-center shrink-0 shadow-sm">
+              ${iconEl}
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-0.5">
+                <p class="font-black text-[13px] text-slate-800 leading-tight">${labelTgl}</p>
+                ${subTgl}
+              </div>
+              ${hasRead
+                ? `<div class="flex items-center gap-2 mt-1.5">
+                    <div class="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                      <div class="h-full rounded-full" style="width:${barPct}%; background:${barColor};"></div>
+                    </div>
+                    <span class="text-[9px] font-bold text-slate-400 shrink-0">Hal. ${akhir}</span>
+                  </div>`
+                : `<p class="text-[10px] text-slate-300 font-semibold mt-0.5">Tidak ada catatan</p>`}
+            </div>
+            <div class="text-right shrink-0 ml-1">
+              <p class="text-2xl font-black ${halColor} leading-none">${hasRead ? hal : '-'}</p>
+              <p class="text-[9px] font-bold text-slate-400">${hasRead ? 'halaman' : ''}</p>
+            </div>
+          </div>
+        </div>`;
+      });
+
+      html += `
+        <div class="mt-2 py-6 text-center">
+          <i class="fa-solid fa-star-and-crescent text-sky-300 text-xl mb-3 block"></i>
+          <p class="text-[12px] text-slate-400 font-semibold italic leading-relaxed px-6">
+            "Semoga setiap huruf yang sudah dibaca<br>diterima oleh-Nya"
+          </p>
+          <p class="text-[10px] text-slate-300 font-bold mt-2">Baarakallahu fiikum 🤲</p>
+        </div>`;
+
+      document.getElementById('riwayatList').innerHTML = html;
+    }
+
+    // ===== Potret: Load & Tampilkan =====
+    let potretData = []; // Data dari spreadsheet
+    let potretLoaded = false;
+    let currentPotretFilter = 'Semua';
+
+    // Data dummy fallback (jika spreadsheet belum dikonfigurasi)
+    const POTRET_DUMMY = [
+      {
+        id: 'p1',
+        judul: 'Adab Membaca Al-Quran yang Perlu Diketahui',
+        kategori: 'Panduan',
+        penulis: 'Tim Rattilil Quran',
+        tanggal: '2026-01-10',
+        ringkasan: 'Panduan lengkap adab sebelum dan saat membaca Al-Quran agar bacaan lebih berkah dan khusyuk.',
+        isi: `Membaca Al-Quran bukan sekadar melafazkan huruf-hurufnya, tetapi merupakan ibadah yang memerlukan adab dan persiapan batin yang baik.
+
+1. BERSUCI TERLEBIH DAHULU
+Sebelum membaca Al-Quran, pastikan kamu dalam keadaan suci dari hadats besar maupun kecil. Berwudhu adalah sunnah yang sangat dianjurkan.
+
+2. MEMILIH TEMPAT YANG BERSIH DAN TENANG
+Carilah tempat yang tenang, bersih, dan bebas dari gangguan. Lingkungan yang kondusif membantu konsentrasi dan kekhusyukan.
+
+3. MENGHADAP KIBLAT
+Disunnahkan untuk menghadap kiblat saat membaca Al-Quran sebagai bentuk ta'zhim (pengagungan) kepada Kalamullah.
+
+4. MEMBACA TA'AWWUDZ DAN BASMALAH
+Mulailah dengan membaca: "A'ûdzu billâhi minasy syaithânir rajîm" kemudian "Bismillâhir rahmânir rahîm" sebelum memulai bacaan.
+
+5. MEMBACA DENGAN TARTIL
+Allah ﷻ berfirman dalam QS. Al-Muzzammil: 4, "Rattil-il Qur'âna tartîlâ" — bacalah Al-Quran dengan tartil (perlahan dan jelas). Tartil lebih utama daripada membaca cepat tetapi tidak memerhatikan makhraj dan tajwid.
+
+6. TADABBUR (MERENUNGI MAKNANYA)
+Berusahalah untuk merenungi makna setiap ayat yang dibaca. Inilah tujuan utama Al-Quran diturunkan. Jika ada ayat tentang azab, berhentilah sejenak dan berlindung kepada Allah; jika ada ayat tentang rahmat, berhentilah dan mohonlah rahmat-Nya.`,
+        referensi: 'QS. Al-Muzzammil: 4 | Shahih Muslim no. 798 | Al-Tibyan fi Adabi Hamalatil Quran - Imam Nawawi'
+      },
+      {
+        id: 'p2',
+        judul: 'Abdullah ibn Mas\'ud: Sahabat yang Bacaannya Paling Dicintai Nabi',
+        kategori: 'Kisah Sahabat',
+        penulis: 'Tim Rattilil Quran',
+        tanggal: '2026-01-20',
+        ringkasan: 'Kisah mengharukan bagaimana Abdullah ibn Mas\'ud membaca Al-Quran hingga membuat Nabi ﷺ menitikkan air mata.',
+        isi: `Abdullah ibn Mas'ud radhiyallahu 'anhu adalah salah satu sahabat Nabi ﷺ yang paling awal masuk Islam dan dikenal memiliki hafalan Al-Quran yang luar biasa.
+
+Suatu hari, Nabi ﷺ berkata kepadanya, "Bacakanlah Al-Quran untukku, wahai Ibnu Mas'ud." Abdullah pun heran, "Ya Rasulallah, bagaimana aku membacakan Al-Quran kepadamu, sedangkan Al-Quran diturunkan kepadamu?"
+
+Nabi ﷺ menjawab, "Aku senang mendengarnya dari orang lain."
+
+Maka Abdullah ibn Mas'ud pun mulai membaca surah An-Nisa'. Ketika sampai pada ayat 41 yang berbunyi:
+
+"Maka bagaimanakah (keadaan orang kafir nanti), apabila Kami mendatangkan seseorang saksi (Rasul) dari tiap-tiap umat dan Kami mendatangkan kamu (Muhammad) sebagai saksi atas mereka itu (sebagai umatmu)."
+
+Nabi ﷺ berkata, "Cukup, cukup." Abdullah pun menoleh dan melihat kedua mata Rasulullah ﷺ bercucuran air mata.
+
+Pelajaran dari kisah ini:
+• Al-Quran yang dibaca dengan tartil dan penuh penghayatan mampu menyentuh hati siapapun, bahkan Nabi ﷺ sendiri.
+• Mendengarkan bacaan Al-Quran dari orang lain adalah sunnah yang dicontohkan Nabi ﷺ.
+• Menghayati makna Al-Quran adalah kunci agar hati menjadi lembut.`,
+        referensi: 'HR. Bukhari no. 5055 | HR. Muslim no. 800'
+      },
+      {
+        id: 'p3',
+        judul: 'Imam Asy-Syafi\'i: Khatam Dua Kali Sehari di Bulan Ramadhan',
+        kategori: 'Kisah Ulama',
+        penulis: 'Tim Rattilil Quran',
+        tanggal: '2026-02-05',
+        ringkasan: 'Kesungguhan Imam Asy-Syafi\'i rahimahullah dalam membaca Al-Quran di bulan Ramadhan yang luar biasa.',
+        isi: `Imam Muhammad ibn Idris Asy-Syafi'i rahimahullah adalah salah satu imam besar dalam sejarah Islam. Selain dikenal sebagai ulama fiqih yang luar biasa, beliau juga seorang ahli Al-Quran yang luar biasa dedikasinya.
+
+Ar-Rabi' ibn Sulaiman, murid setia Imam Asy-Syafi'i, meriwayatkan:
+
+"Imam Asy-Syafi'i mengkhatamkan Al-Quran sebanyak enam puluh kali di bulan Ramadhan, dan itu semua dilakukan dalam shalat."
+
+Artinya, beliau khatam Al-Quran dua kali sehari — sekali di siang hari dan sekali di malam hari — sepanjang bulan Ramadhan!
+
+Bagaimana beliau bisa mencapai hal ini?
+
+Imam Asy-Syafi'i mengatur waktunya dengan sangat disiplin. Beliau membagi hari menjadi tiga bagian: sepertiga untuk menulis ilmu, sepertiga untuk ibadah, dan sepertiga untuk beristirahat. Namun di bulan Ramadhan, porsi untuk Al-Quran ditingkatkan drastis.
+
+Beliau berkata, "Seandainya manusia mau merenungi surah Al-Quran ini (Al-Ashr), niscaya ia mencukupi mereka."
+
+Pelajaran:
+• Kesibukan bukan halangan untuk memperbanyak tilawah.
+• Konsistensi setiap hari jauh lebih baik daripada banyak sekaligus tapi tidak rutin.
+• Ramadhan adalah momentum emas untuk melipatgandakan tilawah Al-Quran.`,
+        referensi: 'Manaqib Asy-Syafi\'i karya Al-Baihaqi | Siyar A\'lam An-Nubala karya Adz-Dzahabi'
+      },
+      {
+        id: 'p4',
+        judul: 'Keutamaan Membaca Al-Quran Setiap Hari',
+        kategori: 'Panduan',
+        penulis: 'Tim Rattilil Quran',
+        tanggal: '2026-02-15',
+        ringkasan: 'Dalil-dalil shahih tentang keutamaan konsisten membaca Al-Quran setiap hari, meski hanya sedikit.',
+        isi: `Banyak dari kita yang bertanya: "Apakah lebih baik membaca Al-Quran sedikit setiap hari, atau banyak sekaligus tapi tidak rutin?"
+
+Jawabannya ada dalam sabda Nabi ﷺ:
+
+"Amalan yang paling dicintai Allah adalah amalan yang dilakukan secara terus-menerus meskipun sedikit." (HR. Bukhari dan Muslim)
+
+INI YANG PERLU KAMU TAHU TENTANG MEMBACA QURAN SETIAP HARI:
+
+🌟 1 HURUF = 10 KEBAIKAN
+Nabi ﷺ bersabda: "Barangsiapa membaca satu huruf dari Kitabullah (Al-Quran), maka baginya satu kebaikan, dan satu kebaikan itu dibalas sepuluh kali lipatnya." (HR. Tirmidzi)
+
+📖 AL-QURAN AKAN MEMBERI SYAFA'AT
+Nabi ﷺ bersabda: "Bacalah Al-Quran, karena sesungguhnya ia akan datang pada hari Kiamat sebagai pemberi syafa'at bagi para pembacanya." (HR. Muslim)
+
+🏆 DERAJAT TERGANTUNG BACAAN
+"Akan dikatakan kepada pembaca Al-Quran: Bacalah dan naiklah, bacalah dengan tartil sebagaimana kamu membacanya dengan tartil di dunia, karena sesungguhnya tempatmu (di surga) adalah di akhir ayat yang kamu baca." (HR. Abu Dawud, Tirmidzi)
+
+TIPS AGAR KONSISTEN:
+• Jadikan tilawah sebagai rutinitas, bukan pilihan — misalnya setelah Subuh atau Isya.
+• Mulailah dengan target kecil: 2-5 halaman per hari. Bertahap lebih baik daripada langsung banyak lalu berhenti.
+• Gunakan KhatamKu untuk mencatat dan memantau progresmu setiap hari! 📲`,
+        referensi: 'HR. Bukhari no. 6464 | HR. Muslim no. 782 | HR. Tirmidzi no. 2910 | HR. Abu Dawud no. 1464'
+      },
+      {
+        id: 'p5',
+        judul: 'Utsman ibn Affan: Tidak Tidur Sebelum Khatam',
+        kategori: 'Kisah Sahabat',
+        penulis: 'Tim Rattilil Quran',
+        tanggal: '2026-03-01',
+        ringkasan: 'Kisah luar biasa Sayyidina Utsman ibn Affan yang sering mengkhatamkan Al-Quran dalam satu malam shalat.',
+        isi: `Utsman ibn Affan radhiyallahu 'anhu, khalifah ketiga umat Islam, adalah sosok yang sangat dekat dengan Al-Quran. Beliau termasuk orang yang paling sering khatam Al-Quran di antara para sahabat.
+
+Suatu hal yang sangat terkenal dari beliau adalah bahwa beliau sering mengkhatamkan Al-Quran seluruhnya dalam satu rakaat shalat witir di malam hari.
+
+Imam Nawawi dalam kitab At-Tibyan menjelaskan: "Utsman ibn Affan biasa mengkhatamkan Al-Quran dalam satu rakaat, dan ini adalah sebuah kekhususan bagi orang-orang yang telah mencapai tingkat hafalan dan kualitas bacaan yang tinggi."
+
+MUSHAF UTSMANI — WARISAN TERBESAR
+
+Selain tilawahnya, warisan terbesar Utsman ibn Affan untuk dunia Islam adalah musyawarah dan penyusunan standarisasi penulisan Al-Quran (Mushaf Utsmani) yang hingga kini menjadi acuan seluruh mushaf di dunia.
+
+Beliau pernah berkata: "Seandainya hati kita bersih, niscaya kita tidak akan pernah kenyang dari membaca Kalamullah."
+
+Makna dari perkataan ini sangat dalam: jiwa yang bersih selalu haus akan Al-Quran. Maka jika kita merasa malas membaca Al-Quran, itu adalah sinyal untuk memperbaiki hati kita.
+
+Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka bumi. Amin.`,
+        referensi: 'At-Tibyan fi Adabi Hamalatil Quran - Imam Nawawi | Siyar A\'lam An-Nubala - Adz-Dzahabi'
+      }
+    ];
+
+    function loadPotretData() {
+      // Coba load dari server Apps Script, fallback ke dummy jika gagal / offline
+      gscript.getPotretContent()
+        .then(data => {
+          potretData = (data && data.length > 0) ? data : POTRET_DUMMY;
+          potretLoaded = true;
+          renderPotretList(potretData, currentPotretFilter);
+        })
+        .catch(() => {
+          potretData = POTRET_DUMMY;
+          potretLoaded = true;
+          renderPotretList(potretData, currentPotretFilter);
+        });
+    }
+
+    function openPotretModal() {
+      openModal('modalPotret');
+      updateActiveNav('navPotret');
+      if (!potretLoaded) {
+        loadPotretData();
+      } else {
+        renderPotretList(potretData, currentPotretFilter);
+      }
+    }
+
+    function filterPotret(kategori) {
+      currentPotretFilter = kategori;
+      // Update active button
+      document.querySelectorAll('.potret-filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+        btn.classList.add('bg-slate-100', 'text-slate-500');
+        btn.classList.remove('bg-sky-500', 'text-white');
+        if (btn.textContent.trim() === kategori) {
+          btn.classList.add('active');
+          btn.classList.remove('bg-slate-100', 'text-slate-500');
+        }
+      });
+      renderPotretList(potretData, kategori);
+    }
+
+    function renderPotretList(data, filter) {
+      const container = document.getElementById('potretList');
+      const skeleton = document.getElementById('potretSkeleton');
+      if (skeleton) skeleton.classList.add('hidden');
+
+      const filtered = filter === 'Semua' ? data : data.filter(p => p.kategori === filter);
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div id="potretSkeleton" class="hidden"></div><div class="text-center py-16 text-slate-400"><i class="fa-solid fa-scroll text-5xl mb-4 opacity-20"></i><p class="font-bold text-sm">Belum ada konten untuk kategori ini.</p></div>`;
+        return;
+      }
+
+      const kategoriColors = {
+        'Panduan': { bg: 'bg-sky-50', border: 'border-sky-100', badge: 'bg-sky-100 text-sky-600', icon: 'fa-book-open', iconBg: 'bg-sky-500' },
+        'Kisah Sahabat': { bg: 'bg-amber-50', border: 'border-amber-100', badge: 'bg-amber-100 text-amber-700', icon: 'fa-star-and-crescent', iconBg: 'bg-amber-500' },
+        'Kisah Ulama': { bg: 'bg-emerald-50', border: 'border-emerald-100', badge: 'bg-emerald-100 text-emerald-700', icon: 'fa-graduation-cap', iconBg: 'bg-emerald-500' },
+      };
+
+      let html = '<div id="potretSkeleton" class="hidden"></div>';
+      filtered.forEach(p => {
+        const c = kategoriColors[p.kategori] || kategoriColors['Panduan'];
+        const tanggal = p.tanggal ? new Date(p.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+        html += `
+        <div onclick="openPotretDetail('${p.id}')" class="glass-card rounded-[1.75rem] p-5 cursor-pointer border ${c.border} ${c.bg} hover:shadow-md transition-all">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 ${c.iconBg} rounded-2xl flex items-center justify-center shrink-0 shadow-sm">
+              <i class="fa-solid ${c.icon} text-white text-lg"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full ${c.badge}">${p.kategori}</span>
+              </div>
+              <h4 class="font-black text-slate-800 text-sm leading-snug mb-2 line-clamp-2">${p.judul}</h4>
+              <p class="text-[12px] text-slate-500 font-medium leading-relaxed line-clamp-2">${p.ringkasan}</p>
+              <div class="flex items-center gap-3 mt-3 text-[10px] text-slate-400 font-semibold">
+                <span><i class="fa-regular fa-calendar mr-1 text-sky-400"></i>${tanggal}</span>
+                <span>·</span>
+                <span><i class="fa-regular fa-user mr-1 text-sky-400"></i>${p.penulis}</span>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-right text-slate-300 text-xs shrink-0 mt-2"></i>
+          </div>
+        </div>`;
+      });
+      container.innerHTML = html;
+    }
+
+    function openPotretDetail(id) {
+      const p = potretData.find(x => x.id === id);
+      if (!p) return;
+
+      document.getElementById('potretDetailJudul').textContent = p.judul;
+      document.getElementById('potretDetailKategori').textContent = p.kategori;
+      document.getElementById('potretDetailIsi').textContent = p.isi;
+      document.getElementById('potretDetailPenulis').textContent = p.penulis;
+
+      const tanggal = p.tanggal ? new Date(p.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+      document.getElementById('potretDetailTanggal').textContent = tanggal;
+
+      const refDiv = document.getElementById('potretDetailReferensi');
+      const refText = document.getElementById('potretDetailRefText');
+      if (p.referensi) {
+        refDiv.classList.remove('hidden');
+        refText.textContent = p.referensi;
+      } else {
+        refDiv.classList.add('hidden');
+      }
+
+      openModal('modalPotretDetail');
+    }
+
+    // ===== #7 localStorage Cache Keys =====
+    const CACHE_KEYS = { profile: 'khatamku_profile', journals: 'khatamku_journals', todayProgress: 'khatamku_todayProg' };
+    function saveToCache() {
+      try {
+        if (appProfile) localStorage.setItem(CACHE_KEYS.profile, JSON.stringify(appProfile));
+        if (appJournals) localStorage.setItem(CACHE_KEYS.journals, JSON.stringify(appJournals));
+        localStorage.setItem(CACHE_KEYS.todayProgress, todayProgressCount.toString());
+      } catch(e) {}
+    }
+    function loadFromCache() {
+      try {
+        const p = localStorage.getItem(CACHE_KEYS.profile);
+        const j = localStorage.getItem(CACHE_KEYS.journals);
+        const t = localStorage.getItem(CACHE_KEYS.todayProgress);
+        if (p) appProfile = JSON.parse(p);
+        if (j) appJournals = JSON.parse(j);
+        if (t) todayProgressCount = parseInt(t) || 0;
+        return !!p;
+      } catch(e) { return false; }
+    }
+
+    // ===== #1 Skeleton Controls =====
+    function showSkeleton() {
+      const sk = document.getElementById('studentSkeleton');
+      const ct = document.getElementById('studentContent');
+      if (sk) sk.classList.remove('hidden');
+      if (ct) ct.classList.add('hidden');
+    }
+    function hideSkeleton() {
+      const sk = document.getElementById('studentSkeleton');
+      const ct = document.getElementById('studentContent');
+      if (sk) sk.classList.add('hidden');
+      if (ct) { ct.classList.remove('hidden'); ct.classList.add('view-enter'); }
+    }
+
+    // ===== #14 Bottom Nav & Scroll =====
+    function scrollToSection(section) {
+      if (section === 'top') window.scrollTo({ top: 0, behavior: 'smooth' });
+      else if (section === 'rekap') {
+        const el = document.getElementById('sectionRekap');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      updateActiveNav(section === 'top' ? 'navHome' : 'navRekap');
+    }
+    function updateActiveNav(activeId) {
+      document.querySelectorAll('.bottom-nav-item').forEach(el => el.classList.remove('active'));
+      const el = document.getElementById(activeId);
+      if (el) el.classList.add('active');
+    }
+
+    // ===== #12 Slider Sync =====
+    function syncSlider(value) {
+      const slider = document.getElementById('progressSlider');
+      const pct = ((value - 1) / 603) * 100;
+      slider.style.background = `linear-gradient(to right, #0ea5e9 ${pct}%, #e2e8f0 ${pct}%)`;
+      const juzLabel = document.getElementById('sliderJuzLabel');
+      if (juzLabel && typeof getJuzFromPage === 'function') juzLabel.textContent = 'Juz ' + getJuzFromPage(value);
+    }
+
+    // ===== #2 Pull to Refresh =====
+    let pullStartY = 0;
+    let isPulling = false;
+    function initPullToRefresh() {
+      const view = document.getElementById('studentView');
+      if (!view) return;
+      view.addEventListener('touchstart', (e) => {
+        if (window.scrollY === 0) { pullStartY = e.touches[0].clientY; isPulling = true; }
+      }, { passive: true });
+      view.addEventListener('touchmove', (e) => {
+        if (!isPulling) return;
+        const diff = e.touches[0].clientY - pullStartY;
+        if (diff > 60) document.getElementById('pullRefreshIndicator').classList.add('visible');
+      }, { passive: true });
+      view.addEventListener('touchend', () => {
+        if (!isPulling) return;
+        isPulling = false;
+        const indicator = document.getElementById('pullRefreshIndicator');
+        if (indicator.classList.contains('visible')) {
+          loadStudentData();
+          setTimeout(() => indicator.classList.remove('visible'), 1500);
+        }
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('loginForm').addEventListener('submit', handleLogin);
+      document.getElementById('registerForm').addEventListener('submit', handleRegister);
+      document.getElementById('inputTargetPages').addEventListener('input', calculateTargetPagesPreview);
+      document.getElementById('progressForm').addEventListener('submit', handleProgressSubmit);
+      document.getElementById('targetForm').addEventListener('submit', handleTargetSubmit);
+      document.getElementById('journalForm').addEventListener('submit', handleJournalSubmit);
+      // Live feedback saat user mengetik halaman
+      document.getElementById('progressLastPage').addEventListener('input', handleProgressLiveFeedback);
+
+      // #12 Slider <-> Input sync
+      const slider = document.getElementById('progressSlider');
+      const pageInput = document.getElementById('progressLastPage');
+      slider.addEventListener('input', () => {
+        pageInput.value = slider.value;
+        syncSlider(parseInt(slider.value));
+        handleProgressLiveFeedback();
+      });
+      pageInput.addEventListener('input', () => {
+        const v = parseInt(pageInput.value) || 1;
+        slider.value = Math.min(604, Math.max(1, v));
+        syncSlider(parseInt(slider.value));
+      });
+
+      const savedUser = localStorage.getItem('khatamku_user');
+      if (savedUser) { currentUser = JSON.parse(savedUser); initApp(); } 
+      else { showLoginScreen(); }
+    });
+
+    // Dynamic Color Function based on Percentage
+    function getProgressColor(pct) {
+      if (pct < 25) return '#ef4444'; // Red-500
+      if (pct < 50) return '#f59e0b'; // Amber-500
+      if (pct < 75) return '#3b82f6'; // Blue-500
+      if (pct < 100) return '#10b981'; // Emerald-500
+      return '#fbbf24'; // Amber-400 / Gold
+    }
+
+    function openModal(id) {
+      if (id === 'modalProgress') populateProgressModal();
+      const modal = document.getElementById(id);
+      const content = document.getElementById(id + 'Content');
+      modal.classList.remove('hidden');
+      setTimeout(() => { 
+        content.classList.remove('translate-y-full', 'scale-95', 'opacity-0'); 
+      }, 10);
+    }
+    
+    function closeModal(id) {
+      const content = document.getElementById(id + 'Content');
+      if (id === 'modalMilestone' || id === 'modalUdzur' || id === 'modalAlert' || id === 'modalConfirm' || id === 'modalRegisterError') {
+        content.classList.add('scale-95', 'opacity-0');
+      } else {
+        content.classList.add('translate-y-full');
+      }
+      setTimeout(() => { document.getElementById(id).classList.add('hidden'); }, 300);
+    }
+
+    function showLoading(msg) {
+      document.getElementById('loadingText').textContent = msg || "Memuat...";
+      document.getElementById('loadingOverlay').style.display = 'flex';
+    }
+    function hideLoading() { document.getElementById('loadingOverlay').style.display = 'none'; }
+    function onError(err) { hideLoading(); customAlert("Kesalahan", err.message || err, "error"); }
+
+    function showLoginScreen() {
+      document.getElementById('loginView').classList.remove('hidden');
+      document.getElementById('loginView').classList.add('view-enter');
+      document.getElementById('mainAppView').classList.add('hidden');
+      document.getElementById('bottomNav').classList.add('hidden');
+    }
+
+    function doLogout() {
+      localStorage.removeItem('khatamku_user');
+      localStorage.removeItem('khatamku_remember');
+      // #7 Clear cache on logout
+      Object.values(CACHE_KEYS).forEach(k => localStorage.removeItem(k));
+      currentUser = null;
+      appProfile = null;
+      appJournals = [];
+      todayProgressCount = 0;
+      document.getElementById('loginUsername').value = '';
+      document.getElementById('loginPassword').value = '';
+      switchAuthTab('masuk');
+      showLoginScreen();
+    }
+
+    function switchAuthTab(tab) {
+      const isLogin = tab === 'masuk';
+      document.getElementById('loginForm').classList.toggle('hidden', !isLogin);
+      document.getElementById('registerForm').classList.toggle('hidden', isLogin);
+      const tMasuk = document.getElementById('tabMasuk');
+      const tDaftar = document.getElementById('tabDaftar');
+      if (isLogin) {
+        tMasuk.classList.add('bg-white', 'shadow', 'text-sky-600');
+        tMasuk.classList.remove('text-slate-400');
+        tDaftar.classList.remove('bg-white', 'shadow', 'text-sky-600');
+        tDaftar.classList.add('text-slate-400');
+      } else {
+        tDaftar.classList.add('bg-white', 'shadow', 'text-sky-600');
+        tDaftar.classList.remove('text-slate-400');
+        tMasuk.classList.remove('bg-white', 'shadow', 'text-sky-600');
+        tMasuk.classList.add('text-slate-400');
+      }
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const u = document.getElementById('loginUsername').value.trim();
+      const p = document.getElementById('loginPassword').value;
+      const remember = document.getElementById('loginRemember').checked;
+      showLoading("Bismillah, masuk ke KhatamKu...");
+      gscript.doLogin(u, p)
+        .then(response => {
+          currentUser = response.user;
+          localStorage.setItem('khatamku_user', JSON.stringify(currentUser));
+          if (remember) localStorage.setItem('khatamku_remember', '1');
+          hideLoading();
+          // dashboardData bisa null jika guru, atau objek {profile,journals,todayProgress} jika murid
+          if (response.dashboardData && response.dashboardData.profile) {
+            initAppWithData(response.dashboardData);
+          } else if (response.dashboardData && response.dashboardData.students) {
+            // Data guru sudah ada
+            initAppWithData(response.dashboardData);
+          } else {
+            // Fallback: muat data setelah login
+            initAppWithData({ profile: null, journals: [], todayProgress: 0 });
+          }
+        })
+        .catch(err => {
+          hideLoading();
+          const adminWa = 'https://wa.me/6282316993233';
+          const msg = (err.message || err).toString();
+          const isWrong = msg.toLowerCase().includes('salah') || msg.toLowerCase().includes('tidak');
+          const detail = isWrong
+            ? `Username atau Password salah, mohon dicoba kembali atau hubungi <a href="${adminWa}" target="_blank" class="font-extrabold text-sky-400 underline">Rattililqur'an</a>.`
+            : msg;
+          let errEl = document.getElementById('loginErrorMsg');
+          if (!errEl) {
+            errEl = document.createElement('p');
+            errEl.id = 'loginErrorMsg';
+            errEl.className = 'text-xs text-red-500 font-semibold text-center mt-1 leading-snug';
+            document.getElementById('loginForm').appendChild(errEl);
+          }
+          errEl.innerHTML = detail;
+          errEl.classList.remove('hidden');
+          setTimeout(() => errEl.classList.add('hidden'), 15000);
+        });
+    }
+
+    function handleRegister(e) {
+      e.preventDefault();
+      const name = document.getElementById('regName').value.trim();
+      const username = document.getElementById('regUsername').value.trim();
+      const password = document.getElementById('regPassword').value;
+
+      // Validasi sisi klien
+      if (!/^[a-zA-Z0-9_]{3,}$/.test(username)) {
+        showRegisterError('Username minimal 3 karakter, hanya huruf, angka, dan underscore (_).');
+        return;
+      }
+      if (password.length < 4) {
+        showRegisterError('Password minimal 4 karakter.');
+        return;
+      }
+      if (!name) {
+        showRegisterError('Nama lengkap tidak boleh kosong.');
+        return;
+      }
+
+      showLoading('Mendaftarkan akun...');
+      gscript.doRegister(name, username, password)
+        .then(res => {
+          hideLoading();
+          let errEl = document.getElementById('registerErrorMsg');
+          if (errEl) errEl.classList.add('hidden');
+          document.getElementById('regName').value = '';
+          document.getElementById('regUsername').value = '';
+          document.getElementById('regPassword').value = '';
+          customAlert(
+            'Alhamdulillaah, Pendaftaran Berhasil!',
+            'Akun kamu berhasil didaftarkan. Silakan masuk menggunakan username dan password yang telah dibuat.',
+            'success'
+          );
+          switchAuthTab('masuk');
+        })
+        .catch(err => {
+          hideLoading();
+          showRegisterError(err.message || err);
+        });
+    }
+
+    function showRegisterError(msg) {
+      document.getElementById('registerErrorPopupMsg').textContent = msg;
+      openModal('modalRegisterError');
+    }
+
+    // Dipanggil saat user auto-login (refresh halaman) - Data belum terambul
+    function initApp() {
+      // #5 View transition: fade out login, slide in main
+      const loginView = document.getElementById('loginView');
+      loginView.classList.add('view-exit');
+      setTimeout(() => {
+        loginView.classList.add('hidden');
+        loginView.classList.remove('view-exit');
+        document.getElementById('mainAppView').classList.remove('hidden');
+        document.getElementById('mainAppView').classList.add('view-enter');
+      }, 300);
+
+      document.getElementById('navUserName').textContent = `Ahlan, ${currentUser.name.split(' ')[0]}`;
+      
+      if (currentUser.role === 'murid') {
+        document.getElementById('studentView').classList.remove('hidden');
+        document.getElementById('teacherView').classList.add('hidden');
+        document.getElementById('bottomNav').classList.remove('hidden');
+        initPullToRefresh();
+        loadTentangData(); // Muat konten halaman Tentang di background
+        loadPotretData();  // Muat konten Potret di background
+
+        // #7 Load from cache first, then fetch fresh data
+        const hasCachedData = loadFromCache();
+        if (hasCachedData) {
+          hideSkeleton();
+          updateDashboard();
+          updateJournalUI();
+          if (appProfile && appProfile.dailyTargetPages) {
+            document.getElementById('inputTargetPages').value = appProfile.dailyTargetPages;
+          }
+          // Silently fetch fresh data in background
+          loadStudentDataSilent();
+        } else {
+          showSkeleton();
+          loadStudentData();
+        }
+      } else {
+        document.getElementById('studentView').classList.add('hidden');
+        document.getElementById('teacherView').classList.remove('hidden');
+        document.getElementById('bottomNav').classList.add('hidden');
+        loadTeacherData();
+      }
+    }
+
+    // Dipanggil saat user manual login - Data sudah dibawa langsung dari server (1x Call)
+    
+    function getLocalDateString(dateObj = new Date()) {
+      const yyyy = dateObj.getFullYear();
+      const mm = String(dateObj.getMonth() + 1).padStart(2, "0");
+      const dd = String(dateObj.getDate()).padStart(2, "0");
+      return `${yyyy}-${mm}-${dd}`;
+    }
+
+    function initAppWithData(data) {
+      // #5 View transition
+      const loginView = document.getElementById('loginView');
+      loginView.classList.add('view-exit');
+      setTimeout(() => {
+        loginView.classList.add('hidden');
+        loginView.classList.remove('view-exit');
+        document.getElementById('mainAppView').classList.remove('hidden');
+        document.getElementById('mainAppView').classList.add('view-enter');
+      }, 300);
+
+      document.getElementById('navUserName').textContent = `Ahlan, ${currentUser.name.split(' ')[0]}`;
+      
+      if (currentUser.role === 'murid') {
+        document.getElementById('studentView').classList.remove('hidden');
+        document.getElementById('teacherView').classList.add('hidden');
+        document.getElementById('bottomNav').classList.remove('hidden');
+        initPullToRefresh();
+        loadTentangData(); // Muat konten halaman Tentang di background
+        loadPotretData();  // Muat konten Potret di background
+        
+        const today = getLocalDateString();
+        document.getElementById('progressDate').value = today;
+        populateSurahDropdowns();
+        
+        if (data && data.profile) {
+          // Data sudah dibawa dari server saat login
+          appProfile = data.profile;
+          appJournals = data.journals || [];
+          todayProgressCount = data.todayProgress || 0;
+          saveToCache();
+          document.getElementById('inputTargetPages').value = appProfile.dailyTargetPages || '';
+          hideSkeleton();
+          updateDashboard();
+          updateJournalUI();
+        } else {
+          // Fallback: muat data secara terpisah
+          loadStudentData();
+        }
+      } else {
+        document.getElementById('studentView').classList.add('hidden');
+        document.getElementById('teacherView').classList.remove('hidden');
+        document.getElementById('bottomNav').classList.add('hidden');
+        
+        teacherDataCache = data;
+        const sel = document.getElementById('tcHalaqahSelect');
+        sel.innerHTML = '<option value="Semua">SEMUA KELAS</option>';
+        data.halaqahs.forEach(h => {
+          sel.innerHTML += `<option value="${h}">${h.toUpperCase()}</option>`;
+        });
+        filterTeacherView();
+      }
+    }
+
+    function loadStudentData() {
+      showSkeleton();
+      const today = getLocalDateString();
+      document.getElementById('progressDate').value = today;
+      populateSurahDropdowns();
+
+      gscript.getInitialData(currentUser.id)
+        .then(data => {
+          appProfile = data.profile;
+          appJournals = data.journals || [];
+          todayProgressCount = data.todayProgress || 0;
+          saveToCache();
+          hideSkeleton();
+          updateDashboard();
+          updateJournalUI();
+          if (appProfile.dailyTargetPages) {
+            document.getElementById('inputTargetPages').value = appProfile.dailyTargetPages;
+            calculateTargetPagesPreview();
+          }
+          document.getElementById('pullRefreshIndicator').classList.remove('visible');
+        })
+        .catch(err => { hideSkeleton(); onError(err); });
+    }
+
+    // #7 Silent background refresh (no skeleton, just update data)
+    function loadStudentDataSilent() {
+      const today = getLocalDateString();
+      document.getElementById('progressDate').value = today;
+      populateSurahDropdowns();
+
+      gscript.getInitialData(currentUser.id)
+        .then(data => {
+          appProfile = data.profile;
+          appJournals = data.journals || [];
+          todayProgressCount = data.todayProgress || 0;
+          saveToCache();
+          updateDashboard();
+          updateJournalUI();
+          if (appProfile.dailyTargetPages) {
+            document.getElementById('inputTargetPages').value = appProfile.dailyTargetPages;
+          }
+        })
+        .catch(() => {});
+    }
+
+    let teacherDataCache = null;
+    let filteredStudents = [];
+
+    function loadTeacherData() {
+      showLoading("MEMUAT DATA HALAQAH...");
+      gscript.getTeacherDashboardData(currentUser.id)
+        .then(data => {
+          teacherDataCache = data;
+          const sel = document.getElementById('tcHalaqahSelect');
+          sel.innerHTML = '<option value="Semua">SEMUA KELAS</option>';
+          data.halaqahs.forEach(h => {
+            sel.innerHTML += `<option value="${h}">${h.toUpperCase()}</option>`;
+          });
+          filterTeacherView();
+          hideLoading();
+        })
+        .catch(onError);
+    }
+    
+    function filterTeacherView() {
+      if (!teacherDataCache) return;
+      const selectedHalaqah = document.getElementById('tcHalaqahSelect').value;
+      
+      if (selectedHalaqah === 'Semua') {
+        filteredStudents = teacherDataCache.students;
+      } else {
+        filteredStudents = teacherDataCache.students.filter(s => s.halaqah === selectedHalaqah);
+      }
+      
+      let doneCount = 0;
+      let html = '';
+      
+      if (filteredStudents.length === 0) {
+        html = '<div class="text-sm text-slate-400 text-center py-10 font-medium"><p>Belum ada murid di kelas ini.</p></div>';
+      } else {
+        filteredStudents.forEach(st => {
+          if (st.hasReadToday) doneCount++;
+          
+          const isUdzur = st.udzurStatus !== '';
+          const bgClass = isUdzur ? 'bg-pink-50' : (st.isAtRisk ? 'bg-red-50' : 'bg-white hover:bg-slate-50');
+          const borderClass = isUdzur ? 'border-l-4 border-l-pink-400' : (st.isAtRisk ? 'border-l-4 border-l-red-500' : '');
+          const badgeClass = isUdzur ? 'text-[10px] bg-pink-100 text-pink-600 px-2 py-0.5 rounded-md ml-2 align-middle' : '';
+          const iconUdzur = st.udzurStatus === 'Haid' ? '🌸' : (st.udzurStatus === 'Sakit' ? '🤒' : '✈️');
+          const udzurBadge = isUdzur ? `<span class="${badgeClass}" title="Selesai otomatis pd ${formatDateID(st.udzurEnd)}">${st.udzurStatus} ${iconUdzur}</span>` : '';
+          
+          const warningBadge = st.isAtRisk ? `<i class="fa-solid fa-triangle-exclamation text-amber-500 ml-2" title="Belum setor ≥ 3 hari"></i>` : '';
+          
+          let waBtn = '';
+          if (st.wa) {
+            let phone = String(st.wa).replace(/\D/g, '');
+            if (phone.startsWith('0')) phone = '62' + phone.substring(1);
+            let msg = encodeURIComponent(`Assalamu'alaikum ${st.name}, jangan lupa tilawah harian dan catat progres bacaan Al-Quran kamu hari ini ya. Semangat! 🌟`);
+            waBtn = `<a href="https://wa.me/${phone}?text=${msg}" target="_blank" onclick="event.stopPropagation()" class="w-10 h-10 rounded-xl bg-emerald-50 hover:bg-emerald-100 flex items-center justify-center text-emerald-500 transition-colors shadow-sm"><i class="fa-brands fa-whatsapp text-lg"></i></a>`;
+          } else {
+            waBtn = `<button onclick="event.stopPropagation(); customAlert('Data Tidak Lengkap', 'Nomor WA belum terdaftar di database (Sheet Akun).', 'warning')" class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-300 shadow-sm"><i class="fa-brands fa-whatsapp text-lg"></i></button>`;
+          }
+
+          let alertStatus = '';
+          if (isUdzur) {
+            alertStatus = `<span class="text-pink-500 flex items-center gap-1"><i class="fa-solid fa-bed"></i> Sedang Udzur Syar'i</span>`;
+          } else if (st.hasReadToday) {
+            alertStatus = `<span class="text-emerald-500 flex items-center gap-1"><i class="fa-solid fa-circle-check"></i> Selesai (${st.todayRead} hal)</span>`;
+          } else {
+            alertStatus = `<span class="text-slate-400 flex items-center gap-1"><i class="fa-solid fa-circle-xmark"></i> Belum Setor</span>`;
+          }
+
+          html += `
+          <div class="glass-card p-4 rounded-[1.5rem] flex items-center justify-between shadow-sm cursor-pointer ${bgClass} ${borderClass} transition-colors" onclick="openHistoryModal('${st.id}')">
+            <div class="flex-1">
+              <p class="font-bold text-slate-800 text-sm mb-1">${st.name}${warningBadge}${udzurBadge}</p>
+              <div class="flex items-center gap-3 text-[11px] font-semibold">
+                <span class="text-sky-600 bg-sky-50 px-2 py-0.5 rounded-md">Hal ${st.lastPage}</span>
+                ${alertStatus}
+              </div>
+            </div>
+            <div class="shrink-0 ml-3">
+              ${waBtn}
+            </div>
+          </div>`;
+        });
+      }
+      
+      document.getElementById('tcTotalStudents').textContent = filteredStudents.length;
+      document.getElementById('tcStudentsDone').textContent = doneCount;
+      document.getElementById('tcStudentList').innerHTML = html;
+    }
+
+    function generateGroupReport() {
+      if (!teacherDataCache || !filteredStudents) return;
+      
+      const selectedHalaqah = document.getElementById('tcHalaqahSelect').value;
+      const reportTitle = selectedHalaqah === 'Semua' ? 'Seluruh Kelas' : selectedHalaqah;
+      
+      const doneList = [];
+      const notDoneList = [];
+      
+      filteredStudents.forEach(st => {
+        if (st.hasReadToday) {
+          doneList.push(`${st.name} (Hal ${st.lastPage})`);
+        } else {
+          notDoneList.push(st.name);
+        }
+      });
+      
+      let report = `Bismillah, Laporan ${reportTitle} Hari Ini.\n\n`;
+      report += `✅ *SUDAH SETOR:*\n`;
+      if (doneList.length > 0) {
+        doneList.forEach((n, i) => report += `${i+1}. ${n}\n`);
+      } else {
+        report += `- Belum ada -\n`;
+      }
+      
+      report += `\n⏳ *BELUM SETOR:*\n`;
+      if (notDoneList.length > 0) {
+        notDoneList.forEach((n, i) => report += `${i+1}. ${n}\n`);
+      } else {
+        report += `- Alhamdulillah tuntas semua -\n`;
+      }
+      
+      report += `\nMari selesaikan target harian kita sebelum jam 00:00! 💪✨`;
+      
+      navigator.clipboard.writeText(report).then(() => {
+        showToast("✅ Rekap berhasil disalin ke clipboard!", 'success');
+      }).catch(err => {
+        customAlert('Gagal', "Gagal menyalin teks: " + err, 'error');
+      });
+    }
+
+    function openHistoryModal(studentId) {
+      if (!teacherDataCache) return;
+      const student = teacherDataCache.students.find(s => s.id === studentId);
+      if (!student) return;
+      
+      document.getElementById('histStudentName').textContent = student.name;
+      
+      let html = '';
+      if (!student.history7Days || student.history7Days.length === 0) {
+        html = '<p class="text-center text-slate-400 py-4 text-sm font-medium">Tidak ada data riwayat.</p>';
+      } else {
+        student.history7Days.forEach(h => {
+          const isToday = h.date === getLocalDateString();
+          const hasRead = h.pagesRead > 0;
+          const bgClass = hasRead ? 'bg-sky-50 border-sky-100' : 'bg-slate-50 border-slate-100 text-slate-400';
+          const textClass = hasRead ? 'text-sky-600' : 'text-slate-400';
+          const icon = hasRead ? '<i class="fa-solid fa-check text-emerald-500"></i>' : '<i class="fa-solid fa-minus opacity-30"></i>';
+          const label = isToday ? 'Hari Ini' : formatDateID(h.date);
+          
+          html += `
+          <div class="flex justify-between items-center p-4 rounded-2xl border ${bgClass} shadow-sm">
+            <p class="font-bold text-sm ${isToday ? 'text-slate-800' : 'text-slate-600'}">${label}</p>
+            <div class="flex items-center gap-3">
+              <span class="font-black ${textClass}">${h.pagesRead} hal</span>
+              <div class="w-6 text-right">${icon}</div>
+            </div>
+          </div>
+          `;
+        });
+      }
+      
+      document.getElementById('histList').innerHTML = html;
+      openModal('modalHistory');
+    }
+
+    function populateProgressModal() {
+      const startPage = appProfile ? (appProfile.lastPageRead || 0) : 0;
+      const resumeFrom = startPage + 1 > 604 ? 1 : startPage + 1;
+      document.getElementById('modalStartPage').textContent = resumeFrom;
+      document.getElementById('progressStartPage').value = startPage;
+      document.getElementById('progressLastPage').value = '';
+      document.getElementById('progressLastPage').min = resumeFrom;
+      document.getElementById('progressLiveFeedback').classList.add('hidden');
+      document.getElementById('progressErrorMsg').classList.add('hidden');
+      // #12 Sync slider to start position
+      const slider = document.getElementById('progressSlider');
+      slider.min = resumeFrom;
+      slider.value = resumeFrom;
+      syncSlider(resumeFrom);
+    }
+
+    function handleProgressLiveFeedback() {
+      const startPage = parseInt(document.getElementById('progressStartPage').value) || 0;
+      const endPage = parseInt(document.getElementById('progressLastPage').value) || 0;
+      const feedbackDiv = document.getElementById('progressLiveFeedback');
+      const feedbackText = document.getElementById('progressFeedbackText');
+      const feedbackSub = document.getElementById('progressFeedbackSub');
+      const errorDiv = document.getElementById('progressErrorMsg');
+      const target = appProfile.dailyTargetPages || 0;
+
+      if (!endPage) { feedbackDiv.classList.add('hidden'); errorDiv.classList.add('hidden'); return; }
+
+      if (endPage < startPage + 1 && startPage < 604) {
+        errorDiv.textContent = `Halaman ${endPage} lebih kecil dari titik mulai (${startPage + 1}). Periksa kembali.`;
+        errorDiv.classList.remove('hidden');
+        feedbackDiv.classList.add('hidden');
+        return;
+      }
+      errorDiv.classList.add('hidden');
+
+      const effectiveStartPage = startPage >= 604 ? 0 : startPage;
+      const pagesRead = endPage - effectiveStartPage;
+      const pct = target > 0 ? Math.min(100, Math.round((pagesRead / target) * 100)) : 0;
+      const color = pct < 50 ? 'text-amber-500' : (pct < 100 ? 'text-sky-500' : 'text-emerald-500');
+
+      feedbackText.innerHTML = `Total dibaca hari ini: <span class="${color} font-black text-lg">${pagesRead} Halaman</span>`;
+      feedbackSub.textContent = target > 0 ? `${pct}% dari target harian (${target} hal)` : '';
+      feedbackDiv.classList.remove('hidden');
+    }
+
+    function updateSmartBookmark() {
+      const lastPage = appProfile.lastPageRead || 0;
+      const nextPage = lastPage + 1;
+
+      document.getElementById('smartBookmarkPage').textContent = lastPage;
+
+      // #13 Update Juz indicator
+      const juzBadge = document.getElementById('smartBookmarkJuz');
+      if (juzBadge && typeof getJuzFromPage === 'function') {
+        const juz = getJuzFromPage(lastPage > 0 ? lastPage : 1);
+        juzBadge.textContent = lastPage >= 604 ? 'Khatam!' : 'Juz ' + juz;
+      }
+
+      let caption = '';
+      if (lastPage === 0) {
+        caption = 'Mulai bacaan pertamamu dari halaman 1 ✨';
+      } else if (lastPage >= 604) {
+        caption = 'Siap untuk setoran khatam! Allahu Akbar! 🏆';
+      } else if (lastPage === 603) {
+        caption = 'Alhamdulillah, satu halaman lagi menuju khatam! 🌟';
+      } else {
+        caption = `Lanjutkan bacaan dari halaman ${nextPage}`;
+      }
+      document.getElementById('smartBookmarkCaption').textContent = caption;
+
+      // Update tanggal terakhir input data
+      const lastUpdateEl = document.getElementById('smartBookmarkLastUpdate');
+      if (lastUpdateEl) {
+        const lastUpdate = appProfile.lastUpdateDate;
+        if (lastUpdate) {
+          const dateObj = new Date(lastUpdate + 'T00:00:00');
+          const formatted = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+          lastUpdateEl.innerHTML = `<i class="fa-regular fa-clock text-[9px]"></i> Update: ${formatted}`;
+        } else {
+          lastUpdateEl.innerHTML = `<i class="fa-regular fa-clock text-[9px]"></i> Belum ada data`;
+        }
+      }
+    }
+
+    function updateDashboard() {
+      const totalPages = 604;
+      const readPages = appProfile.lastPageRead || 0;
+      let pct = readPages > 0 ? Math.floor((readPages / totalPages) * 100) : 0;
+      if(pct > 100) pct = 100;
+      
+      const khatamCount = appProfile.totalKhatam || 0;
+      document.getElementById('uiKhatamCycle').textContent = khatamCount + 1;
+      document.getElementById('uiKhatamCount').textContent = khatamCount;
+
+      // Smart Bookmark
+      updateSmartBookmark();
+      
+      // Update Top Cards
+      document.getElementById('uiTotalProgressPct').textContent = `${pct}%`;
+      
+      // Update Circ Cards
+      const totalColor = getProgressColor(pct);
+      document.getElementById('circTotalPct').textContent = pct;
+      document.getElementById('circTotalRemain').textContent = `${totalPages - readPages} halaman tersisa`;
+      document.getElementById('circTotalDot').style.backgroundColor = totalColor;
+      document.getElementById('circTotalRing').style.background = `conic-gradient(${totalColor} ${pct}%, rgba(0,0,0,0.05) 0%)`;
+
+      // Goal Calculation
+      let reqDailyPages = appProfile.dailyTargetPages || 0;
+      const hasTarget = reqDailyPages > 0 || (appProfile.targetDate && appProfile.targetDate !== '');
+      let diffDays = 0;
+      let estDateStr = '-';
+      const remainingPages = totalPages - readPages;
+
+      let goalPct = 0;
+
+      // Tampilkan empty state jika belum ada target
+      const hitungMundurContent = document.getElementById('hitungMundurContent');
+      const hitungMundurEmpty = document.getElementById('hitungMundurEmpty');
+
+      if (!hasTarget) {
+        if (hitungMundurContent) hitungMundurContent.classList.add('hidden');
+        if (hitungMundurEmpty) hitungMundurEmpty.classList.remove('hidden');
+        document.getElementById('circGoalDate').textContent = '-';
+        document.getElementById('circGoalDays').textContent = '-';
+        document.getElementById('circGoalBar').style.width = '0%';
+      } else {
+        if (hitungMundurContent) hitungMundurContent.classList.remove('hidden');
+        if (hitungMundurEmpty) hitungMundurEmpty.classList.add('hidden');
+
+        if (remainingPages <= 0) {
+          document.getElementById('uiDaysRemaining').textContent = '0';
+          document.getElementById('circGoalDays').textContent = '0';
+          document.getElementById('circGoalDate').textContent = 'Khatam!';
+          document.getElementById('uiTargetDateHeader').innerHTML = '<span class="text-sky-600">Alhamdulillah, Khatam!</span>';
+          goalPct = 100;
+        } else {
+          if (reqDailyPages > 0) {
+            diffDays = Math.ceil(remainingPages / reqDailyPages);
+            const tDate = new Date(); tDate.setDate(tDate.getDate() + diffDays);
+            estDateStr = formatDateID(getLocalDateString(tDate));
+          }
+
+          document.getElementById('uiDaysRemaining').textContent = diffDays > 0 ? diffDays : '-';
+          document.getElementById('circGoalDays').textContent = diffDays > 0 ? diffDays : '-';
+          document.getElementById('circGoalDate').textContent = estDateStr || '-';
+          document.getElementById('uiTargetDateHeader').innerHTML = `Estimasi Khatam: <span class="text-sky-500 ml-2">${estDateStr}</span>`;
+
+          goalPct = diffDays > 0 ? Math.floor((readPages / totalPages) * 100) : 0;
+        }
+
+        const goalColor = getProgressColor(goalPct);
+        document.getElementById('circGoalDot').style.backgroundColor = goalColor;
+        document.getElementById('circGoalRing').style.background = '';
+        const circGoalBar = document.getElementById('circGoalBar');
+        if (circGoalBar) { circGoalBar.style.width = goalPct + '%'; circGoalBar.style.background = goalColor; }
+      }
+
+      // Today's Progress Logic
+      document.getElementById('circDailyPages').textContent = todayProgressCount;
+      const todayTargetPages = reqDailyPages > 0 ? reqDailyPages : 0;
+      const todayRemain = todayTargetPages - todayProgressCount;
+      const tRemainStr = todayRemain > 0 ? `${todayRemain} halaman tersisa` : (todayTargetPages > 0 ? 'Target tercapai!' : 'Belum diatur');
+      
+      document.getElementById('circDailyRemain').textContent = tRemainStr;
+      
+      let dailyPct = todayTargetPages > 0 ? Math.floor((todayProgressCount / todayTargetPages) * 100) : 0;
+      if(dailyPct > 100) dailyPct = 100;
+      
+      const dailyColor = getProgressColor(dailyPct);
+      document.getElementById('circDailyDot').style.backgroundColor = dailyColor;
+      document.getElementById('circDailyRing').style.background = `conic-gradient(${dailyColor} ${dailyPct}%, rgba(0,0,0,0.05) 0%)`;
+
+      if (todayTargetPages > 0) {
+        document.getElementById('uiDailyTargetPages').textContent = `Progres: ${todayProgressCount}/${todayTargetPages} Halaman`;
+        document.getElementById('uiDailyProgressPct').textContent = `${dailyPct}%`;
+      } else {
+        document.getElementById('uiDailyTargetPages').textContent = `Target belum diatur`;
+        document.getElementById('uiDailyProgressPct').textContent = `0%`;
+      }
+      
+      const bar = document.getElementById('uiDailyProgressBar');
+      bar.style.width = `${dailyPct}%`;
+      bar.style.background = getDailyBarColor(dailyPct);
+
+      // Cek Status Udzur
+      const btnUdzur = document.getElementById('btnToggleUdzur');
+      const btnLanjut = document.getElementById('btnLanjutkanBacaan');
+      if (btnUdzur) {
+        if (appProfile.udzurStatus) {
+          // Card Udzur: tampil pink saat udzur aktif
+          btnUdzur.innerHTML = `<div class="absolute -right-2 -bottom-2 opacity-10 text-6xl"><i class="fa-solid fa-power-off"></i></div><div class="text-pink-200 mb-2 text-xl"><i class="fa-solid fa-power-off"></i></div><div class="text-lg font-black text-white mb-1 tracking-tight">Akhiri Udzur</div><div class="text-[11px] font-semibold text-pink-100 uppercase tracking-wider">${appProfile.udzurStatus} 🌸</div>`;
+          btnUdzur.className = 'p-5 rounded-3xl relative overflow-hidden text-left w-full transition-all';
+          btnUdzur.style.background = 'linear-gradient(135deg, #f472b6 0%, #ec4899 100%)';
+          btnUdzur.onclick = () => endUdzur();
+          // Tombol Lanjutkan: nonaktifkan
+          if (btnLanjut) {
+            btnLanjut.textContent = 'UDZUR AKTIF 🌸';
+            btnLanjut.className = 'w-full py-3.5 rounded-2xl bg-pink-400/30 border border-pink-300/50 font-extrabold text-white/80 text-sm tracking-widest cursor-not-allowed';
+            btnLanjut.onclick = (e) => { e.preventDefault(); customAlert('Mode Udzur Aktif 🌸', `Mode Udzur (${appProfile.udzurStatus}) sedang aktif sampai ${formatDateID(appProfile.udzurEnd)}.\nTargetmu sedang dijeda sementara.`, 'info'); };
+          }
+        } else {
+          // Card Udzur: tampil biru normal
+          btnUdzur.innerHTML = `<div class="absolute -right-2 -bottom-2 opacity-10 text-6xl"><i class="fa-solid fa-bed"></i></div><div class="text-sky-200 mb-2 text-xl"><i class="fa-solid fa-bed"></i></div><div class="text-lg font-black text-white mb-1 tracking-tight">Udzur</div><div class="text-[11px] font-semibold text-sky-100 uppercase tracking-wider">Syar'i</div>`;
+          btnUdzur.className = 'glass-card-dark p-5 rounded-3xl relative overflow-hidden text-left w-full transition-all';
+          btnUdzur.style.background = '';
+          btnUdzur.onclick = () => openModal('modalUdzur');
+          // Tombol Lanjutkan: aktifkan kembali
+          if (btnLanjut) {
+            btnLanjut.textContent = 'LANJUTKAN BACAAN';
+            btnLanjut.className = 'w-full py-3.5 rounded-2xl bg-white/25 hover:bg-white/40 border border-white/50 font-extrabold text-white text-sm tracking-widest transition-all shadow-sm';
+            btnLanjut.onclick = () => openModal('modalProgress');
+          }
+        }
+      }
+
+      // Update surah progress map
+      updateSurahGrid();
+    }
+
+    // ===================================================================
+    // ===== PETA PERJALANAN AL-QUR'AN — Surah Grid Logic =====
+    // ===================================================================
+
+    // Standard Mushaf Madinah — page on which each surah begins (index = surah number, 1–114)
+    const SURAH_START_PAGES = [
+      0,  // placeholder index 0
+      1,2,50,77,106,128,151,177,187,208,    // 1-10
+      221,235,249,255,262,267,282,293,305,312, // 11-20
+      322,332,342,350,359,367,377,385,396,404, // 21-30
+      411,415,418,428,434,440,446,453,458,467, // 31-40
+      477,483,489,496,499,502,507,511,515,518, // 41-50
+      520,523,526,528,531,534,537,542,545,549, // 51-60
+      551,553,554,556,558,560,562,564,566,568, // 61-70
+      570,572,574,575,577,578,580,582,583,585, // 71-80
+      586,587,587,589,590,591,591,592,593,594, // 81-90
+      595,595,596,596,597,597,598,598,599,599, // 91-100
+      600,600,601,601,601,602,602,602,603,603, // 101-110
+      603,604,604,604                           // 111-114
+    ];
+
+    /**
+     * Returns progress % (0–100) for a surah based on how many pages have been read.
+     */
+    function getSurahProgressFromPage(surahId, lastPageRead) {
+      if (!lastPageRead || lastPageRead <= 0) return 0;
+      if (lastPageRead >= 604) return 100;
+
+      const startPage = SURAH_START_PAGES[surahId];
+      if (!startPage) return 0;
+      if (lastPageRead < startPage) return 0;
+
+      const nextStart  = surahId < 114 ? SURAH_START_PAGES[surahId + 1] : 605;
+      const endPage    = nextStart - 1;
+
+      if (lastPageRead >= endPage) return 100;
+
+      // Same-page surnahs: if we reached the page, count as done
+      if (endPage <= startPage) return 100;
+
+      const pagesInSurah = endPage - startPage + 1;
+      const pagesRead    = lastPageRead - startPage + 1;
+      return Math.min(100, Math.round((pagesRead / pagesInSurah) * 100));
+    }
+
+    /**
+     * Map progress % to a blue-gradient color scheme.
+     * Returns { bg, border, text } CSS color strings.
+     */
+    function getSurahColor(pct) {
+      if (pct <= 0)   return { bg: '#e8f2fc', border: '#dbeafe', text: '#94a3b8', bar: '#bfdbfe' };
+      if (pct < 20)   return { bg: '#bfdbfe', border: '#93c5fd', text: '#1e40af', bar: '#93c5fd' };
+      if (pct < 40)   return { bg: '#60a5fa', border: '#3b82f6', text: '#ffffff', bar: '#60a5fa' };
+      if (pct < 60)   return { bg: '#2563eb', border: '#1d4ed8', text: '#ffffff', bar: '#2563eb' };
+      if (pct < 80)   return { bg: '#1d4ed8', border: '#1e40af', text: '#ffffff', bar: '#1d4ed8' };
+      if (pct < 100)  return { bg: '#1e3a8a', border: '#172554', text: '#bfdbfe', bar: '#1e3a8a' };
+      return { bg: '#172554', border: '#0f172a', text: '#93c5fd', bar: '#172554' };
+    }
+
+    const TOTAL_QURAN_AYAHS = 6236; // kept for reference, not used in stats card
+
+    function updateSurahGrid() {
+      const lastPageRead = appProfile ? (appProfile.lastPageRead || 0) : 0;
+      const gridEl = document.getElementById('surahGrid');
+      if (!gridEl) return;
+
+      let completedSurahs = 0;
+      let html = '';
+      let animDelay = 0;
+
+      for (let i = 1; i <= 114; i++) {
+        const surah = QURAN_METADATA[i - 1];
+        if (!surah) continue;
+
+        const pct    = getSurahProgressFromPage(i, lastPageRead);
+        const colors = getSurahColor(pct);
+        const delay  = Math.round(animDelay * 6); // ms stagger
+        animDelay++;
+
+        const shadowStyle = pct > 0
+          ? `box-shadow:0 2px 5px rgba(30,58,138,${Math.min(0.5, pct / 150)});`
+          : '';
+
+        if (pct >= 100) completedSurahs++;
+
+        html += `<div class="surah-cell"
+          style="background:${colors.bg};border-color:${colors.border};color:${colors.text};${shadowStyle}animation-delay:${delay}ms"
+          onclick="showSurahTooltip(${i})">${i}</div>`;
+      }
+
+      gridEl.innerHTML = html;
+
+      // --- Update stat cards ---
+      const surahPct = Math.round((completedSurahs / 114) * 100);
+      // Page-based stats (direct & accurate)
+      const halPct   = lastPageRead >= 604 ? 100 : Math.round((lastPageRead / 604) * 100);
+
+      const el = id => document.getElementById(id);
+      if (el('gridSurahDone')) el('gridSurahDone').textContent = completedSurahs;
+      if (el('gridHalDone'))   el('gridHalDone').textContent   = lastPageRead;
+      if (el('gridSurahBar'))  el('gridSurahBar').style.width  = surahPct + '%';
+      if (el('gridHalBar'))    el('gridHalBar').style.width    = halPct + '%';
+      if (el('gridSurahPct'))  el('gridSurahPct').textContent  = surahPct + '%';
+      if (el('gridHalPct'))    el('gridHalPct').textContent    = halPct + '%';
+    }
+
+    function showSurahTooltip(surahId) {
+      const lastPageRead = appProfile ? (appProfile.lastPageRead || 0) : 0;
+      const surah        = QURAN_METADATA[surahId - 1];
+      if (!surah) return;
+
+      const pct      = getSurahProgressFromPage(surahId, lastPageRead);
+      const colors   = getSurahColor(pct);
+
+      // Page range for this surah (from SURAH_START_PAGES)
+      const startPage = SURAH_START_PAGES[surahId];
+      const nextStart = surahId < 114 ? SURAH_START_PAGES[surahId + 1] : 605;
+      const endPage   = nextStart - 1;
+      const pageRange = endPage > startPage
+        ? `Hal ${startPage}–${endPage}`
+        : `Hal ${startPage}`;
+
+      // Juz from existing JUZ_MAPPING (via getJuzFromPage helper)
+      const juzNum    = typeof getJuzFromPage === 'function' ? getJuzFromPage(startPage) : '—';
+      // Check if surah spans multiple juz
+      const juzEnd    = typeof getJuzFromPage === 'function' ? getJuzFromPage(endPage) : juzNum;
+      const juzLabel  = juzEnd > juzNum ? `Juz ${juzNum}–${juzEnd}` : `Juz ${juzNum}`;
+
+      // Detail line: page range · juz · ayat count
+      const detailText = `${pageRange} · ${juzLabel} · ${surah.totalAyahs} ayat`;
+
+      let badgeText, badgeBg, badgeColor;
+      if (pct <= 0)      { badgeText = 'Belum';    badgeBg = '#f1f5f9'; badgeColor = '#94a3b8'; }
+      else if (pct < 100){ badgeText = 'Progress'; badgeBg = '#eff6ff'; badgeColor = '#2563eb'; }
+      else               { badgeText = '✓ Selesai'; badgeBg = '#172554'; badgeColor = '#93c5fd'; }
+
+      const el = id => document.getElementById(id);
+      if (el('tooltipSurahNum'))  el('tooltipSurahNum').textContent  = `Surah ${surahId}`;
+      if (el('tooltipSurahName')) el('tooltipSurahName').textContent = surah.name;
+      if (el('tooltipSurahDetail')) el('tooltipSurahDetail').textContent = detailText;
+      if (el('tooltipSurahPct')) {
+        el('tooltipSurahPct').textContent  = pct + '%';
+        el('tooltipSurahPct').style.color  = pct >= 100 ? '#172554' : pct > 0 ? '#1d4ed8' : '#94a3b8';
+      }
+      if (el('tooltipSurahBadge')) {
+        el('tooltipSurahBadge').textContent       = badgeText;
+        el('tooltipSurahBadge').style.background  = badgeBg;
+        el('tooltipSurahBadge').style.color       = badgeColor;
+      }
+      if (el('tooltipSurahProgressBar')) {
+        el('tooltipSurahProgressBar').style.width      = pct + '%';
+        el('tooltipSurahProgressBar').style.background = colors.bar;
+      }
+
+      const tooltip = el('surahTooltip');
+      if (tooltip) {
+        tooltip.classList.remove('hidden');
+        tooltip.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+
+      // Highlight selected cell
+      document.querySelectorAll('.surah-cell.selected').forEach(c => c.classList.remove('selected'));
+      const cells = document.querySelectorAll('.surah-cell');
+      if (cells[surahId - 1]) cells[surahId - 1].classList.add('selected');
+    }
+
+    // ===================================================================
+
+    function formatDateID(dateStr) {
+      if(!dateStr) return '';
+      return new Date(dateStr).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+
+    function populateSurahDropdowns() {
+      let html = '<option value="" class="text-slate-400">Pilih Surah...</option>';
+      QURAN_METADATA.forEach(s => html += `<option value="${s.id}" class="text-slate-800 font-bold">${s.id}. ${s.name}</option>`);
+      document.getElementById('journalSurah').innerHTML = html;
+    }
+
+    let currentTargetMode = 'reguler';
+
+    function switchTargetMode(mode) {
+      currentTargetMode = mode;
+      if (mode === 'reguler') {
+        document.getElementById('tabTargetReguler').className = 'flex-1 py-2 text-[11px] font-bold tracking-widest uppercase rounded-lg bg-white shadow-sm text-sky-600 transition-all';
+        document.getElementById('tabTargetPintar').className = 'flex-1 py-2 text-[11px] font-bold tracking-widest uppercase rounded-lg text-slate-400 hover:text-slate-600 transition-all';
+        document.getElementById('targetModeReguler').classList.remove('hidden');
+        document.getElementById('targetModePintar').classList.add('hidden');
+        document.getElementById('inputTargetPages').setAttribute('required', 'true');
+        document.getElementById('inputTargetDate').removeAttribute('required');
+      } else {
+        document.getElementById('tabTargetPintar').className = 'flex-1 py-2 text-[11px] font-bold tracking-widest uppercase rounded-lg bg-white shadow-sm text-sky-600 transition-all';
+        document.getElementById('tabTargetReguler').className = 'flex-1 py-2 text-[11px] font-bold tracking-widest uppercase rounded-lg text-slate-400 hover:text-slate-600 transition-all';
+        document.getElementById('targetModePintar').classList.remove('hidden');
+        document.getElementById('targetModeReguler').classList.add('hidden');
+        document.getElementById('inputTargetDate').setAttribute('required', 'true');
+        document.getElementById('inputTargetPages').removeAttribute('required');
+      }
+    }
+
+    function calculateTargetPagesPreview() {
+      const pagesVal = parseInt(document.getElementById('inputTargetPages').value);
+      const calcDiv = document.getElementById('targetPagesCalc');
+      if(!pagesVal || pagesVal <= 0) return calcDiv.classList.add('hidden');
+      
+      const reqDays = Math.ceil((604 - (appProfile.lastPageRead || 0)) / pagesVal);
+      const tDate = new Date(); tDate.setDate(tDate.getDate() + reqDays);
+      calcDiv.classList.remove('hidden');
+      document.getElementById('calcEstDate').textContent = formatDateID(getLocalDateString(tDate));
+    }
+
+    function calculateTargetDatePreview() {
+      const targetDateStr = document.getElementById('inputTargetDate').value;
+      const calcDiv = document.getElementById('targetDateCalc');
+      if (!targetDateStr) return calcDiv.classList.add('hidden');
+      
+      const targetDate = new Date(targetDateStr);
+      targetDate.setHours(0,0,0,0);
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      
+      const diffTime = targetDate.getTime() - today.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      calcDiv.classList.remove('hidden');
+      if (diffDays <= 0) {
+        document.getElementById('calcEstPages').textContent = 'Tanggal sudah lewat';
+        return;
+      }
+
+      const sisaHal = 604 - (appProfile.lastPageRead || 0);
+      const pph = Math.ceil(sisaHal / diffDays);
+      document.getElementById('calcEstPages').textContent = `${pph} Hal / Hari`;
+    }
+
+    function handleTargetSubmit(e) {
+      e.preventDefault();
+      
+      let finalTargetPages = 0;
+      
+      if (currentTargetMode === 'reguler') {
+        finalTargetPages = parseInt(document.getElementById('inputTargetPages').value);
+        if(!finalTargetPages) return customAlert('Perhatian', 'Silakan masukkan target halaman.', 'warning');
+      } else {
+        const targetDateStr = document.getElementById('inputTargetDate').value;
+        if (!targetDateStr) return customAlert('Perhatian', 'Silakan pilih tanggal target khatam.', 'warning');
+        
+        const targetDate = new Date(targetDateStr);
+        targetDate.setHours(0,0,0,0);
+        const today = new Date();
+        today.setHours(0,0,0,0);
+        
+        const diffDays = Math.ceil((targetDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+        if (diffDays <= 0) return customAlert('Perhatian', 'Pilih tanggal di masa depan.', 'warning');
+        
+        const sisaHal = 604 - (appProfile.lastPageRead || 0);
+        finalTargetPages = Math.ceil(sisaHal / diffDays);
+      }
+      
+      const payload = { dailyTargetPages: finalTargetPages };
+      
+      showLoading("MENYIMPAN TARGET...");
+      gscript.saveUserTarget(currentUser.id, payload)
+        .then(p => { appProfile = p; updateDashboard(); hideLoading(); closeModal('modalTarget'); saveToCache(); })
+        .catch(onError);
+    }
+
+    function handleProgressSubmit(e) {
+      e.preventDefault();
+      const date = document.getElementById('progressDate').value;
+      const lastPageInput = parseInt(document.getElementById('progressLastPage').value);
+      const startPage = parseInt(document.getElementById('progressStartPage').value) || 0;
+
+      if (!lastPageInput) return customAlert('Perhatian', 'Isi halaman terakhir yang kamu baca hari ini.', 'warning');
+      if (lastPageInput < startPage + 1 && startPage < 604) {
+        return customAlert('Perhatian', `Halaman ${lastPageInput} tidak valid. Mulai dari halaman ${startPage + 1}.`, 'warning');
+      }
+      if (lastPageInput > 604) return customAlert('Perhatian', 'Halaman tidak boleh melebihi 604.', 'warning');
+
+      const oldJuz = typeof getJuzFromPage === 'function' ? getJuzFromPage(appProfile.lastPageRead || 0) : 1;
+      
+      const effectiveStartPage = startPage >= 604 ? 0 : startPage;
+      const pagesReadThisSession = lastPageInput - effectiveStartPage;
+
+      // #3 Optimistic UI: Update immediately before server responds
+      const previousProfile = { ...appProfile };
+      const previousTodayCount = todayProgressCount;
+      // Jika khatam (604), reset posisi ke 0 secara optimistik
+      appProfile.lastPageRead = lastPageInput >= 604 ? 0 : lastPageInput;
+      appProfile.totalKhatam = lastPageInput >= 604 ? (appProfile.totalKhatam || 0) + 1 : (appProfile.totalKhatam || 0);
+      todayProgressCount += pagesReadThisSession;
+      updateDashboard();
+      closeModal('modalProgress');
+      document.getElementById('progressForm').reset();
+      document.getElementById('progressDate').value = getLocalDateString();
+
+      showToast(`Menyimpan... ${pagesReadThisSession} halaman 📖`, 'info');
+
+      gscript.saveProgressUpdate(currentUser.id, { date, lastPageInput, startPage })
+        .then(res => {
+          appProfile = res.profile;
+          todayProgressCount = res.todayProgress;
+          saveToCache();
+          updateDashboard();
+
+          if (res.isKhatamNow) {
+          // Reset posisi bacaan ke 0, tampilkan perayaan khatam
+          appProfile.lastPageRead = 0;
+          updateDashboard();
+          saveToCache();
+          if (typeof confetti === 'function') {
+            confetti({ particleCount: 200, spread: 90, origin: { y: 0.5 }, colors: ['#fbbf24','#34d399','#60a5fa','#f87171'], zIndex: 10000 });
+            setTimeout(() => confetti({ particleCount: 150, spread: 120, origin: { y: 0.4 } }), 400);
+          }
+          customAlert('Baarakallahu fiikum 🌟', 'Alhamdulillah anda sudah khatam, bersiap untuk perjuangan khatam berikutnya!', 'success');
+        } else {
+          const newJuz = typeof getJuzFromPage === 'function' ? getJuzFromPage(appProfile.lastPageRead || 0) : 1;
+          const Z = res.pagesReadThisSession;
+          const next = res.nextPageStart;
+          if (newJuz > oldJuz) {
+            document.getElementById('milestoneJuzNumber').textContent = newJuz;
+            openModal('modalMilestone');
+            if (typeof confetti === 'function') {
+              confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#0ea5e9', '#f59e0b', '#10b981'], zIndex: 10000 });
+            }
+          } else {
+            showToast(`Alhamdulillah! ${Z} halaman tercatat 📖\nLanjut dari halaman ${next}!`, 'success');
+          }
+        }
+        })
+        .catch(err => {
+          // #3 Rollback on failure
+          appProfile = previousProfile;
+          todayProgressCount = previousTodayCount;
+          updateDashboard();
+          onError(err);
+        });
+    }
+
+    // #10 Top Bar Toast (non-intrusive)
+    function showToast(message, type = 'info') {
+      let toast = document.getElementById('appToast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'appToast';
+        toast.className = 'toast-top';
+        document.body.appendChild(toast);
+      }
+      toast.className = 'toast-top';
+      if (type === 'success') toast.classList.add('toast-success');
+      else if (type === 'error') toast.classList.add('toast-error');
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => { toast.classList.remove('show'); }, 4000);
+    }
+
+    function handleJournalSubmit(e) {
+      e.preventDefault();
+      const payload = {
+        id: document.getElementById('journalId').value,
+        surahId: document.getElementById('journalSurah').value,
+        ayahStart: document.getElementById('journalAyahStart').value,
+        ayahEnd: document.getElementById('journalAyahEnd').value,
+        note: document.getElementById('journalNote').value
+      };
+      showLoading("MENYIMPAN JURNAL...");
+      gscript.saveJournal(currentUser.id, payload)
+        .then(journals => { appJournals = journals; updateJournalUI(); resetJournalForm(); hideLoading(); saveToCache(); })
+        .catch(onError);
+    }
+
+    function resetJournalForm() {
+      document.getElementById('journalForm').reset(); document.getElementById('journalId').value = '';
+      document.getElementById('btnCancelJournal').classList.add('hidden');
+      document.getElementById('btnSaveJournal').classList.remove('w-1/2');
+      document.getElementById('btnSaveJournal').classList.add('flex-1');
+      document.getElementById('btnSaveJournal').textContent = 'SIMPAN JURNAL';
+    }
+
+    function editJournal(id) {
+      const j = appJournals.find(x => x.id === id); if(!j) return;
+      document.getElementById('journalId').value = j.id;
+      document.getElementById('journalSurah').value = j.surahId || '';
+      document.getElementById('journalAyahStart').value = j.ayahStart || '';
+      document.getElementById('journalAyahEnd').value = j.ayahEnd || '';
+      document.getElementById('journalNote').value = j.note;
+      document.getElementById('btnCancelJournal').classList.remove('hidden');
+      document.getElementById('btnSaveJournal').textContent = 'PERBARUI JURNAL';
+    }
+
+    function deleteJournalEntry(id) {
+      customConfirm("Hapus Jurnal", "Hapus jurnal ini secara permanen?", () => {
+        showLoading("MENGHAPUS...");
+        gscript.deleteJournal(currentUser.id, id)
+          .then(journals => { appJournals = journals; updateJournalUI(); hideLoading(); })
+          .catch(onError);
+      }, 'warning');
+    }
+
+    function updateJournalUI() {
+      const container = document.getElementById('journalList');
+      if(appJournals.length === 0) return container.innerHTML = '<div class="text-sm text-slate-400 text-center py-10 font-medium"><i class="fa-solid fa-book-open text-4xl mb-4 opacity-30"></i><p>Belum ada catatan jurnal.</p></div>';
+      let html = '';
+      appJournals.forEach(j => {
+        let ref = '';
+        if(j.surahId) {
+          const s = QURAN_METADATA.find(x => x.id == j.surahId);
+          ref = s ? s.name : '';
+          if(j.ayahStart && j.ayahEnd) ref += ` (${j.ayahStart}-${j.ayahEnd})`;
+          else if(j.ayahStart) ref += ` Ayat ${j.ayahStart}`;
+        }
+        html += `<div class="bg-slate-50 border border-slate-200 rounded-3xl p-6 shadow-sm"><div class="flex justify-between items-start mb-3"><div><p class="text-[10px] font-black text-sky-500 uppercase tracking-widest mb-1">${formatDateID(j.date)}</p>${ref ? `<p class="text-xs text-slate-800 font-bold"><i class="fa-solid fa-tag text-sky-400 mr-1"></i> ${ref}</p>` : ''}</div><div class="flex gap-2"><button onclick="editJournal('${j.id}')" class="text-slate-400 hover:text-sky-500 hover:bg-sky-50 transition-colors w-8 h-8 rounded-full flex justify-center items-center"><i class="fa-solid fa-pen text-xs"></i></button><button onclick="deleteJournalEntry('${j.id}')" class="text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors w-8 h-8 rounded-full flex justify-center items-center"><i class="fa-solid fa-trash text-xs"></i></button></div></div><p class="text-[14px] text-slate-600 whitespace-pre-wrap mt-3 leading-relaxed font-medium">${j.note}</p></div>`;
+      });
+      container.innerHTML = html;
+    }
+
+    // ---- Warna Progress Bar Harian: kuning → oranye → merah ----
+    function getDailyBarColor(pct) {
+      if (pct <= 0)   return '#fbbf24';
+      if (pct >= 100) return '#ef4444';
+      if (pct < 50) {
+        // Kuning #fbbf24 → Oranye #f97316
+        const t = pct / 50;
+        const r = Math.round(251 + (249 - 251) * t);
+        const g = Math.round(191 + (115 - 191) * t);
+        const b = Math.round( 36 + ( 22 -  36) * t);
+        return `rgb(${r},${g},${b})`;
+      } else {
+        // Oranye #f97316 → Merah #ef4444
+        const t = (pct - 50) / 50;
+        const r = Math.round(249 + (239 - 249) * t);
+        const g = Math.round(115 + ( 68 - 115) * t);
+        const b = Math.round( 22 + ( 68 -  22) * t);
+        return `rgb(${r},${g},${b})`;
+      }
+    }
+
+    // ---- Konfirmasi & Eksekusi Reset Data Bacaan ----
+    function confirmResetReadingData() {
+      customConfirm(
+        '⚠️ Reset Data Bacaan',
+        'Apakah Anda yakin ingin mereset?\n\nData bacaan (posisi halaman, target, streak, riwayat log, dan jurnal) akan dihapus secara permanen.',
+        () => {
+          showLoading('MERESET DATA...');
+          gscript.resetReadingData(currentUser.id)
+            .then(freshProfile => {
+              appProfile         = freshProfile;
+              appJournals        = [];
+              todayProgressCount = 0;
+              saveToCache();
+              updateDashboard();
+              updateJournalUI();
+              hideLoading();
+              showToast('Data bacaan berhasil direset. Bismillah, mulai dari awal! 🌟', 'success');
+            })
+            .catch(onError);
+        },
+        'warning'
+      );
+    }
+  </script>
+  <script>
+    // Daftarkan Service Worker untuk PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('SW registered:', reg.scope))
+          .catch(err => console.warn('SW failed:', err));
+      });
+    }
+  </script>
+</body>
+</html>
