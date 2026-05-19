@@ -1,16 +1,17 @@
 // sw.js — KhatamKu Service Worker
 // Strategi: Cache-first untuk aset statis, Network-first untuk API
 
-const CACHE_NAME = 'khatamku-v1';
+const CACHE_NAME = 'khatamku-v2';
+const BASE = '/KhatamKu';
 
 // Aset yang di-cache saat install (app shell)
 const PRECACHE_URLS = [
-  '/',
-  '/index.html',
-  '/api.js',
-  '/manifest.json',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
+  BASE + '/',
+  BASE + '/index.html',
+  BASE + '/api.js',
+  BASE + '/manifest.json',
+  BASE + '/icons/icon-192.png',
+  BASE + '/icons/icon-512.png',
 ];
 
 // ── Install: pre-cache app shell ─────────────────────────────────
@@ -55,7 +56,6 @@ self.addEventListener('fetch', event => {
     event.respondWith(
       fetch(event.request)
         .then(res => {
-          // Simpan salinan ke cache
           const clone = res.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
           return res;
