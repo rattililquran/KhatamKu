@@ -1680,25 +1680,18 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
     ];
 
     function loadPotretData() {
-      // Coba load dari server Apps Script
+      // Coba load dari server Apps Script, fallback ke dummy jika gagal / offline
       gscript.getPotretContent()
-          .then(data => {
-            potretData = (data && data.length > 0) ? data : POTRET_DUMMY;
-            potretLoaded = true;
-            renderPotretList(potretData, currentPotretFilter);
-          })
-          .catch(() => {
-            // Fallback ke data dummy jika gagal
-            potretData = POTRET_DUMMY;
-            potretLoaded = true;
-            renderPotretList(potretData, currentPotretFilter);
-          });
-      } else {
-        // Mode offline/preview: gunakan data dummy langsung
-        potretData = POTRET_DUMMY;
-        potretLoaded = true;
-        renderPotretList(potretData, currentPotretFilter);
-      }
+        .then(data => {
+          potretData = (data && data.length > 0) ? data : POTRET_DUMMY;
+          potretLoaded = true;
+          renderPotretList(potretData, currentPotretFilter);
+        })
+        .catch(() => {
+          potretData = POTRET_DUMMY;
+          potretLoaded = true;
+          renderPotretList(potretData, currentPotretFilter);
+        });
     }
 
     function openPotretModal() {
