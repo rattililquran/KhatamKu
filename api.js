@@ -110,6 +110,26 @@ const gscript = {
   getTeacherDashboardData: (userId) =>
     gasCall('getTeacherDashboardData', { userId }, 'GET'),
 
+  // ── GURU PORTAL (Guru.gs) ─────────────────────────────────
+  guruGetDashboard: (guruId) =>
+    gasCall('guruGetDashboard', { guruId }, 'GET'),
+  guruAddMurid: (guruId, muridData) =>
+    gasCall('guruAddMurid', { guruId, muridData }),
+  guruEditMurid: (guruId, userId, editData) =>
+    gasCall('guruEditMurid', { guruId, userId, editData }),
+  guruDeleteMurid: (guruId, userId) =>
+    gasCall('guruDeleteMurid', { guruId, userId }),
+  guruSearchMurid: (guruId, keyword) =>
+    gasCall('guruSearchMurid', { guruId, keyword }, 'GET'),
+  guruInputProgress: (guruId, progressData) =>
+    gasCall('guruInputProgress', { guruId, progressData }),
+  guruSaveCatatan: (guruId, catatanData) =>
+    gasCall('guruSaveCatatan', { guruId, catatanData }),
+  guruGetCatatan: (guruId, studentId) =>
+    gasCall('guruGetCatatan', { guruId, studentId }, 'GET'),
+  guruGetLaporanMingguan: (guruId) =>
+    gasCall('guruGetLaporanMingguan', { guruId }, 'GET'),
+
   // ── ADMIN: HEALTH DASHBOARD ───────────────────────────────
   adminGetHealthDashboard: (adminId) =>
     gasCall('adminGetHealthDashboard', { adminId }, 'GET'),
