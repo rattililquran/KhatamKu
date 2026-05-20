@@ -305,6 +305,174 @@
       to   { opacity: 1; transform: scale(1); }
     }
     .surah-cell { animation: surahCellIn 0.3s ease both; }
+
+    /* ============================================================
+       ADMIN PORTAL — Styles
+    ============================================================ */
+    #adminView { max-width: 1280px; }
+    @media (max-width: 640px) { #adminView { padding-left: 16px; padding-right: 16px; } }
+
+    .admin-tab-bar {
+      display: flex; gap: 6px; overflow-x: auto;
+      background: rgba(255,255,255,0.6); backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.8);
+      border-radius: 18px; padding: 6px; margin-bottom: 24px;
+      box-shadow: 0 4px 20px -8px rgba(14,165,233,0.15);
+    }
+    .admin-tab-bar::-webkit-scrollbar { display: none; }
+    .admin-tab {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 16px; border-radius: 12px; white-space: nowrap;
+      font-size: 12px; font-weight: 800; letter-spacing: 0.02em;
+      color: #64748b; cursor: pointer; transition: all 0.2s ease;
+      background: transparent; border: none;
+    }
+    .admin-tab:hover { color: #0ea5e9; background: rgba(14,165,233,0.06); }
+    .admin-tab.active {
+      background: linear-gradient(135deg,#0ea5e9,#2563eb);
+      color: white; box-shadow: 0 4px 12px rgba(14,165,233,0.35);
+    }
+    .admin-tab i { font-size: 13px; }
+
+    .stat-card {
+      background: rgba(255,255,255,0.75); backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.9);
+      border-radius: 20px; padding: 20px;
+      box-shadow: 0 8px 24px -12px rgba(14,165,233,0.18);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 12px 30px -10px rgba(14,165,233,0.28); }
+    .stat-card .stat-label {
+      font-size: 10px; font-weight: 800; letter-spacing: 0.08em;
+      text-transform: uppercase; color: #94a3b8; margin-bottom: 6px;
+    }
+    .stat-card .stat-value {
+      font-size: 32px; font-weight: 900; color: #1e293b;
+      line-height: 1; letter-spacing: -0.02em;
+    }
+    .stat-card .stat-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+    }
+
+    .data-table {
+      width: 100%; border-collapse: separate; border-spacing: 0;
+      font-size: 13px;
+    }
+    .data-table thead th {
+      background: #f1f5f9;
+      font-size: 10px; font-weight: 900; letter-spacing: 0.06em;
+      text-transform: uppercase; color: #64748b;
+      padding: 12px 14px; text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .data-table thead th:first-child { border-top-left-radius: 12px; }
+    .data-table thead th:last-child { border-top-right-radius: 12px; }
+    .data-table tbody td {
+      padding: 12px 14px; border-bottom: 1px solid #f1f5f9;
+      color: #1e293b; vertical-align: middle;
+    }
+    .data-table tbody tr:hover { background: rgba(14,165,233,0.04); }
+    .data-table tbody tr:last-child td { border-bottom: none; }
+    .data-table .table-wrap {
+      background: white; border: 1px solid #e2e8f0;
+      border-radius: 14px; overflow: hidden;
+    }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 9px; border-radius: 999px;
+      font-size: 10px; font-weight: 800; letter-spacing: 0.03em;
+    }
+    .badge-active { background: #dcfce7; color: #166534; }
+    .badge-risk   { background: #fee2e2; color: #991b1b; }
+    .badge-udzur  { background: #fef3c7; color: #92400e; }
+    .badge-idle   { background: #f1f5f9; color: #475569; }
+
+    .icon-btn {
+      width: 32px; height: 32px; border-radius: 8px;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 12px; transition: all 0.15s ease;
+      border: 1px solid transparent; background: transparent;
+      cursor: pointer; color: #64748b;
+    }
+    .icon-btn:hover { background: #f1f5f9; color: #0ea5e9; transform: scale(1.05); }
+    .icon-btn.danger:hover { background: #fee2e2; color: #dc2626; }
+
+    .drop-zone {
+      border: 2px dashed #cbd5e1; border-radius: 20px;
+      padding: 40px 20px; text-align: center;
+      background: rgba(255,255,255,0.6); backdrop-filter: blur(10px);
+      transition: all 0.25s ease; cursor: pointer;
+    }
+    .drop-zone:hover, .drop-zone.dragging {
+      border-color: #0ea5e9; background: rgba(14,165,233,0.06);
+      transform: scale(1.01);
+    }
+
+    .admin-input {
+      width: 100%; padding: 11px 14px; border-radius: 12px;
+      border: 1px solid #e2e8f0; background: white; color: #1e293b;
+      font-size: 13px; font-weight: 500; outline: none;
+      transition: border 0.2s, box-shadow 0.2s;
+    }
+    .admin-input:focus {
+      border-color: #0ea5e9;
+      box-shadow: 0 0 0 3px rgba(14,165,233,0.12);
+    }
+    .admin-label {
+      display: block; font-size: 10px; font-weight: 800;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      color: #64748b; margin-bottom: 6px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg,#0ea5e9,#2563eb); color: white;
+      padding: 11px 18px; border-radius: 12px;
+      font-size: 12px; font-weight: 800; letter-spacing: 0.05em;
+      text-transform: uppercase; border: none; cursor: pointer;
+      box-shadow: 0 4px 14px rgba(14,165,233,0.35);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(14,165,233,0.45); }
+    .btn-secondary {
+      background: white; color: #475569;
+      padding: 11px 18px; border-radius: 12px;
+      font-size: 12px; font-weight: 800; letter-spacing: 0.05em;
+      text-transform: uppercase; border: 1px solid #e2e8f0; cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-secondary:hover { border-color: #cbd5e1; background: #f8fafc; }
+    .btn-danger {
+      background: linear-gradient(135deg,#ef4444,#dc2626); color: white;
+      padding: 11px 18px; border-radius: 12px;
+      font-size: 12px; font-weight: 800; letter-spacing: 0.05em;
+      text-transform: uppercase; border: none; cursor: pointer;
+      box-shadow: 0 4px 14px rgba(239,68,68,0.35);
+      transition: all 0.15s ease;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-danger:hover { transform: translateY(-1px); }
+
+    /* Activity bar chart */
+    .chart-container { display: flex; align-items: flex-end; gap: 3px; height: 120px; padding: 12px 0; }
+    .chart-bar {
+      flex: 1; background: linear-gradient(to top, #0ea5e9, #38bdf8);
+      border-radius: 4px 4px 0 0; min-height: 2px;
+      transition: all 0.25s ease; cursor: pointer; position: relative;
+    }
+    .chart-bar:hover { background: linear-gradient(to top, #2563eb, #0ea5e9); transform: scaleY(1.05); }
+    .chart-bar .chart-tooltip {
+      position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+      background: #1e293b; color: white; padding: 4px 8px;
+      border-radius: 6px; font-size: 10px; font-weight: 700;
+      white-space: nowrap; opacity: 0; pointer-events: none;
+      transition: opacity 0.15s; margin-bottom: 6px;
+    }
+    .chart-bar:hover .chart-tooltip { opacity: 1; }
   </style>
 </head>
 <body class="antialiased selection:bg-sky-200 selection:text-sky-900 min-h-screen">
@@ -772,6 +940,312 @@
       <div class="space-y-4 mb-8" id="tcStudentList">
         <!-- Injected via JS -->
       </div>
+    </main>
+
+    <!-- ============================================================
+         VIEW: ADMIN PORTAL
+    ============================================================ -->
+    <main id="adminView" class="mx-auto px-5 hidden pt-6 pb-24 relative z-10" style="max-width: 1280px;">
+
+      <!-- Header -->
+      <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
+        <div>
+          <p class="text-[10px] font-black text-sky-500 uppercase tracking-[0.2em] mb-1">
+            <i class="fa-solid fa-shield-halved mr-1"></i> Administrator Portal
+          </p>
+          <h2 class="text-3xl font-black tracking-tight text-slate-800">Dashboard Admin</h2>
+          <p class="text-sm text-slate-500 mt-1" id="adminWelcomeText">Kelola data, pantau program, dan atur konten KhatamKu.</p>
+        </div>
+        <div class="text-xs text-slate-400 font-semibold">
+          <i class="fa-regular fa-clock mr-1"></i>
+          <span id="adminLastUpdate">—</span>
+        </div>
+      </div>
+
+      <!-- Tab Bar -->
+      <div class="admin-tab-bar">
+        <button class="admin-tab active" data-tab="dashboard" onclick="switchAdminTab('dashboard')"><i class="fa-solid fa-chart-line"></i> Dashboard</button>
+        <button class="admin-tab" data-tab="murid" onclick="switchAdminTab('murid')"><i class="fa-solid fa-users"></i> Murid</button>
+        <button class="admin-tab" data-tab="halaqah" onclick="switchAdminTab('halaqah')"><i class="fa-solid fa-people-roof"></i> Halaqah</button>
+        <button class="admin-tab" data-tab="import" onclick="switchAdminTab('import')"><i class="fa-solid fa-file-csv"></i> Import CSV</button>
+        <button class="admin-tab" data-tab="konten" onclick="switchAdminTab('konten')"><i class="fa-solid fa-pen-to-square"></i> Konten</button>
+        <button class="admin-tab" data-tab="guru" onclick="switchAdminTab('guru')"><i class="fa-solid fa-chalkboard-user"></i> Guru</button>
+      </div>
+
+      <!-- ============ TAB 1: DASHBOARD ============ -->
+      <section id="adminTabDashboard" class="admin-tab-content">
+        <!-- Summary Stats -->
+        <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
+          <div class="stat-card">
+            <span class="stat-icon mb-3" style="background:#dbeafe;color:#2563eb"><i class="fa-solid fa-users"></i></span>
+            <div class="stat-label">Total Murid</div>
+            <div class="stat-value" id="stTotalMurid">0</div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon mb-3" style="background:#dcfce7;color:#16a34a"><i class="fa-solid fa-bolt"></i></span>
+            <div class="stat-label">Aktif Hari Ini</div>
+            <div class="stat-value" id="stActiveToday">0</div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon mb-3" style="background:#fee2e2;color:#dc2626"><i class="fa-solid fa-triangle-exclamation"></i></span>
+            <div class="stat-label">Berisiko</div>
+            <div class="stat-value" id="stAtRisk">0</div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon mb-3" style="background:#fef3c7;color:#d97706"><i class="fa-solid fa-bed"></i></span>
+            <div class="stat-label">Udzur</div>
+            <div class="stat-value" id="stUdzur">0</div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon mb-3" style="background:#f3e8ff;color:#9333ea"><i class="fa-solid fa-trophy"></i></span>
+            <div class="stat-label">Total Khatam</div>
+            <div class="stat-value" id="stTotalKhatam">0</div>
+          </div>
+        </div>
+
+        <!-- Activity Chart -->
+        <div class="stat-card mb-6">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <p class="stat-label">Aktivitas 30 Hari Terakhir</p>
+              <p class="text-sm font-bold text-slate-600 mt-1">Jumlah murid aktif per hari</p>
+            </div>
+            <span class="badge badge-active" id="chartPeakInfo">—</span>
+          </div>
+          <div class="chart-container" id="adminChartBars"></div>
+          <div class="flex justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-2">
+            <span id="chartStartDate">—</span>
+            <span id="chartEndDate">—</span>
+          </div>
+        </div>
+
+        <!-- Halaqah Stats + At Risk -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+          <div class="stat-card">
+            <p class="stat-label mb-4"><i class="fa-solid fa-people-roof mr-1"></i> Performa per Halaqah</p>
+            <div id="halaqahStatsList" class="space-y-3">
+              <p class="text-sm text-slate-400 italic">Memuat...</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <p class="stat-label mb-4">
+              <i class="fa-solid fa-triangle-exclamation mr-1 text-red-500"></i>
+              Murid Berisiko (≥3 hari, non-udzur)
+            </p>
+            <div id="atRiskList" class="space-y-2 max-h-80 overflow-y-auto">
+              <p class="text-sm text-slate-400 italic">Memuat...</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ TAB 2: MURID ============ -->
+      <section id="adminTabMurid" class="admin-tab-content hidden">
+        <div class="stat-card mb-4">
+          <div class="flex flex-col lg:flex-row gap-3 lg:items-end">
+            <div class="flex-1">
+              <label class="admin-label">Cari NIS / Nama</label>
+              <input type="text" id="muridSearch" class="admin-input" placeholder="Ketik untuk mencari..." oninput="renderMuridTable()">
+            </div>
+            <div class="lg:w-48">
+              <label class="admin-label">Filter Halaqah</label>
+              <select id="muridFilterHalaqah" class="admin-input" onchange="renderMuridTable()">
+                <option value="">Semua Halaqah</option>
+              </select>
+            </div>
+            <div class="lg:w-40">
+              <label class="admin-label">Filter Status</label>
+              <select id="muridFilterStatus" class="admin-input" onchange="renderMuridTable()">
+                <option value="">Semua</option>
+                <option value="active">Aktif Hari Ini</option>
+                <option value="risk">Berisiko</option>
+                <option value="udzur">Udzur</option>
+                <option value="idle">Tidak Aktif</option>
+              </select>
+            </div>
+            <button class="btn-primary" onclick="openModal('modalAdminAddMurid')"><i class="fa-solid fa-plus"></i> Tambah Murid</button>
+          </div>
+        </div>
+        <div class="table-wrap stat-card !p-0 overflow-x-auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>NIS</th>
+                <th>Nama</th>
+                <th>Halaqah</th>
+                <th>Status</th>
+                <th class="text-right">Halaman</th>
+                <th class="text-right">Streak</th>
+                <th class="text-right">Khatam</th>
+                <th>Update Terakhir</th>
+                <th class="text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="muridTableBody">
+              <tr><td colspan="9" class="text-center py-8 text-slate-400">Memuat data...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="text-[11px] text-slate-400 mt-3 font-semibold" id="muridTableInfo">—</p>
+      </section>
+
+      <!-- ============ TAB 3: HALAQAH ============ -->
+      <section id="adminTabHalaqah" class="admin-tab-content hidden">
+        <div class="flex justify-between items-center mb-4">
+          <div>
+            <h3 class="text-xl font-black text-slate-800">Manajemen Halaqah</h3>
+            <p class="text-sm text-slate-500">Kelola pembagian kelas / halaqah</p>
+          </div>
+          <button class="btn-primary" onclick="openModal('modalAdminAddHalaqah')"><i class="fa-solid fa-plus"></i> Tambah Halaqah</button>
+        </div>
+        <div id="halaqahGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <p class="text-sm text-slate-400 italic col-span-full">Memuat...</p>
+        </div>
+      </section>
+
+      <!-- ============ TAB 4: IMPORT CSV ============ -->
+      <section id="adminTabImport" class="admin-tab-content hidden">
+        <div class="stat-card mb-4">
+          <h3 class="text-xl font-black text-slate-800 mb-1">Import Data Murid via CSV</h3>
+          <p class="text-sm text-slate-500 mb-5">Tambahkan puluhan/ratusan murid sekaligus dari Excel atau spreadsheet.</p>
+
+          <div class="bg-sky-50 border border-sky-100 rounded-2xl p-4 mb-5">
+            <p class="text-xs font-black text-sky-700 uppercase tracking-wider mb-2">📋 Cara Pakai</p>
+            <ol class="text-sm text-slate-700 space-y-1 list-decimal list-inside leading-relaxed">
+              <li>Klik <b>Unduh Template CSV</b> di bawah.</li>
+              <li>Buka di Excel / Google Sheets, isi data murid.</li>
+              <li>Save As → format <b>.csv</b>.</li>
+              <li>Drag file ke area di bawah, atau klik untuk pilih.</li>
+              <li>Periksa preview lalu klik <b>Import</b>.</li>
+            </ol>
+          </div>
+
+          <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 mb-5">
+            <p class="text-xs font-black text-slate-600 uppercase tracking-wider mb-2">📑 Format Kolom</p>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+              <div><b class="text-red-500">NIS*</b><p class="text-slate-500">unik</p></div>
+              <div><b class="text-red-500">Password*</b><p class="text-slate-500">min 4 karakter</p></div>
+              <div><b class="text-red-500">Nama_Lengkap*</b><p class="text-slate-500">wajib</p></div>
+              <div><b class="text-slate-500">Halaqah</b><p class="text-slate-500">opsional</p></div>
+              <div><b class="text-slate-500">No_WA</b><p class="text-slate-500">opsional</p></div>
+              <div><b class="text-slate-500">Target_Harian</b><p class="text-slate-500">opsional</p></div>
+              <div><b class="text-slate-500">Halaman_Awal</b><p class="text-slate-500">opsional</p></div>
+            </div>
+            <button class="btn-secondary mt-4" onclick="downloadCSVTemplate()"><i class="fa-solid fa-download"></i> Unduh Template CSV</button>
+          </div>
+
+          <div class="drop-zone" id="csvDropZone" onclick="document.getElementById('csvFileInput').click()">
+            <i class="fa-solid fa-cloud-arrow-up text-5xl text-sky-400 mb-3"></i>
+            <p class="text-base font-bold text-slate-700">Drag file CSV ke sini atau klik untuk pilih</p>
+            <p class="text-xs text-slate-400 mt-1">Format: .csv (UTF-8)</p>
+            <input type="file" id="csvFileInput" accept=".csv,text/csv" class="hidden" onchange="handleCSVFile(event)">
+          </div>
+
+          <div id="csvPreview" class="hidden mt-5">
+            <div class="flex justify-between items-center mb-3">
+              <p class="text-sm font-black text-slate-700">Preview: <span id="csvPreviewCount">0</span> baris siap diimpor</p>
+              <button class="btn-secondary text-xs" onclick="resetCSVImport()"><i class="fa-solid fa-xmark"></i> Batalkan</button>
+            </div>
+            <div class="table-wrap !border-slate-200 overflow-x-auto mb-4 max-h-96 overflow-y-auto">
+              <table class="data-table">
+                <thead><tr><th>#</th><th>NIS</th><th>Nama</th><th>Halaqah</th><th>WA</th><th>Target</th><th>Hal. Awal</th></tr></thead>
+                <tbody id="csvPreviewBody"></tbody>
+              </table>
+            </div>
+            <button class="btn-primary w-full justify-center" onclick="executeCSVImport()"><i class="fa-solid fa-paper-plane"></i> Import Sekarang</button>
+          </div>
+
+          <div id="csvResult" class="hidden mt-5">
+            <div class="grid grid-cols-3 gap-3 mb-4">
+              <div class="bg-green-50 border border-green-200 rounded-2xl p-4 text-center">
+                <p class="text-3xl font-black text-green-700" id="csvResImported">0</p>
+                <p class="text-[10px] font-black text-green-600 uppercase tracking-wider mt-1">Berhasil</p>
+              </div>
+              <div class="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 text-center">
+                <p class="text-3xl font-black text-yellow-700" id="csvResSkipped">0</p>
+                <p class="text-[10px] font-black text-yellow-600 uppercase tracking-wider mt-1">Dilewati</p>
+              </div>
+              <div class="bg-red-50 border border-red-200 rounded-2xl p-4 text-center">
+                <p class="text-3xl font-black text-red-700" id="csvResErrors">0</p>
+                <p class="text-[10px] font-black text-red-600 uppercase tracking-wider mt-1">Error</p>
+              </div>
+            </div>
+            <div id="csvResDetails" class="space-y-3"></div>
+            <button class="btn-secondary mt-4 w-full justify-center" onclick="resetCSVImport()"><i class="fa-solid fa-arrow-rotate-left"></i> Import File Lain</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ TAB 5: KONTEN ============ -->
+      <section id="adminTabKonten" class="admin-tab-content hidden">
+        <div class="flex gap-2 mb-4">
+          <button class="admin-tab active" data-subtab="tentang" onclick="switchKontenSubTab('tentang')"><i class="fa-solid fa-info"></i> Tentang</button>
+          <button class="admin-tab" data-subtab="potret" onclick="switchKontenSubTab('potret')"><i class="fa-solid fa-images"></i> Potret</button>
+        </div>
+
+        <div id="kontenSubTentang" class="stat-card">
+          <h3 class="text-lg font-black text-slate-800 mb-1">Edit Halaman Tentang</h3>
+          <p class="text-sm text-slate-500 mb-5">Ubah teks & link yang tampil di halaman Tentang aplikasi.</p>
+          <form id="tentangForm" onsubmit="event.preventDefault(); saveTentangContent();" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div><label class="admin-label">Judul Aplikasi</label><input type="text" id="ad_judul_app" class="admin-input"></div>
+              <div><label class="admin-label">Versi Aplikasi</label><input type="text" id="ad_versi_app" class="admin-input"></div>
+            </div>
+            <div><label class="admin-label">Deskripsi Aplikasi</label><textarea id="ad_deskripsi_app" class="admin-input" rows="3"></textarea></div>
+            <div><label class="admin-label">Tentang Rattilil Qur'an</label><textarea id="ad_tentang_rattil" class="admin-input" rows="4"></textarea></div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div><label class="admin-label">Link WhatsApp</label><input type="url" id="ad_wa_link" class="admin-input" placeholder="https://wa.me/62..."></div>
+              <div><label class="admin-label">Link Instagram</label><input type="url" id="ad_ig_link" class="admin-input" placeholder="https://instagram.com/..."></div>
+              <div><label class="admin-label">Link YouTube</label><input type="url" id="ad_yt_link" class="admin-input" placeholder="https://youtube.com/..."></div>
+            </div>
+            <div><label class="admin-label">Footer Text</label><input type="text" id="ad_footer_text" class="admin-input"></div>
+            <div class="flex justify-end gap-2 pt-2">
+              <button type="button" class="btn-secondary" onclick="loadTentangAdmin()"><i class="fa-solid fa-arrow-rotate-left"></i> Reset</button>
+              <button type="submit" class="btn-primary"><i class="fa-solid fa-save"></i> Simpan</button>
+            </div>
+          </form>
+        </div>
+
+        <div id="kontenSubPotret" class="stat-card hidden">
+          <div class="flex justify-between items-center mb-4">
+            <div>
+              <h3 class="text-lg font-black text-slate-800">Kelola Artikel Potret</h3>
+              <p class="text-sm text-slate-500">Tambah, edit, atau sembunyikan artikel.</p>
+            </div>
+            <button class="btn-primary" onclick="openPotretEditor()"><i class="fa-solid fa-plus"></i> Artikel Baru</button>
+          </div>
+          <div id="potretAdminList" class="space-y-3">
+            <p class="text-sm text-slate-400 italic">Memuat...</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ TAB 6: GURU ============ -->
+      <section id="adminTabGuru" class="admin-tab-content hidden">
+        <div class="flex justify-between items-center mb-4">
+          <div>
+            <h3 class="text-xl font-black text-slate-800">Manajemen Guru</h3>
+            <p class="text-sm text-slate-500">Akun guru & halaqah yang mereka pegang.</p>
+          </div>
+          <button class="btn-primary" onclick="openModal('modalAdminAddGuru')"><i class="fa-solid fa-plus"></i> Tambah Guru</button>
+        </div>
+        <div class="table-wrap stat-card !p-0 overflow-x-auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>Nama Lengkap</th>
+                <th>Halaqah Diampu</th>
+                <th>No WhatsApp</th>
+                <th class="text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="guruTableBody">
+              <tr><td colspan="5" class="text-center py-8 text-slate-400">Memuat...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
     </main>
 
   </div>
@@ -2112,6 +2586,7 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       if (currentUser.role === 'murid') {
         document.getElementById('studentView').classList.remove('hidden');
         document.getElementById('teacherView').classList.add('hidden');
+        document.getElementById('adminView').classList.add('hidden');
         document.getElementById('bottomNav').classList.remove('hidden');
         initPullToRefresh();
         loadTentangData(); // Muat konten halaman Tentang di background
@@ -2132,9 +2607,18 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
           showSkeleton();
           loadStudentData();
         }
+      } else if (currentUser.role === 'admin') {
+        document.getElementById('studentView').classList.add('hidden');
+        document.getElementById('teacherView').classList.add('hidden');
+        document.getElementById('adminView').classList.remove('hidden');
+        document.getElementById('bottomNav').classList.add('hidden');
+        document.getElementById('adminWelcomeText').textContent =
+          `Ahlan, ${currentUser.name}! Kelola data, pantau program, dan atur konten KhatamKu.`;
+        loadAdminDashboard();
       } else {
         document.getElementById('studentView').classList.add('hidden');
         document.getElementById('teacherView').classList.remove('hidden');
+        document.getElementById('adminView').classList.add('hidden');
         document.getElementById('bottomNav').classList.add('hidden');
         loadTeacherData();
       }
@@ -2165,6 +2649,7 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       if (currentUser.role === 'murid') {
         document.getElementById('studentView').classList.remove('hidden');
         document.getElementById('teacherView').classList.add('hidden');
+        document.getElementById('adminView').classList.add('hidden');
         document.getElementById('bottomNav').classList.remove('hidden');
         initPullToRefresh();
         loadTentangData(); // Muat konten halaman Tentang di background
@@ -2189,9 +2674,18 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
           // Fallback: muat data secara terpisah
           loadStudentData();
         }
+      } else if (currentUser.role === 'admin') {
+        document.getElementById('studentView').classList.add('hidden');
+        document.getElementById('teacherView').classList.add('hidden');
+        document.getElementById('adminView').classList.remove('hidden');
+        document.getElementById('bottomNav').classList.add('hidden');
+        document.getElementById('adminWelcomeText').textContent =
+          `Ahlan, ${currentUser.name}! Kelola data, pantau program, dan atur konten KhatamKu.`;
+        loadAdminDashboard();
       } else {
         document.getElementById('studentView').classList.add('hidden');
         document.getElementById('teacherView').classList.remove('hidden');
+        document.getElementById('adminView').classList.add('hidden');
         document.getElementById('bottomNav').classList.add('hidden');
         
         teacherDataCache = data;
@@ -4042,5 +4536,924 @@ STYLE UNTUK ANIMASI BOUNCE (tambahkan ke <style>)
     50% { transform: translateY(-10px); }
   }
 </style>
+
+<!-- ============================================================
+ADMIN MODALS
+============================================================ -->
+
+<!-- Modal: Tambah Murid -->
+<div id="modalAdminAddMurid" class="fixed inset-0 z-50 modal-overlay hidden flex items-center justify-center p-4">
+  <div class="modal-content w-full max-w-lg rounded-3xl p-7 transform transition-transform scale-95 opacity-0" id="modalAdminAddMuridContent">
+    <div class="flex justify-between items-center mb-5 pb-4 border-b border-slate-100">
+      <h3 class="text-xl font-black tracking-tight text-slate-800"><i class="fa-solid fa-user-plus text-sky-500 mr-2"></i> Tambah Murid Baru</h3>
+      <button onclick="closeModal('modalAdminAddMurid')" class="text-slate-400 bg-slate-100 hover:bg-slate-200 w-9 h-9 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form onsubmit="event.preventDefault(); submitAddMurid();" class="space-y-3">
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="admin-label">NIS / Username *</label><input type="text" id="newMuridNis" class="admin-input" required pattern="[a-zA-Z0-9_]+"></div>
+        <div><label class="admin-label">Password *</label><input type="text" id="newMuridPass" class="admin-input" required minlength="4"></div>
+      </div>
+      <div><label class="admin-label">Nama Lengkap *</label><input type="text" id="newMuridNama" class="admin-input" required></div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="admin-label">Halaqah</label><input type="text" id="newMuridHalaqah" class="admin-input" placeholder="Halaqah_A" value="Halaqah_Umum"></div>
+        <div><label class="admin-label">No WhatsApp</label><input type="tel" id="newMuridWa" class="admin-input" placeholder="081234567890"></div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="admin-label">Target Harian (Hal)</label><input type="number" id="newMuridTarget" class="admin-input" min="0" value="0"></div>
+        <div>
+          <label class="admin-label">Halaman Awal (Kalibrasi)</label>
+          <input type="number" id="newMuridHalAwal" class="admin-input" min="0" max="604" value="0">
+          <p class="text-[10px] text-slate-400 mt-1">Untuk murid pindahan yang sudah di pertengahan</p>
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 pt-3">
+        <button type="button" class="btn-secondary" onclick="closeModal('modalAdminAddMurid')">Batal</button>
+        <button type="submit" class="btn-primary"><i class="fa-solid fa-plus"></i> Tambahkan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Edit Murid -->
+<div id="modalAdminEditMurid" class="fixed inset-0 z-50 modal-overlay hidden flex items-center justify-center p-4">
+  <div class="modal-content w-full max-w-lg rounded-3xl p-7 transform transition-transform scale-95 opacity-0" id="modalAdminEditMuridContent">
+    <div class="flex justify-between items-center mb-5 pb-4 border-b border-slate-100">
+      <h3 class="text-xl font-black tracking-tight text-slate-800"><i class="fa-solid fa-pen-to-square text-sky-500 mr-2"></i> Edit Murid</h3>
+      <button onclick="closeModal('modalAdminEditMurid')" class="text-slate-400 bg-slate-100 hover:bg-slate-200 w-9 h-9 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form onsubmit="event.preventDefault(); submitEditMurid();" class="space-y-3">
+      <input type="hidden" id="editMuridId">
+      <div><label class="admin-label">NIS</label><input type="text" id="editMuridNis" class="admin-input" disabled></div>
+      <div><label class="admin-label">Nama Lengkap</label><input type="text" id="editMuridNama" class="admin-input"></div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="admin-label">Halaqah</label><input type="text" id="editMuridHalaqah" class="admin-input"></div>
+        <div><label class="admin-label">No WhatsApp</label><input type="tel" id="editMuridWa" class="admin-input"></div>
+      </div>
+      <div><label class="admin-label">Target Harian (Hal)</label><input type="number" id="editMuridTarget" class="admin-input" min="0"></div>
+      <div class="flex justify-end gap-2 pt-3">
+        <button type="button" class="btn-secondary" onclick="closeModal('modalAdminEditMurid')">Batal</button>
+        <button type="submit" class="btn-primary"><i class="fa-solid fa-save"></i> Simpan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Reset Password -->
+<div id="modalAdminResetPwd" class="fixed inset-0 z-50 modal-overlay hidden flex items-center justify-center p-4">
+  <div class="modal-content w-full max-w-md rounded-3xl p-7 transform transition-transform scale-95 opacity-0" id="modalAdminResetPwdContent">
+    <div class="flex justify-between items-center mb-5 pb-4 border-b border-slate-100">
+      <h3 class="text-xl font-black tracking-tight text-slate-800"><i class="fa-solid fa-key text-amber-500 mr-2"></i> Reset Password</h3>
+      <button onclick="closeModal('modalAdminResetPwd')" class="text-slate-400 bg-slate-100 hover:bg-slate-200 w-9 h-9 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <p class="text-sm text-slate-500 mb-4">Reset password untuk <b id="resetPwdUserLabel">—</b></p>
+    <form onsubmit="event.preventDefault(); submitResetPassword();" class="space-y-3">
+      <input type="hidden" id="resetPwdUserId">
+      <div><label class="admin-label">Password Baru (min 4 karakter)</label><input type="text" id="resetPwdNewVal" class="admin-input" required minlength="4"></div>
+      <div class="flex justify-end gap-2 pt-3">
+        <button type="button" class="btn-secondary" onclick="closeModal('modalAdminResetPwd')">Batal</button>
+        <button type="submit" class="btn-primary"><i class="fa-solid fa-key"></i> Reset</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Kalibrasi Murid -->
+<div id="modalAdminCalibrate" class="fixed inset-0 z-50 modal-overlay hidden flex items-center justify-center p-4">
+  <div class="modal-content w-full max-w-md rounded-3xl p-7 transform transition-transform scale-95 opacity-0" id="modalAdminCalibrateContent">
+    <div class="flex justify-between items-center mb-5 pb-4 border-b border-slate-100">
+      <h3 class="text-xl font-black tracking-tight text-slate-800"><i class="fa-solid fa-sliders text-sky-500 mr-2"></i> Kalibrasi Posisi</h3>
+      <button onclick="closeModal('modalAdminCalibrate')" class="text-slate-400 bg-slate-100 hover:bg-slate-200 w-9 h-9 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <p class="text-sm text-slate-500 mb-4">Atur posisi halaman saat ini untuk <b id="calibUserLabel">—</b></p>
+    <form onsubmit="event.preventDefault(); submitAdminCalibrate();" class="space-y-3">
+      <input type="hidden" id="calibUserId">
+      <div><label class="admin-label">Halaman Saat Ini (0–604)</label><input type="number" id="calibPage" class="admin-input" required min="0" max="604"></div>
+      <div class="flex justify-end gap-2 pt-3">
+        <button type="button" class="btn-secondary" onclick="closeModal('modalAdminCalibrate')">Batal</button>
+        <button type="submit" class="btn-primary"><i class="fa-solid fa-check"></i> Kalibrasi</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Pindah Halaqah -->
+<div id="modalAdminMoveHalaqah" class="fixed inset-0 z-50 modal-overlay hidden flex items-center justify-center p-4">
+  <div class="modal-content w-full max-w-md rounded-3xl p-7 transform transition-transform scale-95 opacity-0" id="modalAdminMoveHalaqahContent">
+    <div class="flex justify-between items-center mb-5 pb-4 border-b border-slate-100">
+      <h3 class="text-xl font-black tracking-tight text-slate-800"><i class="fa-solid fa-arrow-right-arrow-left text-sky-500 mr-2"></i> Pindah Halaqah</h3>
+      <button onclick="closeModal('modalAdminMoveHalaqah')" class="text-slate-400 bg-slate-100 hover:bg-slate-200 w-9 h-9 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <p class="text-sm text-slate-500 mb-4">Pindahkan <b id="moveUserLabel">—</b> ke halaqah lain.</p>
+    <form onsubmit="event.preventDefault(); submitMoveHalaqah();" class="space-y-3">
+      <input type="hidden" id="moveUserId">
+      <div>
+        <label class="admin-label">Halaqah Tujuan</label>
+        <select id="moveTargetHalaqah" class="admin-input" required></select>
+      </div>
+      <p class="text-[11px] text-slate-400">Atau ketik halaqah baru:</p>
+      <input type="text" id="moveTargetCustom" class="admin-input" placeholder="Nama halaqah baru (opsional)">
+      <div class="flex justify-end gap-2 pt-3">
+        <button type="button" class="btn-secondary" onclick="closeModal('modalAdminMoveHalaqah')">Batal</button>
+        <button type="submit" class="btn-primary"><i class="fa-solid fa-check"></i> Pindahkan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Tambah Halaqah -->
+<div id="modalAdminAddHalaqah" class="fixed inset-0 z-50 modal-overlay hidden flex items-center justify-center p-4">
+  <div class="modal-content w-full max-w-md rounded-3xl p-7 transform transition-transform scale-95 opacity-0" id="modalAdminAddHalaqahContent">
+    <div class="flex justify-between items-center mb-5 pb-4 border-b border-slate-100">
+      <h3 class="text-xl font-black tracking-tight text-slate-800"><i class="fa-solid fa-plus text-sky-500 mr-2"></i> Tambah Halaqah</h3>
+      <button onclick="closeModal('modalAdminAddHalaqah')" class="text-slate-400 bg-slate-100 hover:bg-slate-200 w-9 h-9 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form onsubmit="event.preventDefault(); submitAddHalaqah();" class="space-y-3">
+      <div>
+        <label class="admin-label">Nama Halaqah *</label>
+        <input type="text" id="newHalaqahName" class="admin-input" required placeholder="Halaqah_C">
+        <p class="text-[10px] text-slate-400 mt-1">Tip: gunakan underscore daripada spasi (Halaqah_Putri, Halaqah_Senin, dst.)</p>
+      </div>
+      <div class="flex justify-end gap-2 pt-3">
+        <button type="button" class="btn-secondary" onclick="closeModal('modalAdminAddHalaqah')">Batal</button>
+        <button type="submit" class="btn-primary"><i class="fa-solid fa-plus"></i> Tambahkan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Tambah Guru -->
+<div id="modalAdminAddGuru" class="fixed inset-0 z-50 modal-overlay hidden flex items-center justify-center p-4">
+  <div class="modal-content w-full max-w-lg rounded-3xl p-7 transform transition-transform scale-95 opacity-0" id="modalAdminAddGuruContent">
+    <div class="flex justify-between items-center mb-5 pb-4 border-b border-slate-100">
+      <h3 class="text-xl font-black tracking-tight text-slate-800"><i class="fa-solid fa-chalkboard-user text-sky-500 mr-2"></i> Tambah Guru</h3>
+      <button onclick="closeModal('modalAdminAddGuru')" class="text-slate-400 bg-slate-100 hover:bg-slate-200 w-9 h-9 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form onsubmit="event.preventDefault(); submitAddGuru();" class="space-y-3">
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="admin-label">Username *</label><input type="text" id="newGuruUsername" class="admin-input" required></div>
+        <div><label class="admin-label">Password *</label><input type="text" id="newGuruPass" class="admin-input" required minlength="4"></div>
+      </div>
+      <div><label class="admin-label">Nama Lengkap *</label><input type="text" id="newGuruNama" class="admin-input" required></div>
+      <div>
+        <label class="admin-label">Halaqah Diampu</label>
+        <input type="text" id="newGuruHalaqah" class="admin-input" placeholder="Halaqah_A atau Halaqah_A, Halaqah_B">
+        <p class="text-[10px] text-slate-400 mt-1">Multi-halaqah dipisahkan koma</p>
+      </div>
+      <div><label class="admin-label">No WhatsApp</label><input type="tel" id="newGuruWa" class="admin-input"></div>
+      <div class="flex justify-end gap-2 pt-3">
+        <button type="button" class="btn-secondary" onclick="closeModal('modalAdminAddGuru')">Batal</button>
+        <button type="submit" class="btn-primary"><i class="fa-solid fa-plus"></i> Tambahkan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Edit/Tambah Artikel Potret -->
+<div id="modalPotretEditor" class="fixed inset-0 z-50 modal-overlay hidden flex items-center justify-center p-4">
+  <div class="modal-content w-full max-w-2xl rounded-3xl p-7 transform transition-transform scale-95 opacity-0 max-h-[90vh] overflow-y-auto" id="modalPotretEditorContent">
+    <div class="flex justify-between items-center mb-5 pb-4 border-b border-slate-100">
+      <h3 class="text-xl font-black tracking-tight text-slate-800" id="potretEditorTitle"><i class="fa-solid fa-pen text-sky-500 mr-2"></i> Artikel Baru</h3>
+      <button onclick="closeModal('modalPotretEditor')" class="text-slate-400 bg-slate-100 hover:bg-slate-200 w-9 h-9 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form onsubmit="event.preventDefault(); submitPotretArtikel();" class="space-y-3">
+      <input type="hidden" id="potretEdId">
+      <div><label class="admin-label">Judul *</label><input type="text" id="potretEdJudul" class="admin-input" required></div>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div>
+          <label class="admin-label">Kategori</label>
+          <select id="potretEdKategori" class="admin-input">
+            <option>Panduan</option>
+            <option>Kisah Sahabat</option>
+            <option>Kisah Ulama</option>
+          </select>
+        </div>
+        <div><label class="admin-label">Penulis</label><input type="text" id="potretEdPenulis" class="admin-input" value="Tim Rattilil Quran"></div>
+        <div><label class="admin-label">Tanggal</label><input type="date" id="potretEdTanggal" class="admin-input"></div>
+      </div>
+      <div><label class="admin-label">Ringkasan (1-2 kalimat)</label><textarea id="potretEdRingkasan" class="admin-input" rows="2"></textarea></div>
+      <div><label class="admin-label">Isi Artikel *</label><textarea id="potretEdIsi" class="admin-input" rows="10" required></textarea><p class="text-[10px] text-slate-400 mt-1">Tekan Enter untuk paragraf baru</p></div>
+      <div><label class="admin-label">Referensi (opsional)</label><input type="text" id="potretEdReferensi" class="admin-input"></div>
+      <div class="flex items-center gap-2">
+        <input type="checkbox" id="potretEdAktif" checked class="w-4 h-4 accent-sky-500">
+        <label for="potretEdAktif" class="text-sm text-slate-600 font-semibold">Aktif (tampil di halaman Potret)</label>
+      </div>
+      <div class="flex justify-end gap-2 pt-3">
+        <button type="button" class="btn-secondary" onclick="closeModal('modalPotretEditor')">Batal</button>
+        <button type="submit" class="btn-primary"><i class="fa-solid fa-save"></i> Simpan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============================================================
+ADMIN JAVASCRIPT MODULE
+============================================================ -->
+<script>
+  // ── State Management ───────────────────────────────────────
+  let adminDataCache = {
+    dashboard: null,
+    users    : null,
+    halaqahs : null,
+    potret   : null,
+    tentang  : null,
+    csvParsedRows: null
+  };
+  let currentAdminTab = 'dashboard';
+
+  // ── Tab Switching ──────────────────────────────────────────
+  function switchAdminTab(tab) {
+    currentAdminTab = tab;
+    document.querySelectorAll('#adminView .admin-tab').forEach(b => {
+      if (!b.dataset.tab) return;
+      b.classList.toggle('active', b.dataset.tab === tab);
+    });
+    document.querySelectorAll('#adminView .admin-tab-content').forEach(s => s.classList.add('hidden'));
+    document.getElementById('adminTab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.remove('hidden');
+
+    if (tab === 'dashboard') loadAdminDashboard();
+    if (tab === 'murid')     loadAdminMurid();
+    if (tab === 'halaqah')   loadAdminHalaqah();
+    if (tab === 'konten')    { loadTentangAdmin(); loadPotretAdmin(); }
+    if (tab === 'guru')      loadAdminGuru();
+  }
+
+  function switchKontenSubTab(sub) {
+    document.querySelectorAll('#adminTabKonten [data-subtab]').forEach(b =>
+      b.classList.toggle('active', b.dataset.subtab === sub));
+    document.getElementById('kontenSubTentang').classList.toggle('hidden', sub !== 'tentang');
+    document.getElementById('kontenSubPotret').classList.toggle('hidden', sub !== 'potret');
+  }
+
+  // ── DASHBOARD ──────────────────────────────────────────────
+  function loadAdminDashboard() {
+    showLoading('MEMUAT DASHBOARD ADMIN...');
+    gscript.adminGetHealthDashboard(currentUser.id)
+      .then(d => {
+        adminDataCache.dashboard = d;
+        renderAdminDashboard(d);
+        hideLoading();
+      })
+      .catch(err => { hideLoading(); onError(err); });
+  }
+
+  function renderAdminDashboard(d) {
+    document.getElementById('stTotalMurid').textContent = d.summary.totalMurid;
+    document.getElementById('stActiveToday').textContent = d.summary.activeToday;
+    document.getElementById('stAtRisk').textContent = d.summary.atRisk;
+    document.getElementById('stUdzur').textContent = d.summary.udzur;
+    document.getElementById('stTotalKhatam').textContent = d.summary.totalKhatam;
+    document.getElementById('adminLastUpdate').textContent = 'Update: ' + d.generatedAt;
+
+    // Activity Chart
+    const chartEl = document.getElementById('adminChartBars');
+    chartEl.innerHTML = '';
+    if (d.activityChart && d.activityChart.length) {
+      const maxVal = Math.max(...d.activityChart.map(c => c.activeUsers), 1);
+      let peakDay = d.activityChart[0];
+      d.activityChart.forEach(c => {
+        if (c.activeUsers > peakDay.activeUsers) peakDay = c;
+        const bar = document.createElement('div');
+        bar.className = 'chart-bar';
+        bar.style.height = ((c.activeUsers / maxVal) * 100) + '%';
+        bar.innerHTML = `<div class="chart-tooltip">${c.date}<br>${c.activeUsers} aktif</div>`;
+        chartEl.appendChild(bar);
+      });
+      document.getElementById('chartStartDate').textContent = d.activityChart[0].date;
+      document.getElementById('chartEndDate').textContent = d.activityChart[d.activityChart.length-1].date;
+      document.getElementById('chartPeakInfo').textContent = `Puncak: ${peakDay.activeUsers} (${peakDay.date})`;
+    }
+
+    // Halaqah Stats
+    const halaqahEl = document.getElementById('halaqahStatsList');
+    if (d.halaqahStats && d.halaqahStats.length) {
+      halaqahEl.innerHTML = d.halaqahStats.map(h => {
+        const activePct = h.total > 0 ? Math.round((h.active / h.total) * 100) : 0;
+        return `
+          <div class="border border-slate-100 rounded-xl p-3 hover:bg-slate-50 transition">
+            <div class="flex justify-between items-center mb-1.5">
+              <p class="font-bold text-slate-700 text-sm">${escapeHtml(h.name)}</p>
+              <span class="text-[10px] font-black text-slate-500">${h.total} murid</span>
+            </div>
+            <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden mb-2">
+              <div class="h-full bg-gradient-to-r from-sky-400 to-blue-500" style="width:${activePct}%"></div>
+            </div>
+            <div class="flex flex-wrap gap-1.5 text-[10px]">
+              <span class="badge badge-active">✓ ${h.active} aktif</span>
+              ${h.atRisk > 0 ? `<span class="badge badge-risk">⚠ ${h.atRisk} risiko</span>` : ''}
+              ${h.udzur > 0 ? `<span class="badge badge-udzur">⊘ ${h.udzur} udzur</span>` : ''}
+              ${h.khatam > 0 ? `<span class="badge badge-idle">🏆 ${h.khatam} khatam</span>` : ''}
+            </div>
+          </div>`;
+      }).join('');
+    } else {
+      halaqahEl.innerHTML = '<p class="text-sm text-slate-400 italic">Belum ada halaqah.</p>';
+    }
+
+    // At Risk Students
+    const atRiskEl = document.getElementById('atRiskList');
+    if (d.atRiskStudents && d.atRiskStudents.length) {
+      atRiskEl.innerHTML = d.atRiskStudents.map(s => `
+        <div class="flex items-center justify-between gap-2 p-2.5 border border-red-100 bg-red-50/40 rounded-xl">
+          <div class="min-w-0 flex-1">
+            <p class="font-bold text-sm text-slate-800 truncate">${escapeHtml(s.nama)}</p>
+            <p class="text-[11px] text-slate-500">${escapeHtml(s.halaqah)} • Halaman ${s.lastPage}</p>
+          </div>
+          <div class="text-right shrink-0">
+            <p class="text-lg font-black text-red-600 leading-none">${s.diffDays}</p>
+            <p class="text-[9px] font-bold text-red-500 uppercase tracking-wider">hari</p>
+          </div>
+          ${s.wa ? `<a href="https://wa.me/${s.wa.replace(/^0/, '62').replace(/[^0-9]/g,'')}" target="_blank" class="icon-btn" title="Hubungi via WA"><i class="fa-brands fa-whatsapp text-green-500"></i></a>` : ''}
+        </div>
+      `).join('');
+    } else {
+      atRiskEl.innerHTML = '<p class="text-sm text-slate-500 italic">🎉 Semua murid aktif!</p>';
+    }
+  }
+
+  // ── MURID TAB ──────────────────────────────────────────────
+  function loadAdminMurid() {
+    showLoading('MEMUAT DAFTAR MURID...');
+    gscript.adminGetAllUsers(currentUser.id, { role: 'murid' })
+      .then(d => {
+        adminDataCache.users = d;
+        const sel = document.getElementById('muridFilterHalaqah');
+        sel.innerHTML = '<option value="">Semua Halaqah</option>';
+        d.halaqahs.forEach(h => { sel.innerHTML += `<option value="${escapeHtml(h)}">${escapeHtml(h)}</option>`; });
+        renderMuridTable();
+        hideLoading();
+      })
+      .catch(err => { hideLoading(); onError(err); });
+  }
+
+  function renderMuridTable() {
+    if (!adminDataCache.users) return;
+    const search = document.getElementById('muridSearch').value.toLowerCase().trim();
+    const halaqah = document.getElementById('muridFilterHalaqah').value;
+    const status = document.getElementById('muridFilterStatus').value;
+    const today = new Date(); today.setHours(0,0,0,0);
+
+    const filtered = adminDataCache.users.users.filter(u => {
+      if (search && !u.id.toLowerCase().includes(search) && !u.nama.toLowerCase().includes(search)) return false;
+      if (halaqah && u.halaqah !== halaqah) return false;
+      if (status) {
+        const diffDays = u.lastUpdate ? Math.floor((today - new Date(u.lastUpdate)) / 86400000) : 999;
+        const isUdzur = !!u.udzur;
+        const isRisk  = !isUdzur && diffDays >= 3;
+        const isActive = diffDays === 0;
+        if (status === 'active' && !isActive) return false;
+        if (status === 'risk'   && !isRisk)   return false;
+        if (status === 'udzur'  && !isUdzur)  return false;
+        if (status === 'idle'   && (isActive || isUdzur)) return false;
+      }
+      return true;
+    });
+
+    const tbody = document.getElementById('muridTableBody');
+    if (filtered.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="9" class="text-center py-8 text-slate-400">Tidak ada data yang cocok.</td></tr>';
+    } else {
+      tbody.innerHTML = filtered.map(u => {
+        const diffDays = u.lastUpdate ? Math.floor((today - new Date(u.lastUpdate)) / 86400000) : 999;
+        const isUdzur = !!u.udzur;
+        const isRisk  = !isUdzur && diffDays >= 3;
+        const isActive = diffDays === 0;
+        let badge = '';
+        if (isUdzur)      badge = `<span class="badge badge-udzur">⊘ ${escapeHtml(u.udzur)}</span>`;
+        else if (isActive)badge = `<span class="badge badge-active">✓ Aktif</span>`;
+        else if (isRisk)  badge = `<span class="badge badge-risk">⚠ ${diffDays}h</span>`;
+        else              badge = `<span class="badge badge-idle">${diffDays}h</span>`;
+        return `
+          <tr>
+            <td class="font-bold text-slate-700">${escapeHtml(u.id)}</td>
+            <td>${escapeHtml(u.nama)}</td>
+            <td><span class="text-xs font-bold text-sky-600">${escapeHtml(u.halaqah || '—')}</span></td>
+            <td>${badge}</td>
+            <td class="text-right font-black">${u.lastPage || 0}</td>
+            <td class="text-right">${u.streak || 0}🔥</td>
+            <td class="text-right">${u.totalKhatam || 0}</td>
+            <td class="text-xs text-slate-500">${u.lastUpdate || '—'}</td>
+            <td class="text-right whitespace-nowrap">
+              <button class="icon-btn" title="Edit" onclick='openEditMurid(${JSON.stringify(u).replace(/'/g, "&#39;")})'><i class="fa-solid fa-pen"></i></button>
+              <button class="icon-btn" title="Reset Password" onclick="openResetPassword('${escapeJs(u.id)}','${escapeJs(u.nama)}')"><i class="fa-solid fa-key"></i></button>
+              <button class="icon-btn" title="Kalibrasi" onclick="openAdminCalibrate('${escapeJs(u.id)}','${escapeJs(u.nama)}',${u.lastPage||0})"><i class="fa-solid fa-sliders"></i></button>
+              <button class="icon-btn" title="Pindah Halaqah" onclick="openMoveHalaqah('${escapeJs(u.id)}','${escapeJs(u.nama)}','${escapeJs(u.halaqah||'')}')"><i class="fa-solid fa-arrow-right-arrow-left"></i></button>
+              <button class="icon-btn danger" title="Hapus" onclick="confirmDeleteMurid('${escapeJs(u.id)}','${escapeJs(u.nama)}')"><i class="fa-solid fa-trash"></i></button>
+            </td>
+          </tr>`;
+      }).join('');
+    }
+    document.getElementById('muridTableInfo').textContent = `Menampilkan ${filtered.length} dari ${adminDataCache.users.users.length} murid`;
+  }
+
+  function submitAddMurid() {
+    const data = {
+      nis        : document.getElementById('newMuridNis').value.trim(),
+      password   : document.getElementById('newMuridPass').value,
+      namaLengkap: document.getElementById('newMuridNama').value.trim(),
+      halaqah    : document.getElementById('newMuridHalaqah').value.trim(),
+      noWa       : document.getElementById('newMuridWa').value.trim(),
+      targetHarian: parseInt(document.getElementById('newMuridTarget').value) || 0,
+      halamanAwal : parseInt(document.getElementById('newMuridHalAwal').value) || 0
+    };
+    showLoading('Menambahkan murid...');
+    gscript.adminAddMurid(currentUser.id, data)
+      .then(() => {
+        hideLoading();
+        closeModal('modalAdminAddMurid');
+        showToast(`Murid ${data.namaLengkap} berhasil ditambahkan! ✅`, 'success');
+        document.querySelectorAll('#modalAdminAddMurid input').forEach(i => { if (i.type !== 'hidden') i.value = ''; });
+        document.getElementById('newMuridHalaqah').value = 'Halaqah_Umum';
+        document.getElementById('newMuridTarget').value = '0';
+        document.getElementById('newMuridHalAwal').value = '0';
+        loadAdminMurid();
+      })
+      .catch(err => { hideLoading(); onError(err); });
+  }
+
+  function openEditMurid(u) {
+    document.getElementById('editMuridId').value = u.id;
+    document.getElementById('editMuridNis').value = u.id;
+    document.getElementById('editMuridNama').value = u.nama || '';
+    document.getElementById('editMuridHalaqah').value = u.halaqah || '';
+    document.getElementById('editMuridWa').value = u.wa || '';
+    document.getElementById('editMuridTarget').value = u.targetHarian || 0;
+    openModal('modalAdminEditMurid');
+  }
+
+  function submitEditMurid() {
+    const userId = document.getElementById('editMuridId').value;
+    const data = {
+      namaLengkap : document.getElementById('editMuridNama').value.trim(),
+      halaqah     : document.getElementById('editMuridHalaqah').value.trim(),
+      noWa        : document.getElementById('editMuridWa').value.trim(),
+      targetHarian: parseInt(document.getElementById('editMuridTarget').value) || 0
+    };
+    showLoading('Menyimpan...');
+    gscript.adminEditMurid(currentUser.id, userId, data)
+      .then(() => {
+        hideLoading();
+        closeModal('modalAdminEditMurid');
+        showToast('Data murid berhasil diperbarui ✅', 'success');
+        loadAdminMurid();
+      })
+      .catch(err => { hideLoading(); onError(err); });
+  }
+
+  function openResetPassword(userId, userName) {
+    document.getElementById('resetPwdUserId').value = userId;
+    document.getElementById('resetPwdUserLabel').textContent = `${userName} (${userId})`;
+    document.getElementById('resetPwdNewVal').value = '';
+    openModal('modalAdminResetPwd');
+  }
+
+  function submitResetPassword() {
+    const userId = document.getElementById('resetPwdUserId').value;
+    const newPass = document.getElementById('resetPwdNewVal').value;
+    showLoading('Mereset password...');
+    gscript.adminResetPassword(currentUser.id, userId, newPass)
+      .then(() => {
+        hideLoading();
+        closeModal('modalAdminResetPwd');
+        showToast('Password berhasil direset ✅', 'success');
+      })
+      .catch(err => { hideLoading(); onError(err); });
+  }
+
+  function openAdminCalibrate(userId, userName, currentPage) {
+    document.getElementById('calibUserId').value = userId;
+    document.getElementById('calibUserLabel').textContent = `${userName} (${userId})`;
+    document.getElementById('calibPage').value = currentPage;
+    openModal('modalAdminCalibrate');
+  }
+
+  function submitAdminCalibrate() {
+    const userId = document.getElementById('calibUserId').value;
+    const page = parseInt(document.getElementById('calibPage').value);
+    showLoading('Mengkalibrasi...');
+    gscript.adminCalibrateStudent(currentUser.id, userId, { page })
+      .then(() => {
+        hideLoading();
+        closeModal('modalAdminCalibrate');
+        showToast(`Posisi diset ke halaman ${page} ✅`, 'success');
+        loadAdminMurid();
+      })
+      .catch(err => { hideLoading(); onError(err); });
+  }
+
+  function openMoveHalaqah(userId, userName, currentHalaqah) {
+    document.getElementById('moveUserId').value = userId;
+    document.getElementById('moveUserLabel').textContent = `${userName} (${currentHalaqah || 'tanpa halaqah'})`;
+    const sel = document.getElementById('moveTargetHalaqah');
+    sel.innerHTML = '';
+    (adminDataCache.users.halaqahs || []).forEach(h => {
+      if (h !== currentHalaqah) sel.innerHTML += `<option value="${escapeHtml(h)}">${escapeHtml(h)}</option>`;
+    });
+    document.getElementById('moveTargetCustom').value = '';
+    openModal('modalAdminMoveHalaqah');
+  }
+
+  function submitMoveHalaqah() {
+    const userId = document.getElementById('moveUserId').value;
+    const custom = document.getElementById('moveTargetCustom').value.trim();
+    const target = custom || document.getElementById('moveTargetHalaqah').value;
+    if (!target) { showToast('Pilih atau ketik halaqah tujuan.', 'error'); return; }
+    showLoading('Memindahkan...');
+    gscript.adminMoveStudentHalaqah(currentUser.id, userId, target)
+      .then(() => {
+        hideLoading();
+        closeModal('modalAdminMoveHalaqah');
+        showToast(`Murid dipindahkan ke ${target} ✅`, 'success');
+        loadAdminMurid();
+      })
+      .catch(err => { hideLoading(); onError(err); });
+  }
+
+  function confirmDeleteMurid(userId, userName) {
+    customConfirm(
+      '⚠️ Hapus Permanen',
+      `Yakin ingin menghapus murid "${userName}" (${userId})?\n\nSEMUA data bacaan & jurnalnya akan hilang. Tindakan ini TIDAK BISA dibatalkan.`,
+      () => {
+        showLoading('Menghapus...');
+        gscript.adminDeleteMurid(currentUser.id, userId)
+          .then(() => {
+            hideLoading();
+            showToast('Murid berhasil dihapus.', 'success');
+            loadAdminMurid();
+          })
+          .catch(err => { hideLoading(); onError(err); });
+      },
+      'warning'
+    );
+  }
+
+  // ── HALAQAH TAB ────────────────────────────────────────────
+  function loadAdminHalaqah() {
+    showLoading('MEMUAT HALAQAH...');
+    gscript.adminGetAllHalaqah(currentUser.id)
+      .then(d => {
+        adminDataCache.halaqahs = d;
+        renderHalaqahGrid(d);
+        hideLoading();
+      })
+      .catch(err => { hideLoading(); onError(err); });
+  }
+
+  function renderHalaqahGrid(d) {
+    const el = document.getElementById('halaqahGrid');
+    if (!d.halaqahs || d.halaqahs.length === 0) {
+      el.innerHTML = '<p class="text-sm text-slate-400 italic col-span-full">Belum ada halaqah. Tambahkan via tombol di atas.</p>';
+      return;
+    }
+    el.innerHTML = d.halaqahs.map(h => `
+      <div class="stat-card">
+        <div class="flex justify-between items-start mb-3">
+          <div class="min-w-0 flex-1">
+            <h4 class="font-black text-slate-800 truncate">${escapeHtml(h.name)}</h4>
+            <p class="text-[11px] text-slate-400 font-bold">${h.countMurid} murid • ${h.countGuru} guru</p>
+          </div>
+          <button class="icon-btn danger" onclick="confirmDeleteHalaqah('${escapeJs(h.name)}', ${h.countMurid})"><i class="fa-solid fa-trash"></i></button>
+        </div>
+        ${h.guruList && h.guruList.length ? `
+          <div class="border-t border-slate-100 pt-3">
+            <p class="text-[9px] font-black text-slate-400 uppercase tracking-wider mb-1.5">Diampu Oleh</p>
+            <p class="text-xs text-slate-600">${h.guruList.map(escapeHtml).join(', ')}</p>
+          </div>
+        ` : '<p class="text-[11px] text-amber-600 italic">⚠ Belum ada guru pengampu</p>'}
+      </div>
+    `).join('');
+  }
+
+  function submitAddHalaqah() {
+    const name = document.getElementById('newHalaqahName').value.trim();
+    showLoading('Menambahkan halaqah...');
+    gscript.adminAddHalaqah(currentUser.id, name)
+      .then(() => {
+        hideLoading();
+        closeModal('modalAdminAddHalaqah');
+        showToast(`Halaqah "${name}" berhasil ditambahkan ✅`, 'success');
+        document.getElementById('newHalaqahName').value = '';
+        loadAdminHalaqah();
+      })
+      .catch(err => { hideLoading(); onError(err); });
+  }
+
+  function confirmDeleteHalaqah(name, count) {
+    const warning = count > 0
+      ? `Yakin hapus halaqah "${name}"?\n\n${count} murid akan otomatis dipindahkan ke "Halaqah_Umum".`
+      : `Yakin hapus halaqah kosong "${name}"?`;
+    customConfirm('⚠️ Hapus Halaqah', warning, () => {
+      showLoading('Menghapus halaqah...');
+      gscript.adminDeleteHalaqah(currentUser.id, name)
+        .then(res => {
+          hideLoading();
+          showToast(`Halaqah dihapus. ${res.movedCount} murid dipindahkan ke Halaqah_Umum.`, 'success');
+          loadAdminHalaqah();
+        })
+        .catch(err => { hideLoading(); onError(err); });
+    }, 'warning');
+  }
+
+  // ── CSV IMPORT TAB ─────────────────────────────────────────
+  function downloadCSVTemplate() {
+    const csv = 'NIS,Password,Nama_Lengkap,Halaqah,No_WA,Target_Harian,Halaman_Awal\n' +
+                '1001,rahasia1,Ahmad Fulan,Halaqah_A,081234567890,5,0\n' +
+                '1002,rahasia2,Aisyah Fulanah,Halaqah_B,,3,120\n' +
+                '1003,rahasia3,Umar Fulan,Halaqah_A,081200000000,,';
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'template_murid_khatamku.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Template CSV berhasil diunduh 📥', 'success');
+  }
+
+  function handleCSVFile(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const rows = parseAdminCSV(ev.target.result);
+        if (rows.length === 0) { showToast('File CSV kosong atau format tidak dikenali.', 'error'); return; }
+        adminDataCache.csvParsedRows = rows;
+        renderCSVPreview(rows);
+      } catch (err) {
+        showToast('Gagal membaca CSV: ' + err.message, 'error');
+      }
+    };
+    reader.readAsText(file, 'UTF-8');
+  }
+
+  function renderCSVPreview(rows) {
+    document.getElementById('csvDropZone').classList.add('hidden');
+    document.getElementById('csvResult').classList.add('hidden');
+    document.getElementById('csvPreview').classList.remove('hidden');
+    document.getElementById('csvPreviewCount').textContent = rows.length;
+    document.getElementById('csvPreviewBody').innerHTML = rows.slice(0, 100).map((r, i) => `
+      <tr>
+        <td class="text-slate-400">${i+1}</td>
+        <td class="font-bold">${escapeHtml(r.nis || '')}</td>
+        <td>${escapeHtml(r.namaLengkap || '')}</td>
+        <td>${escapeHtml(r.halaqah || 'Halaqah_Umum')}</td>
+        <td class="text-xs">${escapeHtml(r.noWa || '—')}</td>
+        <td class="text-right">${r.targetHarian || 0}</td>
+        <td class="text-right">${r.halamanAwal || 0}</td>
+      </tr>`).join('') + (rows.length > 100 ? `<tr><td colspan="7" class="text-center text-slate-400 italic">... dan ${rows.length-100} baris lainnya</td></tr>` : '');
+  }
+
+  function executeCSVImport() {
+    if (!adminDataCache.csvParsedRows) return;
+    showLoading(`MENGIMPOR ${adminDataCache.csvParsedRows.length} MURID...`);
+    gscript.adminImportCSV(currentUser.id, adminDataCache.csvParsedRows)
+      .then(res => {
+        hideLoading();
+        renderCSVResult(res);
+        showToast(`Import selesai: ${res.imported} berhasil, ${res.skipped} dilewati, ${res.errors} error.`,
+          res.errors > 0 ? 'warning' : 'success');
+      })
+      .catch(err => { hideLoading(); onError(err); });
+  }
+
+  function renderCSVResult(res) {
+    document.getElementById('csvPreview').classList.add('hidden');
+    document.getElementById('csvResult').classList.remove('hidden');
+    document.getElementById('csvResImported').textContent = res.imported;
+    document.getElementById('csvResSkipped').textContent = res.skipped;
+    document.getElementById('csvResErrors').textContent = res.errors;
+    let html = '';
+    if (res.details.skipped.length > 0) {
+      html += `<div class="bg-yellow-50 border border-yellow-200 rounded-2xl p-4">
+        <p class="text-xs font-black text-yellow-700 uppercase tracking-wider mb-2">⚠ Dilewati</p>
+        <ul class="text-xs text-slate-600 space-y-1 max-h-40 overflow-y-auto">
+        ${res.details.skipped.map(s => `<li>• <b>${escapeHtml(s.nis)}</b> — ${escapeHtml(s.reason)}</li>`).join('')}
+        </ul></div>`;
+    }
+    if (res.details.errors.length > 0) {
+      html += `<div class="bg-red-50 border border-red-200 rounded-2xl p-4">
+        <p class="text-xs font-black text-red-700 uppercase tracking-wider mb-2">✕ Error</p>
+        <ul class="text-xs text-slate-600 space-y-1 max-h-40 overflow-y-auto">
+        ${res.details.errors.map(e => `<li>• Baris ${e.line} (<b>${escapeHtml(e.nis)}</b>) — ${escapeHtml(e.message)}</li>`).join('')}
+        </ul></div>`;
+    }
+    document.getElementById('csvResDetails').innerHTML = html;
+  }
+
+  function resetCSVImport() {
+    adminDataCache.csvParsedRows = null;
+    document.getElementById('csvFileInput').value = '';
+    document.getElementById('csvPreview').classList.add('hidden');
+    document.getElementById('csvResult').classList.add('hidden');
+    document.getElementById('csvDropZone').classList.remove('hidden');
+  }
+
+  // Drag-and-drop for CSV
+  (function setupCSVDropZone(){
+    const dz = document.getElementById('csvDropZone');
+    if (!dz) return;
+    ['dragenter','dragover'].forEach(ev =>
+      dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('dragging'); }));
+    ['dragleave','drop'].forEach(ev =>
+      dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('dragging'); }));
+    dz.addEventListener('drop', e => {
+      const file = e.dataTransfer.files[0];
+      if (file) {
+        document.getElementById('csvFileInput').files = e.dataTransfer.files;
+        handleCSVFile({ target: { files: [file] } });
+      }
+    });
+  })();
+
+  // ── KONTEN: TENTANG ────────────────────────────────────────
+  function loadTentangAdmin() {
+    gscript.getTentangContent()
+      .then(d => {
+        adminDataCache.tentang = d;
+        ['judul_app','versi_app','deskripsi_app','tentang_rattil','wa_link','ig_link','yt_link','footer_text']
+          .forEach(k => {
+            const el = document.getElementById('ad_' + k);
+            if (el) el.value = d[k] || '';
+          });
+      })
+      .catch(onError);
+  }
+
+  function saveTentangContent() {
+    const data = {};
+    ['judul_app','versi_app','deskripsi_app','tentang_rattil','wa_link','ig_link','yt_link','footer_text']
+      .forEach(k => {
+        const el = document.getElementById('ad_' + k);
+        if (el) data[k] = el.value;
+      });
+    showLoading('Menyimpan konten Tentang...');
+    gscript.adminUpdateTentang(currentUser.id, data)
+      .then(() => {
+        hideLoading();
+        showToast('Konten Tentang berhasil diperbarui ✅', 'success');
+      })
+      .catch(err => { hideLoading(); onError(err); });
+  }
+
+  // ── KONTEN: POTRET ─────────────────────────────────────────
+  function loadPotretAdmin() {
+    gscript.getPotretContent()
+      .then(arr => {
+        adminDataCache.potret = arr;
+        renderPotretAdminList(arr);
+      })
+      .catch(onError);
+  }
+
+  function renderPotretAdminList(arr) {
+    const el = document.getElementById('potretAdminList');
+    if (!arr || arr.length === 0) {
+      el.innerHTML = '<p class="text-sm text-slate-400 italic">Belum ada artikel. Klik <b>Artikel Baru</b> untuk menambahkan.</p>';
+      return;
+    }
+    el.innerHTML = arr.map(a => `
+      <div class="border border-slate-200 rounded-2xl p-4 hover:border-sky-200 transition">
+        <div class="flex justify-between items-start gap-3">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1.5">
+              <span class="badge badge-active">${escapeHtml(a.kategori || 'Panduan')}</span>
+              <span class="text-[10px] text-slate-400">${escapeHtml(a.tanggal || '')}</span>
+            </div>
+            <h4 class="font-black text-slate-800 mb-1">${escapeHtml(a.judul)}</h4>
+            <p class="text-xs text-slate-500 line-clamp-2">${escapeHtml(a.ringkasan || '')}</p>
+            <p class="text-[10px] text-slate-400 mt-1.5">oleh ${escapeHtml(a.penulis || '—')}</p>
+          </div>
+          <div class="flex gap-1 shrink-0">
+            <button class="icon-btn" onclick='openPotretEditor(${JSON.stringify(a).replace(/'/g, "&#39;")})' title="Edit"><i class="fa-solid fa-pen"></i></button>
+            <button class="icon-btn danger" onclick="confirmDeletePotret('${escapeJs(a.id)}','${escapeJs(a.judul)}')" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function openPotretEditor(a) {
+    const isEdit = !!a;
+    document.getElementById('potretEditorTitle').innerHTML =
+      isEdit ? '<i class="fa-solid fa-pen text-sky-500 mr-2"></i> Edit Artikel'
+             : '<i class="fa-solid fa-plus text-sky-500 mr-2"></i> Artikel Baru';
+    document.getElementById('potretEdId').value         = isEdit ? a.id        : '';
+    document.getElementById('potretEdJudul').value      = isEdit ? a.judul     : '';
+    document.getElementById('potretEdKategori').value   = isEdit ? (a.kategori || 'Panduan') : 'Panduan';
+    document.getElementById('potretEdPenulis').value    = isEdit ? a.penulis   : 'Tim Rattilil Quran';
+    document.getElementById('potretEdTanggal').value    = isEdit ? a.tanggal   : new Date().toISOString().slice(0,10);
+    document.getElementById('potretEdRingkasan').value  = isEdit ? a.ringkasan : '';
+    document.getElementById('potretEdIsi').value        = isEdit ? a.isi       : '';
+    document.getElementById('potretEdReferensi').value  = isEdit ? a.referensi : '';
+    document.getElementById('potretEdAktif').checked    = true;
+    openModal('modalPotretEditor');
+  }
+
+  function submitPotretArtikel() {
+    const data = {
+      id        : document.getElementById('potretEdId').value || undefined,
+      judul     : document.getElementById('potretEdJudul').value.trim(),
+      kategori  : document.getElementById('potretEdKategori').value,
+      penulis   : document.getElementById('potretEdPenulis').value.trim(),
+      tanggal   : document.getElementById('potretEdTanggal').value,
+      ringkasan : document.getElementById('potretEdRingkasan').value.trim(),
+      isi       : document.getElementById('potretEdIsi').value.trim(),
+      referensi : document.getElementById('potretEdReferensi').value.trim(),
+      aktif     : document.getElementById('potretEdAktif').checked
+    };
+    showLoading('Menyimpan artikel...');
+    gscript.adminSavePotretArtikel(currentUser.id, data)
+      .then(res => {
+        hideLoading();
+        closeModal('modalPotretEditor');
+        showToast(res.action === 'created' ? 'Artikel baru berhasil dibuat ✅' : 'Artikel berhasil diperbarui ✅', 'success');
+        loadPotretAdmin();
+      })
+      .catch(err => { hideLoading(); onError(err); });
+  }
+
+  function confirmDeletePotret(id, judul) {
+    customConfirm('⚠️ Hapus Artikel', `Hapus artikel "${judul}"?\nTindakan ini tidak bisa dibatalkan.`, () => {
+      showLoading('Menghapus...');
+      gscript.adminDeletePotretArtikel(currentUser.id, id)
+        .then(() => {
+          hideLoading();
+          showToast('Artikel berhasil dihapus.', 'success');
+          loadPotretAdmin();
+        })
+        .catch(err => { hideLoading(); onError(err); });
+    }, 'warning');
+  }
+
+  // ── GURU TAB ───────────────────────────────────────────────
+  function loadAdminGuru() {
+    showLoading('MEMUAT DATA GURU...');
+    gscript.adminGetAllUsers(currentUser.id, { role: 'guru' })
+      .then(d => {
+        const tbody = document.getElementById('guruTableBody');
+        if (d.users.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-slate-400">Belum ada akun guru.</td></tr>';
+        } else {
+          tbody.innerHTML = d.users.map(g => `
+            <tr>
+              <td class="font-bold text-slate-700">${escapeHtml(g.id)}</td>
+              <td>${escapeHtml(g.nama)}</td>
+              <td><span class="text-xs font-bold text-sky-600">${escapeHtml(g.halaqah || '—')}</span></td>
+              <td class="text-xs text-slate-500">${escapeHtml(g.wa || '—')}</td>
+              <td class="text-right whitespace-nowrap">
+                <button class="icon-btn" title="Edit Halaqah" onclick="editGuruHalaqah('${escapeJs(g.id)}','${escapeJs(g.nama)}','${escapeJs(g.halaqah||'')}')"><i class="fa-solid fa-pen"></i></button>
+                <button class="icon-btn" title="Reset Password" onclick="openResetPassword('${escapeJs(g.id)}','${escapeJs(g.nama)}')"><i class="fa-solid fa-key"></i></button>
+              </td>
+            </tr>`).join('');
+        }
+        hideLoading();
+      })
+      .catch(err => { hideLoading(); onError(err); });
+  }
+
+  function submitAddGuru() {
+    const data = {
+      username   : document.getElementById('newGuruUsername').value.trim(),
+      password   : document.getElementById('newGuruPass').value,
+      namaLengkap: document.getElementById('newGuruNama').value.trim(),
+      halaqah    : document.getElementById('newGuruHalaqah').value.trim(),
+      noWa       : document.getElementById('newGuruWa').value.trim()
+    };
+    showLoading('Menambahkan guru...');
+    gscript.adminAddGuru(currentUser.id, data)
+      .then(() => {
+        hideLoading();
+        closeModal('modalAdminAddGuru');
+        showToast(`Guru ${data.namaLengkap} berhasil ditambahkan ✅`, 'success');
+        document.querySelectorAll('#modalAdminAddGuru input').forEach(i => i.value = '');
+        loadAdminGuru();
+      })
+      .catch(err => { hideLoading(); onError(err); });
+  }
+
+  function editGuruHalaqah(guruId, guruName, currentHalaqah) {
+    const newH = prompt(`Halaqah yang diampu ${guruName}:\n(Pisahkan dengan koma untuk multi-halaqah, contoh: Halaqah_A, Halaqah_B)`, currentHalaqah);
+    if (newH === null) return;
+    showLoading('Menyimpan...');
+    gscript.adminUpdateGuruHalaqah(currentUser.id, guruId, newH.trim())
+      .then(() => {
+        hideLoading();
+        showToast('Halaqah guru berhasil diperbarui ✅', 'success');
+        loadAdminGuru();
+      })
+      .catch(err => { hideLoading(); onError(err); });
+  }
+
+  // ── UTIL HELPERS ───────────────────────────────────────────
+  function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+  function escapeJs(str) {
+    if (str === null || str === undefined) return '';
+    return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+  }
+</script>
 </body>
 </html>
