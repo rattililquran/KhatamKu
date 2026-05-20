@@ -28,6 +28,24 @@
   <link rel="stylesheet" href="assets/tailwind.min.css">
   <link rel="stylesheet" href="assets/fontawesome.min.css">
   <script src="assets/confetti.min.js" defer></script>
+  <!-- Fallback ke CDN jika assets/ belum diupload -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof tailwind !== 'undefined') return; // sudah ada
+      // Cek apakah Tailwind berhasil dimuat dari self-hosted
+      var testEl = document.createElement('div');
+      testEl.className = 'hidden';
+      document.body.appendChild(testEl);
+      var style = window.getComputedStyle(testEl);
+      if (style.display !== 'none') {
+        // Tailwind tidak dimuat, load CDN sebagai fallback
+        var s = document.createElement('script');
+        s.src = 'https://cdn.tailwindcss.com';
+        document.head.appendChild(s);
+      }
+      document.body.removeChild(testEl);
+    });
+  </script>
   <script>
     tailwind.config = {
       theme: {
@@ -3194,106 +3212,6 @@
     // ── Init ────────────────────────────────────────────────────
     (function wiridInit() { wiridLoad(); })();
 
-    const WIRID_KEY = 'khatamku_wirid';
-
-    // ── localStorage helpers ────────────────────────────────────
-    function wiridSave() {
-      try { localStorage.setItem(WIRID_KEY, JSON.stringify(wiridState)); } catch(e) {}
-    }
-    function wiridLoad() {
-      try {
-        const raw = localStorage.getItem(WIRID_KEY);
-        if (raw) wiridState = { ...wiridState, ...JSON.parse(raw) };
-      } catch(e) {}
-    }
-
-    // ── Reset berdasarkan tanggal & waktu ───────────────────────
-    function wiridCheckReset() {
-      const now   = new Date();
-      const h     = now.getHours();
-      const today = getLocalDateString();
-
-      // Dzikir Pagi reset jam 12:00 siang
-      const pagiResetDate = h >= 12 ? today : (() => {
-        const d = new Date(now); d.setDate(d.getDate() - 1);
-        return d.toISOString().slice(0,10);
-      })();
-      if (wiridState.pagi.date !== pagiResetDate) {
-        wiridState.pagi = { items: {}, date: pagiResetDate };
-      }
-
-      // Dzikir Petang reset jam 00:00 malam
-      if (wiridState.petang.date !== today) {
-        wiridState.petang = { items: {}, date: today };
-      }
-
-      // Istighfar reset tiap hari baru
-      if (wiridState.istigfar.date !== today) {
-        wiridState.istigfar = {
-          count  : 0,
-          target : wiridState.istigfar.target || 100,
-          date   : today
-        };
-      }
-
-      wiridSave();
-    }
-
-    // ── Deteksi waktu & tab default ─────────────────────────────
-    function wiridDetectTime() {
-      const h = new Date().getHours();
-      // 05:00–11:59 → Pagi aktif
-      // 12:00–14:59 → keduanya (transisi, tampilkan petang dulu)
-      // 15:00–23:59 → Petang aktif
-      // 00:00–04:59 → keduanya (malam/sahur)
-      let label = '', activeTab = 'pagi';
-      if      (h >= 5  && h < 12) { label = '🌅 Waktu Dzikir Pagi';   activeTab = 'pagi'; }
-      else if (h >= 12 && h < 15) { label = '☀️ Siang — Dzikir Petang nanti jam 15.00'; activeTab = 'pagi'; }
-      else if (h >= 15 && h < 18) { label = '🌤 Waktu Dzikir Petang';  activeTab = 'petang'; }
-      else if (h >= 18 && h < 24) { label = '🌙 Petang — Dzikir Petang masih terbuka'; activeTab = 'petang'; }
-      else                         { label = '🌙 Malam — Dzikir Pagi & Petang';          activeTab = 'pagi'; }
-
-      document.getElementById('wiridTimeLabel').textContent = label;
-
-      // Tandai tab aktif berdasarkan waktu
-      ['Pagi','Petang','Istigfar'].forEach(t => {
-        const btn = document.getElementById('wtab' + t);
-        if (btn) btn.classList.remove('active-time');
-      });
-      const activeBtn = document.getElementById('wtab' + activeTab.charAt(0).toUpperCase() + activeTab.slice(1));
-      if (activeBtn) activeBtn.classList.add('active-time');
-
-      return activeTab;
-    }
-
-    // ── Buka WiridKu ───────────────────────────────────────────
-    function openWiridKu() {
-      wiridLoad();
-      wiridCheckReset();
-      const activeTab = wiridDetectTime();
-      renderWiridDoneBtn('pagi');
-      renderWiridDoneBtn('petang');
-      renderWiridCounterUI('pagi');
-      renderWiridCounterUI('petang');
-      renderWiridIstigfar();
-      updateWiridBadges();
-      updateWiridMiniRings();
-      switchWiridTab(activeTab);
-      openModal('modalWirid');
-      updateActiveNav('navWirid');
-    }
-
-    // ── Switch tab ──────────────────────────────────────────────
-    function switchWiridTab(tab) {
-      wiridCurrentTab = tab;
-      ['pagi','petang','istigfar'].forEach(t => {
-        document.getElementById('wpane' + t.charAt(0).toUpperCase() + t.slice(1)).classList.toggle('hidden', t !== tab);
-        const btn = document.getElementById('wtab' + t.charAt(0).toUpperCase() + t.slice(1));
-        if (btn) btn.classList.toggle('active', t === tab);
-      });
-    }
-
-    // ── Render checklist Pagi ───────────────────────────────────
     // ===== FITUR 8: RIWAYAT BACAAN LENGKAP =====
     let riwayatCache = null;
     let riwayatFilterAktif = null;
