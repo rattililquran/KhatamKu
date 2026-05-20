@@ -6,10 +6,11 @@
   <title>KhatamKu - Sistem Manajemen Bacaan Al-Quran</title>
   
   <!-- Preconnect untuk mempercepat loading aset eksternal -->
-  <link rel="preconnect" href="https://cdn.tailwindcss.com">
-  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <!-- Preconnect hanya untuk Google Fonts (Inter fallback online) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"></noscript>
 
   <!-- PWA -->
   <link rel="manifest" href="manifest.json">
@@ -23,10 +24,10 @@
   <!-- API adapter (pengganti google.script.run) -->
   <script src="api.js"></script>
 
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- ── Self-hosted assets (tidak perlu internet setelah install) ── -->
+  <link rel="stylesheet" href="assets/tailwind.min.css">
+  <link rel="stylesheet" href="assets/fontawesome.min.css">
+  <script src="assets/confetti.min.js" defer></script>
   <script>
     tailwind.config = {
       theme: {
@@ -3528,8 +3529,6 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
         document.getElementById('adminView').classList.add('hidden');
         document.getElementById('bottomNav').classList.remove('hidden');
         initPullToRefresh();
-        loadTentangData(); // Muat konten halaman Tentang di background
-        loadPotretData();  // Muat konten Potret di background
         maybeShowPwaBanner(); // Tampilkan banner install PWA jika belum pernah
         
         const today = getLocalDateString();
@@ -3568,6 +3567,7 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       }
     }
 
+    // ── FASE 1: Muat data minimal dulu (cepat ~0.5-1 detik) ──
     function loadStudentData() {
       showSkeleton();
       const today = getLocalDateString();
@@ -3576,9 +3576,9 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
 
       gscript.getInitialData(currentUser.id)
         .then(data => {
-          appProfile = data.profile;
-          appJournals = data.journals || [];
-          todayProgressCount = data.todayProgress || 0;
+          appProfile        = data.profile;
+          appJournals       = data.journals || [];
+          todayProgressCount= data.todayProgress || 0;
           saveToCache();
           hideSkeleton();
           updateDashboard();
@@ -3589,6 +3589,9 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
             calculateTargetPagesPreview();
           }
           document.getElementById('pullRefreshIndicator').classList.remove('visible');
+
+          // ── FASE 2: Muat data berat di background (tidak blokir UI) ──
+          _loadHeavyDataBackground();
         })
         .catch(err => { hideSkeleton(); onError(err); });
     }
@@ -3601,17 +3604,32 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
 
       gscript.getInitialData(currentUser.id)
         .then(data => {
-          appProfile = data.profile;
-          appJournals = data.journals || [];
-          todayProgressCount = data.todayProgress || 0;
+          appProfile        = data.profile;
+          appJournals       = data.journals || [];
+          todayProgressCount= data.todayProgress || 0;
           saveToCache();
           updateDashboard();
           updateJournalUI();
           if (appProfile.dailyTargetPages) {
             document.getElementById('inputTargetPages').value = appProfile.dailyTargetPages;
           }
+          // Fase 2 di background juga
+          _loadHeavyDataBackground();
         })
         .catch(() => {});
+    }
+
+    /**
+     * Fase 2 — muat data yang tidak urgent di background.
+     * Dipanggil setelah dashboard sudah tampil agar user tidak nunggu.
+     * Saat ini: preload Potret & Tentang agar modal langsung muncul tanpa loading.
+     */
+    function _loadHeavyDataBackground() {
+      // Preload konten Tentang & Potret di background (silent — tidak tampil error)
+      setTimeout(() => {
+        if (typeof loadTentangData === 'function') loadTentangData();
+        if (typeof loadPotretData  === 'function') loadPotretData();
+      }, 1500); // delay 1.5 detik agar tidak bersaing dengan render awal
     }
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
