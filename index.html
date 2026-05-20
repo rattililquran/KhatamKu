@@ -3268,29 +3268,47 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
 
     // ── Student Detail Modal ────────────────────────────────
     function openGuruStudentModal(studentId) {
-      if (!guruCache) return;
+      if (!guruCache) {
+        showToast('Data belum selesai dimuat, harap tunggu...', 'warning');
+        return;
+      }
       const s = guruCache.students.find(x => x.id === studentId);
-      if (!s) return;
+      if (!s) {
+        showToast('Data murid tidak ditemukan.', 'error');
+        return;
+      }
 
       document.getElementById('gsCurrentStudentId').value = studentId;
       document.getElementById('gsModalName').textContent    = s.name;
-      document.getElementById('gsModalHalaqah').textContent = s.halaqah + ' · NIS: ' + s.id;
-      document.getElementById('gsModalPage').textContent    = s.lastPage;
-      document.getElementById('gsModalStreak').textContent  = s.streak;
-      document.getElementById('gsModalKhatam').textContent  = s.totalKhatam;
-      document.getElementById('gsModalPct').textContent     = s.pct + '%';
-      document.getElementById('gsModalBar').style.width     = s.pct + '%';
+      document.getElementById('gsModalHalaqah').textContent = (s.halaqah || '—') + ' · NIS: ' + s.id;
+      document.getElementById('gsModalPage').textContent    = s.lastPage || 0;
+      document.getElementById('gsModalStreak').textContent  = s.streak   || 0;
+      document.getElementById('gsModalKhatam').textContent  = s.totalKhatam || 0;
+      document.getElementById('gsModalPct').textContent     = (s.pct || 0) + '%';
+      document.getElementById('gsModalBar').style.width     = (s.pct || 0) + '%';
       document.getElementById('gsInputPage').value  = '';
       document.getElementById('gsInputDate').value  = new Date().toISOString().slice(0, 10);
 
-      // 7-day grid
+      // 7-day grid — guard history7 null/undefined
       const grid = document.getElementById('gsModal7Days');
-      grid.innerHTML = s.history7.map(h => {
+      const hist7 = Array.isArray(s.history7) ? s.history7 : [];
+      if (hist7.length === 0) {
+        // Build empty 7-day placeholders
+        for (let d = 6; d >= 0; d--) {
+          const t = new Date(); t.setDate(t.getDate() - d);
+          hist7.push({ date: t.toISOString().slice(0, 10), pagesRead: 0 });
+        }
+      }
+      grid.innerHTML = hist7.map(h => {
         const hasRead = h.pagesRead > 0;
         const isToday = h.date === getLocalDateString();
         return `<div class="text-center">
-          <div class="h-8 rounded-lg flex items-center justify-center text-xs font-black mb-1 ${hasRead ? 'bg-sky-100 text-sky-700' : 'bg-slate-100 text-slate-400'} ${isToday ? 'ring-2 ring-sky-400' : ''}">${hasRead ? h.pagesRead : '—'}</div>
-          <p class="text-[8px] font-bold text-slate-400">${h.date.slice(8)}</p>
+          <div class="h-8 rounded-lg flex items-center justify-center text-xs font-black mb-1
+            ${hasRead ? 'bg-sky-100 text-sky-700' : 'bg-slate-100 text-slate-400'}
+            ${isToday ? 'ring-2 ring-sky-400' : ''}">
+            ${hasRead ? h.pagesRead : '—'}
+          </div>
+          <p class="text-[8px] font-bold text-slate-400">${(h.date || '').slice(8)}</p>
         </div>`;
       }).join('');
 
@@ -3300,19 +3318,27 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
         const msg = encodeURIComponent(`Assalamu'alaikum ${s.name}, jangan lupa tilawah harian ya! Semangat 🌟`);
         waBtn.onclick = () => window.open(`https://wa.me/${s.wa}?text=${msg}`, '_blank');
         waBtn.disabled = false;
+        waBtn.style.opacity = '1';
       } else {
         waBtn.onclick = () => showToast('Nomor WA belum terdaftar.', 'warning');
         waBtn.disabled = false;
+        waBtn.style.opacity = '0.5';
       }
 
-      // Load catatan
+      // Reset catatan
+      document.getElementById('gsCatatan').value = '';
+      document.getElementById('gsCatatanUpdated').textContent = 'Memuat catatan...';
+
+      // Load catatan async — tidak blokir modal
       gscript.guruGetCatatan(currentUser.id, studentId)
         .then(res => {
           document.getElementById('gsCatatan').value = res.catatan || '';
           document.getElementById('gsCatatanUpdated').textContent =
             res.updated ? 'Diupdate: ' + res.updated : 'Belum ada catatan';
         })
-        .catch(() => {});
+        .catch(() => {
+          document.getElementById('gsCatatanUpdated').textContent = 'Gagal memuat catatan';
+        });
 
       openModal('modalGuruStudent');
     }
