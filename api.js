@@ -6,7 +6,7 @@
 // ── WAJIB DIISI: URL deploy Apps Script kamu ──────────────
 // Setelah deploy Apps Script → salin URL-nya ke sini
 // Contoh: https://script.google.com/macros/s/AKfycbx.../exec
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbz9BDHf636nFOPkSkduOVYfRb8VPRQ7u3dZedwiOeUFI8YyffkxDz7o04WcNI2B7JaBwA/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxHdSgmDPGYZu_DKlPbUWTk_FE4Y3JYZq_TPJqPiTnZ0fxvc_G3ztdDqiqzgXJVvkgaOA/exec';
 // ──────────────────────────────────────────────────────────
 
 /**
@@ -69,6 +69,9 @@ const gscript = {
 
   doRegister: (namaLengkap, username, password) =>
     gasCall('doRegister', { namaLengkap, username, password }),
+
+  changePassword: (userId, oldPassword, newPassword) =>
+    gasCall('changePassword', { userId, oldPassword, newPassword }),
 
   // ── DATA MURID ────────────────────────────────────────────
   getInitialData: (userId) =>
