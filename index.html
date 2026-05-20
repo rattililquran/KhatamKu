@@ -306,6 +306,11 @@
     }
     .surah-cell { animation: surahCellIn 0.3s ease both; }
 
+    @keyframes slideUpIn {
+      from { opacity: 0; transform: translateY(100%); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
     /* ============================================================
        ADMIN PORTAL — Styles
     ============================================================ */
@@ -1908,7 +1913,7 @@
 
   <!-- Modal: Tentang KhatamKu & Rattilil Qur'an -->
   <div id="modalTentang" class="fixed inset-0 z-50 modal-overlay hidden flex flex-col justify-end sm:justify-center items-center">
-    <div class="modal-content w-full max-w-md h-[88vh] sm:h-[85vh] rounded-t-[2.5rem] sm:rounded-3xl p-0 flex flex-col transform transition-transform translate-y-full text-slate-800 overflow-hidden" id="modalTentangContent">
+    <div class="modal-content w-full max-w-md h-[92vh] sm:h-[90vh] rounded-t-[2.5rem] sm:rounded-3xl p-0 flex flex-col transform transition-transform translate-y-full text-slate-800 overflow-hidden" id="modalTentangContent">
       
       <!-- Header fixed -->
       <div class="flex justify-between items-center px-7 pt-7 pb-5 shrink-0 border-b border-slate-100/80">
@@ -1920,7 +1925,7 @@
       </div>
 
       <!-- Scrollable Content -->
-      <div class="flex-1 overflow-y-auto px-7 py-5 space-y-5 pb-8">
+      <div class="flex-1 overflow-y-auto px-6 py-5 space-y-4 pb-10">
 
         <!-- App Header Card -->
         <div class="relative overflow-hidden rounded-[1.75rem] p-6 text-center" style="background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);">
@@ -1933,6 +1938,24 @@
             <h2 class="text-2xl font-black text-white mb-1" id="tentangJudul">KhatamKu</h2>
             <span class="text-[11px] font-bold text-sky-200 bg-white/20 px-3 py-1 rounded-full border border-white/30" id="tentangVersi">v1.0.0</span>
           </div>
+        </div>
+
+        <!-- Quick Action Buttons Row -->
+        <div class="grid grid-cols-2 gap-3">
+          <!-- Install App -->
+          <button onclick="openInstallGuide()" class="flex flex-col items-center gap-2 p-4 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl hover:border-emerald-300 transition-all group active:scale-95">
+            <div class="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-all">
+              <i class="fa-solid fa-mobile-screen-button text-white text-sm"></i>
+            </div>
+            <span class="text-[10px] font-black text-emerald-700 uppercase tracking-wider text-center">Install App<br>ke HP</span>
+          </button>
+          <!-- Ganti Password -->
+          <button onclick="closeModal('modalTentang'); openModal('modalGantiPassword')" class="flex flex-col items-center gap-2 p-4 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-2xl hover:border-amber-300 transition-all group active:scale-95">
+            <div class="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-all">
+              <i class="fa-solid fa-key text-white text-sm"></i>
+            </div>
+            <span class="text-[10px] font-black text-amber-700 uppercase tracking-wider text-center">Ganti<br>Password</span>
+          </button>
         </div>
 
         <!-- Tentang Aplikasi -->
@@ -1957,6 +1980,47 @@
           <p class="text-sm text-slate-600 leading-relaxed font-medium" id="tentangDeskRattil">Memuat konten...</p>
         </div>
 
+        <!-- Donasi Operasional -->
+        <div class="relative overflow-hidden rounded-[1.5rem] p-5" style="background:linear-gradient(135deg,#7c3aed,#4f46e5)">
+          <div class="absolute -top-6 -right-6 w-24 h-24 bg-white/10 rounded-full"></div>
+          <div class="absolute -bottom-4 -left-4 w-16 h-16 bg-black/10 rounded-full"></div>
+          <div class="relative z-10">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
+                <i class="fa-solid fa-heart text-white text-sm"></i>
+              </div>
+              <div>
+                <h4 class="text-[11px] font-black text-purple-200 uppercase tracking-widest">Donasi Operasional</h4>
+                <p class="text-xs text-white/80 mt-0.5">Dukung program ini tetap berjalan</p>
+              </div>
+            </div>
+            <p class="text-xs text-purple-100 leading-relaxed mb-4">Jazakallahu khairan atas dukunganmu. Setiap donasi membantu kami menjaga server, mengembangkan fitur, dan memperluas program tilawah. 🤲</p>
+            <!-- Rekening -->
+            <div class="space-y-2">
+              <div class="bg-white/15 backdrop-blur rounded-xl p-3 flex items-center justify-between">
+                <div>
+                  <p class="text-[9px] font-black text-purple-200 uppercase tracking-wider">Bank Syariah Indonesia (BSI)</p>
+                  <p class="text-base font-black text-white tracking-wider">7145 2233 44</p>
+                  <p class="text-[10px] text-purple-200">a.n. Yayasan Rattilil Qur'an</p>
+                </div>
+                <button onclick="copyRekening('7145223344','BSI')" class="w-9 h-9 bg-white/20 hover:bg-white/30 rounded-lg flex items-center justify-center transition active:scale-90">
+                  <i class="fa-regular fa-copy text-white text-xs"></i>
+                </button>
+              </div>
+              <div class="bg-white/15 backdrop-blur rounded-xl p-3 flex items-center justify-between">
+                <div>
+                  <p class="text-[9px] font-black text-purple-200 uppercase tracking-wider">GoPay / OVO / Dana</p>
+                  <p class="text-base font-black text-white tracking-wider">0812 3456 7890</p>
+                  <p class="text-[10px] text-purple-200">a.n. Rattilil Qur'an</p>
+                </div>
+                <button onclick="copyRekening('081234567890','GoPay/OVO/Dana')" class="w-9 h-9 bg-white/20 hover:bg-white/30 rounded-lg flex items-center justify-center transition active:scale-90">
+                  <i class="fa-regular fa-copy text-white text-xs"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Ikuti Kami / Social Media -->
         <div class="bg-white border border-slate-200 rounded-[1.5rem] p-5 shadow-sm">
           <div class="flex items-center gap-2 mb-4">
@@ -1966,27 +2030,24 @@
             <h4 class="text-[11px] font-black text-slate-600 uppercase tracking-widest">Ikuti Kami</h4>
           </div>
           <div class="flex gap-3 justify-center">
-            <!-- WhatsApp -->
             <a id="tentangWA" href="#" target="_blank" rel="noopener noreferrer"
               class="flex flex-col items-center gap-2 flex-1 py-4 px-2 bg-slate-50 rounded-2xl border border-slate-200 hover:border-green-300 hover:bg-green-50 transition-all group shadow-sm">
-              <div class="w-11 h-11 bg-[#25D366] rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 group-hover:shadow-lg transition-all">
+              <div class="w-11 h-11 bg-[#25D366] rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-all">
                 <i class="fa-brands fa-whatsapp text-white text-xl"></i>
               </div>
               <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest group-hover:text-green-600 transition-colors">WhatsApp</span>
             </a>
-            <!-- Instagram -->
             <a id="tentangIG" href="#" target="_blank" rel="noopener noreferrer"
               class="flex flex-col items-center gap-2 flex-1 py-4 px-2 bg-slate-50 rounded-2xl border border-slate-200 hover:border-pink-300 hover:bg-pink-50 transition-all group shadow-sm">
-              <div class="w-11 h-11 rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 group-hover:shadow-lg transition-all"
+              <div class="w-11 h-11 rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-all"
                 style="background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)">
                 <i class="fa-brands fa-instagram text-white text-xl"></i>
               </div>
               <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest group-hover:text-pink-600 transition-colors">Instagram</span>
             </a>
-            <!-- YouTube -->
             <a id="tentangYT" href="#" target="_blank" rel="noopener noreferrer"
               class="flex flex-col items-center gap-2 flex-1 py-4 px-2 bg-slate-50 rounded-2xl border border-slate-200 hover:border-red-300 hover:bg-red-50 transition-all group shadow-sm">
-              <div class="w-11 h-11 bg-[#FF0000] rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 group-hover:shadow-lg transition-all">
+              <div class="w-11 h-11 bg-[#FF0000] rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-all">
                 <i class="fa-brands fa-youtube text-white text-xl"></i>
               </div>
               <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest group-hover:text-red-600 transition-colors">YouTube</span>
@@ -1999,6 +2060,168 @@
           <p class="text-[11px] text-slate-400 font-medium leading-relaxed" id="tentangFooter">Dibuat dengan ❤️ untuk para pecinta Al-Qur'an</p>
         </div>
 
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       Modal: Ganti Password
+  ═══════════════════════════════════════════════════ -->
+  <div id="modalGantiPassword" class="fixed inset-0 z-50 modal-overlay hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="modal-content w-full max-w-md rounded-t-[2.5rem] sm:rounded-3xl p-7 transform transition-transform translate-y-full sm:translate-y-0 sm:scale-95 sm:opacity-0" id="modalGantiPasswordContent">
+
+      <!-- Header -->
+      <div class="flex justify-between items-center mb-6 pb-5 border-b border-slate-100">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
+            <i class="fa-solid fa-key text-amber-600 text-sm"></i>
+          </div>
+          <div>
+            <h3 class="text-xl font-black tracking-tight text-slate-800">Ganti Password</h3>
+            <p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mt-0.5">Keamanan Akun</p>
+          </div>
+        </div>
+        <button onclick="closeModal('modalGantiPassword')" class="text-slate-400 bg-slate-100 hover:bg-slate-200 w-10 h-10 rounded-full flex items-center justify-center transition-colors">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Form -->
+      <form id="formGantiPassword" onsubmit="event.preventDefault(); submitGantiPassword();" class="space-y-4">
+
+        <!-- Password Lama -->
+        <div>
+          <label class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Password Lama</label>
+          <div class="relative">
+            <input type="password" id="gpOldPass" class="w-full px-5 py-4 glass-input rounded-2xl outline-none font-bold pr-12" placeholder="Masukkan password saat ini" required>
+            <button type="button" onclick="togglePassVis('gpOldPass', this)" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition">
+              <i class="fa-regular fa-eye text-sm"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="flex items-center gap-3 py-1">
+          <div class="flex-1 h-px bg-slate-100"></div>
+          <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Password Baru</span>
+          <div class="flex-1 h-px bg-slate-100"></div>
+        </div>
+
+        <!-- Password Baru -->
+        <div>
+          <label class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Password Baru</label>
+          <div class="relative">
+            <input type="password" id="gpNewPass" class="w-full px-5 py-4 glass-input rounded-2xl outline-none font-bold pr-12"
+              placeholder="Min. 6 karakter + angka" required oninput="checkPassStrength(this.value)">
+            <button type="button" onclick="togglePassVis('gpNewPass', this)" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition">
+              <i class="fa-regular fa-eye text-sm"></i>
+            </button>
+          </div>
+          <!-- Strength indicator -->
+          <div class="mt-2 space-y-1.5" id="gpStrengthBox">
+            <div class="flex gap-1">
+              <div class="h-1 flex-1 rounded-full bg-slate-100 transition-all" id="gpS1"></div>
+              <div class="h-1 flex-1 rounded-full bg-slate-100 transition-all" id="gpS2"></div>
+              <div class="h-1 flex-1 rounded-full bg-slate-100 transition-all" id="gpS3"></div>
+              <div class="h-1 flex-1 rounded-full bg-slate-100 transition-all" id="gpS4"></div>
+            </div>
+            <div class="flex flex-wrap gap-x-3 gap-y-1 text-[10px] font-semibold">
+              <span id="gpC1" class="text-slate-300"><i class="fa-solid fa-circle-check mr-1"></i>Min. 6 karakter</span>
+              <span id="gpC2" class="text-slate-300"><i class="fa-solid fa-circle-check mr-1"></i>Ada huruf</span>
+              <span id="gpC3" class="text-slate-300"><i class="fa-solid fa-circle-check mr-1"></i>Ada angka</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Konfirmasi Password -->
+        <div>
+          <label class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Konfirmasi Password Baru</label>
+          <div class="relative">
+            <input type="password" id="gpConfirmPass" class="w-full px-5 py-4 glass-input rounded-2xl outline-none font-bold pr-12"
+              placeholder="Ulangi password baru" required oninput="checkPassMatch()">
+            <button type="button" onclick="togglePassVis('gpConfirmPass', this)" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition">
+              <i class="fa-regular fa-eye text-sm"></i>
+            </button>
+          </div>
+          <p id="gpMatchMsg" class="text-xs font-semibold mt-1.5 hidden"></p>
+        </div>
+
+        <!-- Error Message -->
+        <div id="gpErrorMsg" class="hidden bg-red-50 border border-red-200 text-red-600 text-sm font-semibold px-4 py-3 rounded-xl flex items-center gap-2">
+          <i class="fa-solid fa-circle-exclamation shrink-0"></i>
+          <span id="gpErrorText"></span>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" id="gpSubmitBtn" class="w-full glass-btn font-extrabold py-5 rounded-2xl mt-2 tracking-widest text-sm shadow-lg disabled:opacity-50">
+          <i class="fa-solid fa-lock mr-2"></i>PERBARUI PASSWORD
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       Modal: Panduan Install PWA
+  ═══════════════════════════════════════════════════ -->
+  <div id="modalInstallGuide" class="fixed inset-0 z-[80] modal-overlay hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="modal-content w-full max-w-md rounded-t-[2.5rem] sm:rounded-3xl p-0 transform transition-transform translate-y-full sm:translate-y-0 sm:scale-95 sm:opacity-0 overflow-hidden" id="modalInstallGuideContent">
+
+      <!-- Header gradient -->
+      <div class="px-7 pt-7 pb-5 relative overflow-hidden" style="background:linear-gradient(135deg,#0ea5e9,#2563eb)">
+        <div class="absolute -top-6 -right-6 w-24 h-24 bg-white/10 rounded-full"></div>
+        <div class="flex justify-between items-start relative z-10">
+          <div>
+            <div class="flex items-center gap-2 mb-2">
+              <div class="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center">
+                <i class="fa-solid fa-mobile-screen-button text-white text-sm"></i>
+              </div>
+              <h3 class="text-xl font-black text-white">Install KhatamKu</h3>
+            </div>
+            <p class="text-sky-200 text-xs font-semibold">Tambahkan ke Layar Utama HP kamu</p>
+          </div>
+          <button onclick="closeModal('modalInstallGuide')" class="w-9 h-9 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white transition">
+            <i class="fa-solid fa-xmark text-sm"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <div class="px-7 py-6 space-y-4" id="installGuideContent">
+        <!-- Diisi oleh JS berdasarkan deteksi OS -->
+      </div>
+
+      <!-- Footer -->
+      <div class="px-7 pb-7">
+        <button onclick="dismissInstallGuide(true)" class="w-full glass-btn font-extrabold py-4 rounded-2xl tracking-widest text-sm shadow-lg">
+          Mengerti, Terima Kasih! 👍
+        </button>
+        <button onclick="dismissInstallGuide(false)" class="w-full mt-2 text-[11px] font-bold text-slate-400 hover:text-slate-600 py-2 transition">
+          Jangan tampilkan lagi
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       PWA Auto Popup (muncul otomatis saat login pertama)
+  ═══════════════════════════════════════════════════ -->
+  <div id="pwaBanner" class="fixed bottom-0 left-0 right-0 z-[70] hidden px-4 pb-4">
+    <div class="max-w-md mx-auto bg-white rounded-3xl shadow-2xl border border-slate-200 p-5 flex items-center gap-4"
+      style="animation: slideUpIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both">
+      <div class="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style="background:linear-gradient(135deg,#0ea5e9,#2563eb)">
+        <i class="fa-solid fa-book-open text-white text-lg"></i>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="font-black text-slate-800 text-sm">Install KhatamKu di HP kamu!</p>
+        <p class="text-xs text-slate-500 mt-0.5">Akses lebih cepat tanpa buka browser 🚀</p>
+      </div>
+      <div class="flex flex-col gap-1.5 shrink-0">
+        <button onclick="openInstallGuide(); hidePwaBanner()" class="bg-sky-500 hover:bg-sky-600 text-white text-xs font-black px-3 py-2 rounded-xl transition active:scale-95">
+          Cara Install
+        </button>
+        <button onclick="hidePwaBanner()" class="text-[10px] font-bold text-slate-400 hover:text-slate-600 transition text-center">
+          Nanti saja
+        </button>
       </div>
     </div>
   </div>
@@ -2156,6 +2379,232 @@
 
       openModal('modalTentang');
       updateActiveNav('navTentang');
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // FITUR: GANTI PASSWORD
+    // ═══════════════════════════════════════════════════════
+
+    function togglePassVis(inputId, btn) {
+      const input = document.getElementById(inputId);
+      const isPass = input.type === 'password';
+      input.type = isPass ? 'text' : 'password';
+      btn.innerHTML = isPass
+        ? '<i class="fa-regular fa-eye-slash text-sm"></i>'
+        : '<i class="fa-regular fa-eye text-sm"></i>';
+    }
+
+    function checkPassStrength(val) {
+      const hasMin  = val.length >= 6;
+      const hasLtr  = /[a-zA-Z]/.test(val);
+      const hasNum  = /[0-9]/.test(val);
+      const score   = [hasMin, hasLtr, hasNum].filter(Boolean).length;
+
+      const colors  = ['bg-red-400', 'bg-amber-400', 'bg-emerald-400'];
+      const bars    = ['gpS1','gpS2','gpS3','gpS4'];
+      bars.forEach((id, i) => {
+        const el = document.getElementById(id);
+        el.className = `h-1 flex-1 rounded-full transition-all ${i < score ? colors[Math.min(score-1, 2)] : 'bg-slate-100'}`;
+      });
+      const setCheck = (id, ok) => {
+        const el = document.getElementById(id);
+        el.className = ok ? 'text-emerald-500' : 'text-slate-300';
+      };
+      setCheck('gpC1', hasMin);
+      setCheck('gpC2', hasLtr);
+      setCheck('gpC3', hasNum);
+    }
+
+    function checkPassMatch() {
+      const np  = document.getElementById('gpNewPass').value;
+      const cp  = document.getElementById('gpConfirmPass').value;
+      const msg = document.getElementById('gpMatchMsg');
+      if (!cp) { msg.classList.add('hidden'); return false; }
+      const ok = np === cp;
+      msg.classList.remove('hidden');
+      msg.className = `text-xs font-semibold mt-1.5 ${ok ? 'text-emerald-500' : 'text-red-500'}`;
+      msg.innerHTML = ok
+        ? '<i class="fa-solid fa-circle-check mr-1"></i>Password cocok!'
+        : '<i class="fa-solid fa-circle-xmark mr-1"></i>Password tidak cocok';
+      return ok;
+    }
+
+    function showGpError(msg) {
+      const box = document.getElementById('gpErrorMsg');
+      document.getElementById('gpErrorText').textContent = msg;
+      box.classList.remove('hidden');
+    }
+
+    function submitGantiPassword() {
+      const oldPass  = document.getElementById('gpOldPass').value;
+      const newPass  = document.getElementById('gpNewPass').value;
+      const confPass = document.getElementById('gpConfirmPass').value;
+
+      // Hide error
+      document.getElementById('gpErrorMsg').classList.add('hidden');
+
+      // Frontend validation
+      if (!oldPass) { showGpError('Masukkan password lama kamu.'); return; }
+      if (newPass.length < 6) { showGpError('Password baru minimal 6 karakter.'); return; }
+      if (!/[a-zA-Z]/.test(newPass)) { showGpError('Password baru harus mengandung huruf.'); return; }
+      if (!/[0-9]/.test(newPass))    { showGpError('Password baru harus mengandung angka.'); return; }
+      if (newPass !== confPass)       { showGpError('Konfirmasi password tidak cocok.'); return; }
+      if (newPass === oldPass)        { showGpError('Password baru tidak boleh sama dengan password lama.'); return; }
+
+      const btn = document.getElementById('gpSubmitBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Memproses...';
+
+      gscript.changePassword(currentUser.id, oldPass, newPass)
+        .then(() => {
+          closeModal('modalGantiPassword');
+          // Reset form
+          document.getElementById('formGantiPassword').reset();
+          checkPassStrength('');
+          document.getElementById('gpMatchMsg').classList.add('hidden');
+          showToast('Password berhasil diperbarui! 🔐', 'success');
+        })
+        .catch(err => {
+          showGpError(err.message || 'Terjadi kesalahan. Coba lagi.');
+        })
+        .finally(() => {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-lock mr-2"></i>PERBARUI PASSWORD';
+        });
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // FITUR: PANDUAN INSTALL PWA
+    // ═══════════════════════════════════════════════════════
+
+    function detectOS() {
+      const ua = navigator.userAgent || '';
+      if (/iPhone|iPad|iPod/i.test(ua)) return 'ios';
+      if (/Android/i.test(ua)) return 'android';
+      return 'other';
+    }
+
+    function openInstallGuide() {
+      const os  = detectOS();
+      const el  = document.getElementById('installGuideContent');
+
+      if (os === 'ios') {
+        el.innerHTML = `
+          <p class="text-sm text-slate-600 font-medium mb-4">Ikuti langkah berikut di <b>Safari</b>:</p>
+          <div class="space-y-3">
+            <div class="flex items-start gap-4 bg-slate-50 rounded-2xl p-4 border border-slate-100">
+              <div class="w-9 h-9 bg-sky-100 text-sky-600 rounded-xl flex items-center justify-center shrink-0 font-black text-sm">1</div>
+              <div>
+                <p class="font-bold text-slate-800 text-sm">Klik tombol Share di bawah</p>
+                <p class="text-xs text-slate-500 mt-1">Tombol kotak dengan panah ke atas</p>
+                <div class="mt-2 inline-flex items-center gap-1.5 bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-slate-600">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
+                  <span class="text-xs font-bold">Share</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-start gap-4 bg-slate-50 rounded-2xl p-4 border border-slate-100">
+              <div class="w-9 h-9 bg-sky-100 text-sky-600 rounded-xl flex items-center justify-center shrink-0 font-black text-sm">2</div>
+              <div>
+                <p class="font-bold text-slate-800 text-sm">Gulir ke bawah → Pilih</p>
+                <div class="mt-2 inline-flex items-center gap-1.5 bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-slate-700">
+                  <i class="fa-regular fa-square-plus text-sky-500"></i>
+                  <span class="text-xs font-bold">Add to Home Screen</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-start gap-4 bg-slate-50 rounded-2xl p-4 border border-slate-100">
+              <div class="w-9 h-9 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center shrink-0 font-black text-sm">3</div>
+              <div>
+                <p class="font-bold text-slate-800 text-sm">Klik <span class="text-emerald-600">Add</span> di pojok kanan atas</p>
+                <p class="text-xs text-slate-500 mt-1">KhatamKu akan muncul di Home Screen kamu 🎉</p>
+              </div>
+            </div>
+          </div>
+          <div class="mt-4 bg-amber-50 border border-amber-100 rounded-2xl p-3 text-xs text-amber-700 font-medium">
+            <i class="fa-solid fa-circle-info mr-1"></i>Pastikan kamu membuka halaman ini di browser <b>Safari</b>, bukan aplikasi lain.
+          </div>`;
+      } else if (os === 'android') {
+        el.innerHTML = `
+          <p class="text-sm text-slate-600 font-medium mb-4">Ikuti langkah berikut di <b>Chrome</b>:</p>
+          <div class="space-y-3">
+            <div class="flex items-start gap-4 bg-slate-50 rounded-2xl p-4 border border-slate-100">
+              <div class="w-9 h-9 bg-sky-100 text-sky-600 rounded-xl flex items-center justify-center shrink-0 font-black text-sm">1</div>
+              <div>
+                <p class="font-bold text-slate-800 text-sm">Klik menu <span class="font-black">⋮</span> di kanan atas browser</p>
+                <p class="text-xs text-slate-500 mt-1">Tiga titik vertikal di pojok kanan atas</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-4 bg-slate-50 rounded-2xl p-4 border border-slate-100">
+              <div class="w-9 h-9 bg-sky-100 text-sky-600 rounded-xl flex items-center justify-center shrink-0 font-black text-sm">2</div>
+              <div>
+                <p class="font-bold text-slate-800 text-sm">Pilih salah satu:</p>
+                <div class="mt-2 space-y-1.5">
+                  <div class="inline-flex items-center gap-1.5 bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-slate-700 text-xs font-bold">
+                    <i class="fa-solid fa-plus text-sky-500 text-xs"></i> Tambahkan ke Layar Utama
+                  </div>
+                  <br>
+                  <div class="inline-flex items-center gap-1.5 bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-slate-700 text-xs font-bold">
+                    <i class="fa-solid fa-download text-sky-500 text-xs"></i> Install App
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-start gap-4 bg-slate-50 rounded-2xl p-4 border border-slate-100">
+              <div class="w-9 h-9 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center shrink-0 font-black text-sm">3</div>
+              <div>
+                <p class="font-bold text-slate-800 text-sm">Klik <span class="text-emerald-600">Tambahkan / Install</span></p>
+                <p class="text-xs text-slate-500 mt-1">KhatamKu akan tampil seperti aplikasi di HP kamu 🎉</p>
+              </div>
+            </div>
+          </div>`;
+      } else {
+        el.innerHTML = `
+          <div class="text-center py-4">
+            <div class="w-16 h-16 bg-sky-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <i class="fa-solid fa-desktop text-sky-500 text-2xl"></i>
+            </div>
+            <p class="font-bold text-slate-700 mb-2">Buka di HP kamu</p>
+            <p class="text-sm text-slate-500">Fitur install tersedia di Chrome (Android) dan Safari (iPhone/iPad). Akses KhatamKu di browser HP kamu, lalu ikuti panduan install.</p>
+          </div>`;
+      }
+
+      openModal('modalInstallGuide');
+    }
+
+    function dismissInstallGuide(justClose) {
+      closeModal('modalInstallGuide');
+      if (!justClose) {
+        try { localStorage.setItem('khatamku_pwa_dismissed', '1'); } catch(e) {}
+      }
+    }
+
+    // Banner PWA otomatis muncul saat login pertama
+    function maybeShowPwaBanner() {
+      try {
+        if (localStorage.getItem('khatamku_pwa_dismissed') === '1') return;
+        if (localStorage.getItem('khatamku_pwa_shown') === '1') return;
+        // Hanya tampilkan di mobile
+        if (window.innerWidth > 768) return;
+        // Jangan tampil kalau sudah installed (standalone mode)
+        if (window.matchMedia('(display-mode: standalone)').matches) return;
+
+        setTimeout(() => {
+          document.getElementById('pwaBanner').classList.remove('hidden');
+          localStorage.setItem('khatamku_pwa_shown', '1');
+        }, 3000);
+      } catch(e) {}
+    }
+
+    function hidePwaBanner() {
+      document.getElementById('pwaBanner').classList.add('hidden');
+    }
+
+    // Helper: salin nomor rekening
+    function copyRekening(nomor, nama) {
+      navigator.clipboard.writeText(nomor)
+        .then(() => showToast(`Nomor ${nama} berhasil disalin! 📋`, 'success'))
+        .catch(() => showToast('Gagal menyalin nomor.', 'error'));
     }
 
     // ===== FITUR 8: RIWAYAT BACAAN LENGKAP =====
@@ -2977,6 +3426,7 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
         initPullToRefresh();
         loadTentangData(); // Muat konten halaman Tentang di background
         loadPotretData();  // Muat konten Potret di background
+        maybeShowPwaBanner(); // Tampilkan banner install PWA jika belum pernah
         
         const today = getLocalDateString();
         document.getElementById('progressDate').value = today;
