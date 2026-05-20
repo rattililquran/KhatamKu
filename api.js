@@ -6,7 +6,7 @@
 // ── WAJIB DIISI: URL deploy Apps Script kamu ──────────────
 // Setelah deploy Apps Script → salin URL-nya ke sini
 // Contoh: https://script.google.com/macros/s/AKfycbx.../exec
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbxFEIClFkIBclKTC8tg6PxWtjZ5FdWEwpRd2roOPzz9xiOiHMP5WRDA4L0NbWBVSoB_iA/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxU5Jt-NLEuDG7b8OsIdUjCjsV_A-r2rAjD8HhrrcJQplx053or16DHe7kPA_P0hVkV_g/exec';
 // ──────────────────────────────────────────────────────────
 
 /**
