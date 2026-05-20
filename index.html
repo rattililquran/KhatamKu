@@ -233,18 +233,73 @@
       background: linear-gradient(to right, #0ea5e9 0%, #e2e8f0 0%);
     }
     .range-slider::-webkit-slider-thumb {
-      -webkit-appearance: none; appearance: none; width: 28px; height: 28px;
+      -webkit-appearance: none; appearance: none; width: 32px; height: 32px;
       border-radius: 50%; background: linear-gradient(135deg, #0ea5e9, #2563eb);
       cursor: pointer; box-shadow: 0 2px 8px rgba(14, 165, 233, 0.4);
       border: 3px solid white; transition: transform 0.2s;
     }
     .range-slider::-webkit-slider-thumb:active { transform: scale(1.2); }
     .range-slider::-moz-range-thumb {
-      width: 24px; height: 24px; border-radius: 50%;
+      width: 28px; height: 28px; border-radius: 50%;
       background: linear-gradient(135deg, #0ea5e9, #2563eb);
       cursor: pointer; box-shadow: 0 2px 8px rgba(14, 165, 233, 0.4);
       border: 3px solid white;
     }
+
+    /* ── Mobile Optimizations ───────────────────────────── */
+
+    /* Cegah auto-zoom iOS saat tap input (font-size minimal 16px) */
+    input, select, textarea {
+      font-size: 16px;
+    }
+    /* Override untuk elemen yang font-size sudah diatur via class */
+    .text-3xl input, input.text-3xl { font-size: 30px; }
+    .text-xl input, input.text-xl { font-size: 20px; }
+
+    /* Touch target minimal 44px untuk semua elemen interaktif */
+    .icon-btn {
+      min-width: 44px !important;
+      min-height: 44px !important;
+      width: 44px;
+      height: 44px;
+    }
+    .bottom-nav-item {
+      min-height: 44px;
+      padding: 8px 4px;
+      touch-action: manipulation; /* hilangkan delay 300ms tap */
+    }
+
+    /* Hilangkan delay tap 300ms di semua elemen interaktif */
+    button, a, [onclick], .cursor-pointer, input[type="submit"],
+    .admin-tab, .bottom-nav-item {
+      touch-action: manipulation;
+    }
+
+    /* Label nav lebih kecil di layar mungil */
+    @media (max-width: 375px) {
+      .bottom-nav-item span { font-size: 9px !important; }
+      .bottom-nav-item i    { font-size: 15px !important; }
+    }
+
+    /* Reduced motion — matikan animasi di preferensi aksesibilitas */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* Offline banner */
+    #offlineBanner {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+      background: #f59e0b; color: white;
+      padding: 10px 16px; text-align: center;
+      font-size: 13px; font-weight: 800;
+      transform: translateY(-100%);
+      transition: transform 0.3s ease;
+    }
+    #offlineBanner.show { transform: translateY(0); }
 
     /* ===== #2 Pull to Refresh ===== */
     .pull-indicator {
@@ -490,6 +545,11 @@
   </div>
 
   <!-- Loading Overlay -->
+  <!-- Offline Banner -->
+  <div id="offlineBanner">
+    <i class="fa-solid fa-wifi-slash mr-2"></i>Kamu sedang offline — menampilkan data terakhir
+  </div>
+
   <div id="loadingOverlay" style="display: none;">
     <div class="spinner mb-4"></div>
     <p class="text-sky-600 font-bold animate-pulse tracking-wider" id="loadingText">MEMUAT DATA...</p>
@@ -1134,7 +1194,7 @@
 
     <!-- Modal: Detail Murid + Input Progress + Catatan -->
     <div id="modalGuruStudent" class="fixed inset-0 z-50 modal-overlay hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div class="modal-content w-full sm:max-w-lg rounded-t-[2.5rem] sm:rounded-3xl p-6 transform transition-transform translate-y-full sm:translate-y-0 sm:scale-95 sm:opacity-0 max-h-[92vh] overflow-y-auto" id="modalGuruStudentContent">
+      <div class="modal-content w-full sm:max-w-lg rounded-t-[2.5rem] sm:rounded-3xl p-6 transform transition-transform translate-y-full max-h-[92vh] overflow-y-auto" id="modalGuruStudentContent">
         <!-- Header -->
         <div class="flex justify-between items-center mb-4 pb-4 border-b border-slate-100">
           <div>
@@ -1182,7 +1242,7 @@
           <p class="text-xs font-black text-sky-700 uppercase tracking-wider mb-3"><i class="fa-solid fa-pen-to-square mr-1"></i> Input Progress Atas Nama Murid</p>
           <div class="flex gap-2">
             <div class="flex-1">
-              <input type="number" id="gsInputPage" min="1" max="604" class="admin-input text-center font-black text-lg" placeholder="Halaman...">
+              <input type="number" id="gsInputPage" min="1" max="604" inputmode="numeric" pattern="[0-9]*" enterkeyhint="done" class="admin-input text-center font-black text-lg" placeholder="Halaman...">
             </div>
             <div class="w-32">
               <input type="date" id="gsInputDate" class="admin-input">
@@ -1631,6 +1691,7 @@
         <div>
           <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Hari ini selesai di halaman berapa?</label>
           <input type="number" id="progressLastPage" min="1" max="604"
+            inputmode="numeric" pattern="[0-9]*" enterkeyhint="done"
             class="w-full px-5 py-5 glass-input rounded-2xl outline-none font-black text-3xl text-center text-sky-600 tracking-wider"
             placeholder="Contoh: 25" required>
           <!-- #12 Range Slider -->
@@ -1697,7 +1758,7 @@
         <div id="targetModeReguler">
           <p class="text-[11px] text-slate-500 mb-4 leading-relaxed font-medium">Santai & konsisten. Kamu tentukan kemampuan membaca harianmu, sistem akan menghitung estimasi khatamnya.</p>
           <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Target Halaman per Hari</label>
-          <input type="number" id="inputTargetPages" min="1" max="604" class="w-full px-5 py-4 glass-input rounded-2xl outline-none text-3xl font-black text-center text-sky-600" placeholder="Contoh: 10" required>
+          <input type="number" id="inputTargetPages" min="1" max="604" inputmode="numeric" pattern="[0-9]*" enterkeyhint="done" class="w-full px-5 py-4 glass-input rounded-2xl outline-none text-3xl font-black text-center text-sky-600" placeholder="Contoh: 10" required>
           <div class="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-xl hidden shadow-sm" id="targetPagesCalc">
             <p class="text-sm text-slate-600 flex justify-between items-center font-medium">Estimasi khatam: <span id="calcEstDate" class="font-bold text-sky-600 text-base bg-white px-3 py-1 rounded-lg border border-sky-100 shadow-sm"></span></p>
           </div>
@@ -1773,8 +1834,8 @@
         <div class="grid grid-cols-2 gap-3">
           <select id="journalSurah" class="w-full px-4 py-4 text-sm glass-input rounded-2xl outline-none font-bold text-sky-600"></select>
           <div class="flex gap-2">
-            <input type="number" id="journalAyahStart" class="w-full px-4 py-4 text-sm glass-input rounded-2xl outline-none text-center font-bold" placeholder="Dari">
-            <input type="number" id="journalAyahEnd" class="w-full px-4 py-4 text-sm glass-input rounded-2xl outline-none text-center font-bold" placeholder="Sampai">
+            <input type="number" id="journalAyahStart" inputmode="numeric" pattern="[0-9]*" enterkeyhint="next" class="w-full px-4 py-4 text-sm glass-input rounded-2xl outline-none text-center font-bold" placeholder="Dari">
+            <input type="number" id="journalAyahEnd" inputmode="numeric" pattern="[0-9]*" enterkeyhint="done" class="w-full px-4 py-4 text-sm glass-input rounded-2xl outline-none text-center font-bold" placeholder="Sampai">
           </div>
         </div>
         <textarea id="journalNote" rows="2" class="w-full px-5 py-4 text-sm glass-input rounded-2xl outline-none font-medium leading-relaxed" placeholder="Tuliskan hikmah/catatan hari ini..." required></textarea>
@@ -2068,7 +2129,7 @@
        Modal: Ganti Password
   ═══════════════════════════════════════════════════ -->
   <div id="modalGantiPassword" class="fixed inset-0 z-50 modal-overlay hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <div class="modal-content w-full max-w-md rounded-t-[2.5rem] sm:rounded-3xl p-7 transform transition-transform translate-y-full sm:translate-y-0 sm:scale-95 sm:opacity-0" id="modalGantiPasswordContent">
+    <div class="modal-content w-full max-w-md rounded-t-[2.5rem] sm:rounded-3xl p-7 transform transition-transform scale-95 opacity-0" id="modalGantiPasswordContent">
 
       <!-- Header -->
       <div class="flex justify-between items-center mb-6 pb-5 border-b border-slate-100">
@@ -2164,7 +2225,7 @@
        Modal: Panduan Install PWA
   ═══════════════════════════════════════════════════ -->
   <div id="modalInstallGuide" class="fixed inset-0 z-[80] modal-overlay hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <div class="modal-content w-full max-w-md rounded-t-[2.5rem] sm:rounded-3xl p-0 transform transition-transform translate-y-full sm:translate-y-0 sm:scale-95 sm:opacity-0 overflow-hidden" id="modalInstallGuideContent">
+    <div class="modal-content w-full max-w-md rounded-t-[2.5rem] sm:rounded-3xl p-0 transform transition-transform scale-95 opacity-0 overflow-hidden" id="modalInstallGuideContent">
 
       <!-- Header gradient -->
       <div class="px-7 pt-7 pb-5 relative overflow-hidden" style="background:linear-gradient(135deg,#0ea5e9,#2563eb)">
@@ -3167,6 +3228,35 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
         syncSlider(parseInt(slider.value));
       });
 
+      // ── Draft auto-save: simpan input halaman ke localStorage ──
+      pageInput.addEventListener('input', () => {
+        try { localStorage.setItem('khatamku_draft_page', pageInput.value); } catch(e) {}
+      });
+
+      // ── Offline / Online detection ───────────────────────────
+      const offlineBanner = document.getElementById('offlineBanner');
+      function updateOnlineStatus() {
+        if (!navigator.onLine) {
+          offlineBanner.classList.add('show');
+        } else {
+          offlineBanner.classList.remove('show');
+          // Auto-refresh data saat koneksi kembali (hanya jika sudah login)
+          if (currentUser && currentUser.role === 'murid') {
+            showToast('Koneksi kembali! Memperbarui data... 🔄', 'success');
+            setTimeout(() => loadStudentDataSilent(), 1000);
+          }
+        }
+      }
+      window.addEventListener('offline', updateOnlineStatus);
+      window.addEventListener('online',  updateOnlineStatus);
+      // Cek status awal
+      if (!navigator.onLine) offlineBanner.classList.add('show');
+
+      // ── Reduced motion detection ─────────────────────────────
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.documentElement.classList.add('reduce-motion');
+      }
+
       const savedUser = localStorage.getItem('khatamku_user');
       if (savedUser) { currentUser = JSON.parse(savedUser); initApp(); } 
       else { showLoginScreen(); }
@@ -3187,19 +3277,33 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       const modal = document.getElementById(id);
       const content = document.getElementById(id + 'Content');
       modal.classList.remove('hidden');
-      setTimeout(() => { 
-        content.classList.remove('translate-y-full', 'scale-95', 'opacity-0'); 
+      setTimeout(() => {
+        if (content) {
+          content.classList.remove('translate-y-full', 'scale-95', 'opacity-0');
+        }
       }, 10);
     }
-    
+
     function closeModal(id) {
       const content = document.getElementById(id + 'Content');
-      if (id === 'modalMilestone' || id === 'modalUdzur' || id === 'modalAlert' || id === 'modalConfirm' || id === 'modalRegisterError') {
-        content.classList.add('scale-95', 'opacity-0');
-      } else {
-        content.classList.add('translate-y-full');
+      const centerModals = [
+        'modalMilestone','modalUdzur','modalAlert','modalConfirm',
+        'modalRegisterError','modalGantiPassword','modalInstallGuide',
+        'modalAdminAddMurid','modalAdminEditMurid','modalAdminResetPwd',
+        'modalAdminCalibrate','modalAdminMoveHalaqah','modalAdminAddHalaqah',
+        'modalAdminAddGuru','modalPotretEditor','modalGuruAddMurid','modalGuruEditMurid'
+      ];
+      if (content) {
+        if (centerModals.includes(id)) {
+          content.classList.add('scale-95', 'opacity-0');
+        } else {
+          content.classList.add('translate-y-full');
+        }
       }
-      setTimeout(() => { document.getElementById(id).classList.add('hidden'); }, 300);
+      setTimeout(() => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
+      }, 300);
     }
 
     function showLoading(msg) {
@@ -3971,15 +4075,23 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       const resumeFrom = startPage + 1 > 604 ? 1 : startPage + 1;
       document.getElementById('modalStartPage').textContent = resumeFrom;
       document.getElementById('progressStartPage').value = startPage;
-      document.getElementById('progressLastPage').value = '';
-      document.getElementById('progressLastPage').min = resumeFrom;
       document.getElementById('progressLiveFeedback').classList.add('hidden');
       document.getElementById('progressErrorMsg').classList.add('hidden');
-      // #12 Sync slider to start position
+
+      // Restore draft jika ada
+      let draftPage = '';
+      try { draftPage = localStorage.getItem('khatamku_draft_page') || ''; } catch(e) {}
+      const pageInput = document.getElementById('progressLastPage');
+      pageInput.value = draftPage || '';
+      pageInput.min = resumeFrom;
+
+      // #12 Sync slider
       const slider = document.getElementById('progressSlider');
       slider.min = resumeFrom;
-      slider.value = resumeFrom;
-      syncSlider(resumeFrom);
+      const sliderVal = draftPage ? Math.min(604, Math.max(resumeFrom, parseInt(draftPage))) : resumeFrom;
+      slider.value = sliderVal;
+      syncSlider(sliderVal);
+      if (draftPage) handleProgressLiveFeedback();
     }
 
     function handleProgressLiveFeedback() {
@@ -5203,6 +5315,8 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
           todayProgressCount = res.todayProgress;
           saveToCache();
           updateDashboard();
+          // Hapus draft setelah berhasil disimpan
+          try { localStorage.removeItem('khatamku_draft_page'); } catch(e) {}
 
           if (res.isKhatamNow) {
           // Reset posisi bacaan ke 0, tampilkan perayaan khatam
@@ -5240,6 +5354,15 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
 
     // #10 Top Bar Toast (non-intrusive)
     function showToast(message, type = 'info') {
+      // Haptic feedback
+      try {
+        if (navigator.vibrate) {
+          if (type === 'success') navigator.vibrate(50);
+          else if (type === 'error') navigator.vibrate([50, 50, 50]);
+          else if (type === 'warning') navigator.vibrate([80, 40, 80]);
+        }
+      } catch(e) {}
+
       let toast = document.getElementById('appToast');
       if (!toast) {
         toast = document.createElement('div');
@@ -5252,7 +5375,8 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       else if (type === 'error') toast.classList.add('toast-error');
       toast.textContent = message;
       toast.classList.add('show');
-      setTimeout(() => { toast.classList.remove('show'); }, 4000);
+      clearTimeout(toast._timeout);
+      toast._timeout = setTimeout(() => { toast.classList.remove('show'); }, 4000);
     }
 
     function handleJournalSubmit(e) {
