@@ -911,36 +911,359 @@
     </main>
 
     <!-- CONTENT: TEACHER VIEW -->
-    <main id="teacherView" class="max-w-md mx-auto px-5 hidden pt-6 pb-24 relative z-10">
-      <div class="flex justify-between items-center mb-6">
+    <main id="teacherView" class="mx-auto px-4 hidden pt-4 pb-24 relative z-10" style="max-width:900px">
+
+      <!-- ── GURU HEADER ── -->
+      <div class="flex items-center justify-between mb-5">
         <div>
-          <h2 class="text-2xl font-black text-slate-800">Portal Guru</h2>
-          <select id="tcHalaqahSelect" onchange="filterTeacherView()" class="mt-2 text-[12px] font-black text-sky-600 uppercase tracking-widest bg-sky-50 border border-sky-100 rounded-xl px-4 py-2 outline-none appearance-none cursor-pointer shadow-sm">
-            <option value="Semua">Memuat...</option>
+          <p class="text-[10px] font-black tracking-[0.2em] uppercase mb-1" style="color:#0ea5e9">
+            <i class="fa-solid fa-chalkboard-user mr-1"></i> Portal Guru
+          </p>
+          <h2 class="text-2xl font-black tracking-tight text-slate-800" id="guruWelcomeTitle">Dashboard</h2>
+        </div>
+        <div class="flex items-center gap-2">
+          <select id="guruHalaqahFilter" onchange="guruApplyFilter()" class="text-[11px] font-black text-sky-600 uppercase tracking-wider bg-white border border-sky-200 rounded-xl px-3 py-2 outline-none shadow-sm cursor-pointer">
+            <option value="Semua">Semua Kelas</option>
           </select>
+          <button onclick="loadGuruDashboard()" class="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-sky-500 hover:border-sky-300 transition shadow-sm">
+            <i class="fa-solid fa-arrows-rotate text-xs"></i>
+          </button>
         </div>
       </div>
 
-      <div class="grid grid-cols-2 gap-4 mb-4">
-        <div class="glass-card p-5 rounded-[1.5rem] shadow-sm">
-          <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Murid</p>
-          <p class="text-4xl font-black text-slate-800" id="tcTotalStudents">0</p>
-        </div>
-        <div class="glass-card p-5 rounded-[1.5rem] shadow-sm">
-          <p class="text-[11px] font-bold text-emerald-500 uppercase tracking-widest mb-1">Setor Hari Ini</p>
-          <p class="text-4xl font-black text-emerald-600" id="tcStudentsDone">0</p>
-        </div>
+      <!-- ── GURU TAB BAR ── -->
+      <div class="admin-tab-bar mb-5">
+        <button class="admin-tab active" data-gtab="dashboard" onclick="switchGuruTab('dashboard')">
+          <i class="fa-solid fa-chart-pie"></i> Dashboard
+        </button>
+        <button class="admin-tab" data-gtab="murid" onclick="switchGuruTab('murid')">
+          <i class="fa-solid fa-users"></i> Murid
+        </button>
+        <button class="admin-tab" data-gtab="laporan" onclick="switchGuruTab('laporan')">
+          <i class="fa-solid fa-file-lines"></i> Laporan
+        </button>
       </div>
 
-      <button onclick="generateGroupReport()" class="w-full mb-8 bg-sky-50 hover:bg-sky-100 text-sky-600 border border-sky-200 font-extrabold py-4 rounded-[1.5rem] flex justify-center items-center gap-3 transition-colors shadow-sm">
-        <i class="fa-solid fa-copy text-lg"></i> SALIN REKAP HARI INI
-      </button>
+      <!-- ══════════════════════════════════════════
+           TAB 1: DASHBOARD
+      ══════════════════════════════════════════ -->
+      <section id="guruTabDashboard" class="guru-tab-pane">
 
-      <h3 class="font-bold text-[12px] text-slate-500 mb-4 tracking-widest uppercase">Daftar Murid</h3>
-      <div class="space-y-4 mb-8" id="tcStudentList">
-        <!-- Injected via JS -->
-      </div>
+        <!-- Stats Row -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+          <div class="stat-card text-center">
+            <div class="text-3xl font-black text-slate-800 mb-1" id="gStTotal">0</div>
+            <div class="stat-label">Total Murid</div>
+          </div>
+          <div class="stat-card text-center">
+            <div class="text-3xl font-black mb-1" style="color:#16a34a" id="gStActive">0</div>
+            <div class="stat-label" style="color:#16a34a">Aktif Hari Ini</div>
+          </div>
+          <div class="stat-card text-center">
+            <div class="text-3xl font-black mb-1" style="color:#dc2626" id="gStRisk">0</div>
+            <div class="stat-label" style="color:#dc2626">Berisiko</div>
+          </div>
+          <div class="stat-card text-center">
+            <div class="text-3xl font-black mb-1" style="color:#0ea5e9" id="gStAvg">0%</div>
+            <div class="stat-label">Rata-rata Progress</div>
+          </div>
+        </div>
+
+        <!-- Progress Bar Overview + Chart -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+
+          <!-- Activity Chart 14 hari -->
+          <div class="stat-card">
+            <p class="stat-label mb-3"><i class="fa-solid fa-chart-column mr-1"></i> Aktivitas 14 Hari</p>
+            <div class="flex items-end gap-1 h-20" id="guruActivityBars">
+              <!-- JS injected -->
+            </div>
+            <div class="flex justify-between text-[9px] text-slate-400 font-bold mt-1">
+              <span id="guruChartStart">—</span><span id="guruChartEnd">—</span>
+            </div>
+          </div>
+
+          <!-- Pie: aktif vs tidak -->
+          <div class="stat-card flex flex-col items-center justify-center">
+            <p class="stat-label mb-3 self-start"><i class="fa-solid fa-circle-half-stroke mr-1"></i> Status Hari Ini</p>
+            <div class="relative w-28 h-28">
+              <svg viewBox="0 0 36 36" class="w-full h-full -rotate-90">
+                <circle cx="18" cy="18" r="15.9" fill="none" stroke="#f1f5f9" stroke-width="3.8"/>
+                <circle id="guruPieActive" cx="18" cy="18" r="15.9" fill="none"
+                  stroke="#22c55e" stroke-width="3.8" stroke-dasharray="0 100"
+                  style="transition:stroke-dasharray 1s ease"/>
+                <circle id="guruPieRisk" cx="18" cy="18" r="15.9" fill="none"
+                  stroke="#ef4444" stroke-width="3.8" stroke-dasharray="0 100" stroke-dashoffset="-0"
+                  style="transition:stroke-dasharray 1s ease 0.2s"/>
+              </svg>
+              <div class="absolute inset-0 flex flex-col items-center justify-center">
+                <span class="text-xl font-black text-slate-800" id="guruPieCenter">0%</span>
+                <span class="text-[9px] font-bold text-slate-400">aktif</span>
+              </div>
+            </div>
+            <div class="flex gap-4 mt-3 text-[10px] font-bold">
+              <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-green-400 inline-block"></span> Aktif</span>
+              <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-red-400 inline-block"></span> Berisiko</span>
+              <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-slate-200 inline-block"></span> Lainnya</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top Murid Bulan Ini -->
+        <div class="stat-card mb-5">
+          <div class="flex items-center justify-between mb-3">
+            <p class="stat-label"><i class="fa-solid fa-trophy mr-1 text-amber-500"></i> Top Murid Bulan Ini</p>
+          </div>
+          <div id="guruTopStudents" class="space-y-2">
+            <p class="text-sm text-slate-400 italic">Memuat...</p>
+          </div>
+        </div>
+
+        <!-- Daftar Murid Ringkas -->
+        <div class="stat-card">
+          <div class="flex items-center justify-between mb-3">
+            <p class="stat-label"><i class="fa-solid fa-users mr-1"></i> Semua Murid</p>
+            <button onclick="generateGroupReport()" class="btn-secondary text-[11px] py-2 px-3">
+              <i class="fa-solid fa-copy"></i> Salin Rekap
+            </button>
+          </div>
+          <div id="guruStudentCards" class="space-y-2">
+            <p class="text-sm text-slate-400 italic">Memuat...</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════════════════════════════════
+           TAB 2: MANAJEMEN MURID
+      ══════════════════════════════════════════ -->
+      <section id="guruTabMurid" class="guru-tab-pane hidden">
+
+        <!-- Toolbar -->
+        <div class="stat-card mb-4">
+          <div class="flex gap-2 flex-col sm:flex-row">
+            <div class="flex-1 relative">
+              <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+              <input type="text" id="guruMuridSearch" class="admin-input pl-8" placeholder="Cari nama atau NIS..."
+                oninput="guruRenderMuridTable()">
+            </div>
+            <button class="btn-primary" onclick="openModal('modalGuruAddMurid')">
+              <i class="fa-solid fa-plus"></i> Tambah Murid
+            </button>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="stat-card !p-0 overflow-hidden overflow-x-auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Nama</th>
+                <th>Status</th>
+                <th class="text-right">Halaman</th>
+                <th class="text-right">Target</th>
+                <th class="text-right">Streak</th>
+                <th>Update Terakhir</th>
+                <th class="text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="guruMuridTableBody">
+              <tr><td colspan="7" class="text-center py-8 text-slate-400">Memuat...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="text-[11px] text-slate-400 mt-2 font-semibold" id="guruMuridTableInfo">—</p>
+      </section>
+
+      <!-- ══════════════════════════════════════════
+           TAB 3: LAPORAN MINGGUAN
+      ══════════════════════════════════════════ -->
+      <section id="guruTabLaporan" class="guru-tab-pane hidden">
+        <div class="stat-card mb-4">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="text-lg font-black text-slate-800">Laporan Mingguan</h3>
+              <p class="text-sm text-slate-500" id="guruLaporanPeriod">—</p>
+            </div>
+            <button onclick="salinLaporan()" class="btn-primary">
+              <i class="fa-solid fa-copy"></i> Salin
+            </button>
+          </div>
+
+          <!-- Summary -->
+          <div class="grid grid-cols-2 gap-3 mb-4">
+            <div class="bg-green-50 border border-green-100 rounded-2xl p-3 text-center">
+              <p class="text-2xl font-black text-green-700" id="laporanAktif">0</p>
+              <p class="text-[10px] font-black text-green-600 uppercase tracking-wider">Aktif Minggu Ini</p>
+            </div>
+            <div class="bg-red-50 border border-red-100 rounded-2xl p-3 text-center">
+              <p class="text-2xl font-black text-red-700" id="laporanRisiko">0</p>
+              <p class="text-[10px] font-black text-red-600 uppercase tracking-wider">Perlu Perhatian</p>
+            </div>
+          </div>
+
+          <!-- Per-murid table -->
+          <div class="overflow-x-auto">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Nama</th>
+                  <th class="text-center">Hari Aktif</th>
+                  <th class="text-right">Total Hal</th>
+                  <th class="text-right">Rata-rata</th>
+                  <th>7 Hari</th>
+                </tr>
+              </thead>
+              <tbody id="guruLaporanBody">
+                <tr><td colspan="5" class="text-center py-8 text-slate-400">Memuat...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
     </main>
+
+    <!-- ============================================================
+         GURU MODALS
+    ============================================================ -->
+
+    <!-- Modal: Detail Murid + Input Progress + Catatan -->
+    <div id="modalGuruStudent" class="fixed inset-0 z-50 modal-overlay hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="modal-content w-full sm:max-w-lg rounded-t-[2.5rem] sm:rounded-3xl p-6 transform transition-transform translate-y-full sm:translate-y-0 sm:scale-95 sm:opacity-0 max-h-[92vh] overflow-y-auto" id="modalGuruStudentContent">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-4 pb-4 border-b border-slate-100">
+          <div>
+            <h3 class="text-xl font-black text-slate-800" id="gsModalName">—</h3>
+            <p class="text-xs text-slate-500 mt-0.5" id="gsModalHalaqah">—</p>
+          </div>
+          <button onclick="closeModal('modalGuruStudent')" class="text-slate-400 bg-slate-100 hover:bg-slate-200 w-9 h-9 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="grid grid-cols-3 gap-2 mb-4">
+          <div class="bg-sky-50 rounded-xl p-3 text-center">
+            <p class="text-xl font-black text-sky-700" id="gsModalPage">0</p>
+            <p class="text-[9px] font-black text-sky-500 uppercase tracking-wider">Halaman</p>
+          </div>
+          <div class="bg-amber-50 rounded-xl p-3 text-center">
+            <p class="text-xl font-black text-amber-700" id="gsModalStreak">0</p>
+            <p class="text-[9px] font-black text-amber-500 uppercase tracking-wider">Streak 🔥</p>
+          </div>
+          <div class="bg-purple-50 rounded-xl p-3 text-center">
+            <p class="text-xl font-black text-purple-700" id="gsModalKhatam">0</p>
+            <p class="text-[9px] font-black text-purple-500 uppercase tracking-wider">Khatam 🏆</p>
+          </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="mb-4">
+          <div class="flex justify-between text-[11px] font-bold text-slate-600 mb-1.5">
+            <span>Progress Al-Quran</span>
+            <span id="gsModalPct">0%</span>
+          </div>
+          <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+            <div id="gsModalBar" class="h-full rounded-full transition-all duration-1000" style="background:linear-gradient(to right,#0ea5e9,#2563eb);width:0%"></div>
+          </div>
+        </div>
+
+        <!-- Riwayat 7 hari -->
+        <div class="mb-4">
+          <p class="stat-label mb-2">Riwayat 7 Hari</p>
+          <div class="grid grid-cols-7 gap-1" id="gsModal7Days"></div>
+        </div>
+
+        <!-- Input Progress oleh Guru -->
+        <div class="bg-sky-50 border border-sky-100 rounded-2xl p-4 mb-4">
+          <p class="text-xs font-black text-sky-700 uppercase tracking-wider mb-3"><i class="fa-solid fa-pen-to-square mr-1"></i> Input Progress Atas Nama Murid</p>
+          <div class="flex gap-2">
+            <div class="flex-1">
+              <input type="number" id="gsInputPage" min="1" max="604" class="admin-input text-center font-black text-lg" placeholder="Halaman...">
+            </div>
+            <div class="w-32">
+              <input type="date" id="gsInputDate" class="admin-input">
+            </div>
+            <button onclick="submitGuruProgress()" class="btn-primary px-3">
+              <i class="fa-solid fa-check"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Catatan Guru -->
+        <div class="mb-4">
+          <p class="stat-label mb-2"><i class="fa-solid fa-note-sticky mr-1"></i> Catatan Pribadi</p>
+          <textarea id="gsCatatan" class="admin-input" rows="3" placeholder="Catatan tentang murid ini (hanya terlihat olehmu)..."></textarea>
+          <div class="flex justify-between items-center mt-2">
+            <p class="text-[10px] text-slate-400" id="gsCatatanUpdated">—</p>
+            <button onclick="submitGuruCatatan()" class="btn-secondary text-xs py-1.5 px-3">
+              <i class="fa-solid fa-save"></i> Simpan
+            </button>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex gap-2">
+          <button id="gsWaBtn" class="btn-secondary flex-1 justify-center text-green-600 border-green-200 bg-green-50" onclick="">
+            <i class="fa-brands fa-whatsapp"></i> WhatsApp
+          </button>
+          <button onclick="openGuruEditMurid()" class="btn-secondary flex-1 justify-center">
+            <i class="fa-solid fa-pen"></i> Edit Data
+          </button>
+        </div>
+        <input type="hidden" id="gsCurrentStudentId">
+      </div>
+    </div>
+
+    <!-- Modal: Tambah Murid (Guru) -->
+    <div id="modalGuruAddMurid" class="fixed inset-0 z-50 modal-overlay hidden flex items-center justify-center p-4">
+      <div class="modal-content w-full max-w-md rounded-3xl p-6 transform transition-transform scale-95 opacity-0" id="modalGuruAddMuridContent">
+        <div class="flex justify-between items-center mb-5 pb-4 border-b border-slate-100">
+          <h3 class="text-xl font-black text-slate-800"><i class="fa-solid fa-user-plus text-sky-500 mr-2"></i> Tambah Murid</h3>
+          <button onclick="closeModal('modalGuruAddMurid')" class="text-slate-400 bg-slate-100 hover:bg-slate-200 w-9 h-9 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <form onsubmit="event.preventDefault(); submitGuruAddMurid();" class="space-y-3">
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="admin-label">NIS *</label><input type="text" id="gAddNis" class="admin-input" required pattern="[a-zA-Z0-9_]+"></div>
+            <div><label class="admin-label">Password *</label><input type="text" id="gAddPass" class="admin-input" required minlength="4"></div>
+          </div>
+          <div><label class="admin-label">Nama Lengkap *</label><input type="text" id="gAddNama" class="admin-input" required></div>
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="admin-label">No WhatsApp</label><input type="tel" id="gAddWa" class="admin-input" placeholder="081234..."></div>
+            <div><label class="admin-label">Target Harian</label><input type="number" id="gAddTarget" class="admin-input" min="0" value="0"></div>
+          </div>
+          <div>
+            <label class="admin-label">Halaman Awal <span class="normal-case text-slate-400">(murid pindahan)</span></label>
+            <input type="number" id="gAddHalAwal" class="admin-input" min="0" max="604" value="0">
+          </div>
+          <div class="flex justify-end gap-2 pt-2">
+            <button type="button" class="btn-secondary" onclick="closeModal('modalGuruAddMurid')">Batal</button>
+            <button type="submit" class="btn-primary"><i class="fa-solid fa-plus"></i> Tambahkan</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal: Edit Murid (Guru) -->
+    <div id="modalGuruEditMurid" class="fixed inset-0 z-50 modal-overlay hidden flex items-center justify-center p-4">
+      <div class="modal-content w-full max-w-md rounded-3xl p-6 transform transition-transform scale-95 opacity-0" id="modalGuruEditMuridContent">
+        <div class="flex justify-between items-center mb-5 pb-4 border-b border-slate-100">
+          <h3 class="text-xl font-black text-slate-800"><i class="fa-solid fa-pen text-sky-500 mr-2"></i> Edit Murid</h3>
+          <button onclick="closeModal('modalGuruEditMurid')" class="text-slate-400 bg-slate-100 hover:bg-slate-200 w-9 h-9 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <form onsubmit="event.preventDefault(); submitGuruEditMurid();" class="space-y-3">
+          <input type="hidden" id="gEditId">
+          <div><label class="admin-label">NIS</label><input type="text" id="gEditNis" class="admin-input" disabled></div>
+          <div><label class="admin-label">Nama Lengkap</label><input type="text" id="gEditNama" class="admin-input"></div>
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="admin-label">No WhatsApp</label><input type="tel" id="gEditWa" class="admin-input"></div>
+            <div><label class="admin-label">Target Harian</label><input type="number" id="gEditTarget" class="admin-input" min="0"></div>
+          </div>
+          <div class="flex justify-end gap-2 pt-2">
+            <button type="button" class="btn-secondary" onclick="closeModal('modalGuruEditMurid')">Batal</button>
+            <button type="submit" class="btn-primary"><i class="fa-solid fa-save"></i> Simpan</button>
+          </div>
+        </form>
+      </div>
+    </div>
 
     <!-- ============================================================
          VIEW: ADMIN PORTAL
@@ -2687,14 +3010,7 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
         document.getElementById('teacherView').classList.remove('hidden');
         document.getElementById('adminView').classList.add('hidden');
         document.getElementById('bottomNav').classList.add('hidden');
-        
-        teacherDataCache = data;
-        const sel = document.getElementById('tcHalaqahSelect');
-        sel.innerHTML = '<option value="Semua">SEMUA KELAS</option>';
-        data.halaqahs.forEach(h => {
-          sel.innerHTML += `<option value="${h}">${h.toUpperCase()}</option>`;
-        });
-        filterTeacherView();
+        loadGuruDashboard();
       }
     }
 
@@ -2744,168 +3060,428 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
         .catch(() => {});
     }
 
-    let teacherDataCache = null;
-    let filteredStudents = [];
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // PORTAL GURU — JavaScript Module (menggantikan fungsi lama)
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-    function loadTeacherData() {
-      showLoading("MEMUAT DATA HALAQAH...");
-      gscript.getTeacherDashboardData(currentUser.id)
-        .then(data => {
-          teacherDataCache = data;
-          const sel = document.getElementById('tcHalaqahSelect');
-          sel.innerHTML = '<option value="Semua">SEMUA KELAS</option>';
-          data.halaqahs.forEach(h => {
-            sel.innerHTML += `<option value="${h}">${h.toUpperCase()}</option>`;
-          });
-          filterTeacherView();
+    let guruCache        = null;   // data lengkap dari guruGetDashboard
+    let guruFiltered     = [];     // murid setelah filter halaqah
+    let guruCurrentTab   = 'dashboard';
+    let guruLaporanCache = null;
+
+    // ── Tab navigation ──────────────────────────────────────
+    function switchGuruTab(tab) {
+      guruCurrentTab = tab;
+      document.querySelectorAll('#teacherView [data-gtab]').forEach(b =>
+        b.classList.toggle('active', b.dataset.gtab === tab));
+      document.querySelectorAll('.guru-tab-pane').forEach(s => s.classList.add('hidden'));
+      document.getElementById('guruTab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.remove('hidden');
+      if (tab === 'murid')    guruRenderMuridTable();
+      if (tab === 'laporan')  loadGuruLaporan();
+    }
+
+    // ── Load dashboard ──────────────────────────────────────
+    function loadGuruDashboard() {
+      showLoading('MEMUAT PORTAL GURU...');
+      gscript.guruGetDashboard(currentUser.id)
+        .then(d => {
+          guruCache = d;
+          guruApplyFilter();
           hideLoading();
         })
-        .catch(onError);
+        .catch(err => { hideLoading(); onError(err); });
     }
-    
-    function filterTeacherView() {
-      if (!teacherDataCache) return;
-      const selectedHalaqah = document.getElementById('tcHalaqahSelect').value;
-      
-      if (selectedHalaqah === 'Semua') {
-        filteredStudents = teacherDataCache.students;
-      } else {
-        filteredStudents = teacherDataCache.students.filter(s => s.halaqah === selectedHalaqah);
+
+    // Backward compat untuk fungsi lama yang masih dipanggil dari initAppWithData
+    function loadTeacherData() { loadGuruDashboard(); }
+
+    function guruApplyFilter() {
+      if (!guruCache) return;
+      const sel = document.getElementById('guruHalaqahFilter');
+      const val = sel ? sel.value : 'Semua';
+
+      // Populate filter dropdown first time
+      if (guruCache.halaqahs && sel && sel.options.length <= 1) {
+        sel.innerHTML = '<option value="Semua">Semua Kelas</option>';
+        guruCache.halaqahs.forEach(h => {
+          sel.innerHTML += `<option value="${escapeHtml(h)}">${escapeHtml(h)}</option>`;
+        });
       }
-      
-      let doneCount = 0;
-      let html = '';
-      
-      if (filteredStudents.length === 0) {
-        html = '<div class="text-sm text-slate-400 text-center py-10 font-medium"><p>Belum ada murid di kelas ini.</p></div>';
-      } else {
-        filteredStudents.forEach(st => {
-          if (st.hasReadToday) doneCount++;
-          
-          const isUdzur = st.udzurStatus !== '';
-          const bgClass = isUdzur ? 'bg-pink-50' : (st.isAtRisk ? 'bg-red-50' : 'bg-white hover:bg-slate-50');
-          const borderClass = isUdzur ? 'border-l-4 border-l-pink-400' : (st.isAtRisk ? 'border-l-4 border-l-red-500' : '');
-          const badgeClass = isUdzur ? 'text-[10px] bg-pink-100 text-pink-600 px-2 py-0.5 rounded-md ml-2 align-middle' : '';
-          const iconUdzur = st.udzurStatus === 'Haid' ? '🌸' : (st.udzurStatus === 'Sakit' ? '🤒' : '✈️');
-          const udzurBadge = isUdzur ? `<span class="${badgeClass}" title="Selesai otomatis pd ${formatDateID(st.udzurEnd)}">${st.udzurStatus} ${iconUdzur}</span>` : '';
-          
-          const warningBadge = st.isAtRisk ? `<i class="fa-solid fa-triangle-exclamation text-amber-500 ml-2" title="Belum setor ≥ 3 hari"></i>` : '';
-          
-          let waBtn = '';
-          if (st.wa) {
-            let phone = String(st.wa).replace(/\D/g, '');
-            if (phone.startsWith('0')) phone = '62' + phone.substring(1);
-            let msg = encodeURIComponent(`Assalamu'alaikum ${st.name}, jangan lupa tilawah harian dan catat progres bacaan Al-Quran kamu hari ini ya. Semangat! 🌟`);
-            waBtn = `<a href="https://wa.me/${phone}?text=${msg}" target="_blank" onclick="event.stopPropagation()" class="w-10 h-10 rounded-xl bg-emerald-50 hover:bg-emerald-100 flex items-center justify-center text-emerald-500 transition-colors shadow-sm"><i class="fa-brands fa-whatsapp text-lg"></i></a>`;
-          } else {
-            waBtn = `<button onclick="event.stopPropagation(); customAlert('Data Tidak Lengkap', 'Nomor WA belum terdaftar di database (Sheet Akun).', 'warning')" class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-300 shadow-sm"><i class="fa-brands fa-whatsapp text-lg"></i></button>`;
-          }
 
-          let alertStatus = '';
-          if (isUdzur) {
-            alertStatus = `<span class="text-pink-500 flex items-center gap-1"><i class="fa-solid fa-bed"></i> Sedang Udzur Syar'i</span>`;
-          } else if (st.hasReadToday) {
-            alertStatus = `<span class="text-emerald-500 flex items-center gap-1"><i class="fa-solid fa-circle-check"></i> Selesai (${st.todayRead} hal)</span>`;
-          } else {
-            alertStatus = `<span class="text-slate-400 flex items-center gap-1"><i class="fa-solid fa-circle-xmark"></i> Belum Setor</span>`;
-          }
+      guruFiltered = val === 'Semua'
+        ? guruCache.students
+        : guruCache.students.filter(s => s.halaqah === val);
 
-          html += `
-          <div class="glass-card p-4 rounded-[1.5rem] flex items-center justify-between shadow-sm cursor-pointer ${bgClass} ${borderClass} transition-colors" onclick="openHistoryModal('${st.id}')">
-            <div class="flex-1">
-              <p class="font-bold text-slate-800 text-sm mb-1">${st.name}${warningBadge}${udzurBadge}</p>
-              <div class="flex items-center gap-3 text-[11px] font-semibold">
-                <span class="text-sky-600 bg-sky-50 px-2 py-0.5 rounded-md">Hal ${st.lastPage}</span>
-                ${alertStatus}
+      renderGuruDashboard();
+      if (guruCurrentTab === 'murid') guruRenderMuridTable();
+    }
+
+    // ── Render Dashboard ────────────────────────────────────
+    function renderGuruDashboard() {
+      const d = guruCache;
+      const s = d.summary;
+
+      document.getElementById('guruWelcomeTitle').textContent = `Ahlan, ${d.guru.nama.split(' ')[0]}!`;
+      document.getElementById('gStTotal').textContent  = guruFiltered.length;
+      document.getElementById('gStActive').textContent = guruFiltered.filter(x => x.hasReadToday).length;
+      document.getElementById('gStRisk').textContent   = guruFiltered.filter(x => x.isAtRisk).length;
+      const avgPct = guruFiltered.length
+        ? Math.round(guruFiltered.reduce((a,x) => a + x.pct, 0) / guruFiltered.length)
+        : 0;
+      document.getElementById('gStAvg').textContent = avgPct + '%';
+
+      // Activity chart
+      const barsEl = document.getElementById('guruActivityBars');
+      if (d.activityChart && d.activityChart.length) {
+        const max = Math.max(...d.activityChart.map(c => c.count), 1);
+        barsEl.innerHTML = d.activityChart.map(c => {
+          const h = Math.max(4, Math.round((c.count / max) * 72));
+          return `<div class="flex-1 rounded-t" style="height:${h}px;background:${c.count>0?'linear-gradient(to top,#0ea5e9,#38bdf8)':'#f1f5f9'}" title="${c.date}: ${c.count} aktif"></div>`;
+        }).join('');
+        document.getElementById('guruChartStart').textContent = d.activityChart[0].date.slice(5);
+        document.getElementById('guruChartEnd').textContent   = d.activityChart[d.activityChart.length-1].date.slice(5);
+      }
+
+      // Pie chart
+      const total   = guruFiltered.length || 1;
+      const active  = guruFiltered.filter(x => x.hasReadToday).length;
+      const risk    = guruFiltered.filter(x => x.isAtRisk).length;
+      const activePct = (active / total) * 100;
+      const riskPct   = (risk / total) * 100;
+      const circ = 100; // circumference basis
+      document.getElementById('guruPieActive').setAttribute('stroke-dasharray', `${activePct} ${circ}`);
+      document.getElementById('guruPieRisk').setAttribute('stroke-dasharray',   `${riskPct} ${circ}`);
+      document.getElementById('guruPieRisk').setAttribute('stroke-dashoffset',  `-${activePct}`);
+      document.getElementById('guruPieCenter').textContent = Math.round((active/total)*100) + '%';
+
+      // Top students
+      const topEl = document.getElementById('guruTopStudents');
+      const tops  = d.topStudents.filter(t => guruFiltered.find(s => s.id === t.id));
+      if (tops.length) {
+        topEl.innerHTML = tops.map((t, i) => {
+          const medals = ['🥇','🥈','🥉','4️⃣','5️⃣'];
+          return `
+          <div class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 transition cursor-pointer" onclick="openGuruStudentModal('${escapeJs(t.id)}')">
+            <span class="text-lg w-6 text-center">${medals[i]}</span>
+            <div class="flex-1 min-w-0">
+              <p class="font-bold text-sm text-slate-800 truncate">${escapeHtml(t.name)}</p>
+              <div class="flex items-center gap-1 mt-0.5">
+                <div class="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                  <div class="h-full rounded-full bg-gradient-to-r from-sky-400 to-blue-500" style="width:${t.pct}%"></div>
+                </div>
+                <span class="text-[10px] font-black text-slate-500">${t.pct}%</span>
               </div>
             </div>
-            <div class="shrink-0 ml-3">
-              ${waBtn}
-            </div>
+            <span class="text-sm font-black text-sky-600">${t.monthPages} hal</span>
           </div>`;
-        });
+        }).join('');
+      } else {
+        topEl.innerHTML = '<p class="text-sm text-slate-400 italic">Belum ada data bulan ini.</p>';
       }
-      
-      document.getElementById('tcTotalStudents').textContent = filteredStudents.length;
-      document.getElementById('tcStudentsDone').textContent = doneCount;
-      document.getElementById('tcStudentList').innerHTML = html;
+
+      // Student cards
+      renderGuruStudentCards();
     }
 
-    function generateGroupReport() {
-      if (!teacherDataCache || !filteredStudents) return;
-      
-      const selectedHalaqah = document.getElementById('tcHalaqahSelect').value;
-      const reportTitle = selectedHalaqah === 'Semua' ? 'Seluruh Kelas' : selectedHalaqah;
-      
-      const doneList = [];
-      const notDoneList = [];
-      
-      filteredStudents.forEach(st => {
-        if (st.hasReadToday) {
-          doneList.push(`${st.name} (Hal ${st.lastPage})`);
+    function renderGuruStudentCards() {
+      const el = document.getElementById('guruStudentCards');
+      if (!guruFiltered.length) {
+        el.innerHTML = '<p class="text-sm text-slate-400 italic text-center py-6">Belum ada murid.</p>';
+        return;
+      }
+      el.innerHTML = guruFiltered.map(s => {
+        const isUdzur = !!s.udzurStatus;
+        let statusDot, statusText;
+        if (isUdzur) {
+          statusDot = 'bg-pink-400'; statusText = `<span class="text-pink-500">⊘ ${s.udzurStatus}</span>`;
+        } else if (s.hasReadToday) {
+          statusDot = 'bg-green-400'; statusText = `<span class="text-green-600">✓ ${s.todayRead} hal</span>`;
+        } else if (s.isAtRisk) {
+          statusDot = 'bg-red-400'; statusText = `<span class="text-red-500">⚠ ${s.diffDays} hari</span>`;
         } else {
-          notDoneList.push(st.name);
+          statusDot = 'bg-slate-300'; statusText = `<span class="text-slate-400">Belum setor</span>`;
         }
-      });
-      
-      let report = `Bismillah, Laporan ${reportTitle} Hari Ini.\n\n`;
-      report += `✅ *SUDAH SETOR:*\n`;
-      if (doneList.length > 0) {
-        doneList.forEach((n, i) => report += `${i+1}. ${n}\n`);
-      } else {
-        report += `- Belum ada -\n`;
-      }
-      
-      report += `\n⏳ *BELUM SETOR:*\n`;
-      if (notDoneList.length > 0) {
-        notDoneList.forEach((n, i) => report += `${i+1}. ${n}\n`);
-      } else {
-        report += `- Alhamdulillah tuntas semua -\n`;
-      }
-      
-      report += `\nMari selesaikan target harian kita sebelum jam 00:00! 💪✨`;
-      
-      navigator.clipboard.writeText(report).then(() => {
-        showToast("✅ Rekap berhasil disalin ke clipboard!", 'success');
-      }).catch(err => {
-        customAlert('Gagal', "Gagal menyalin teks: " + err, 'error');
-      });
-    }
 
-    function openHistoryModal(studentId) {
-      if (!teacherDataCache) return;
-      const student = teacherDataCache.students.find(s => s.id === studentId);
-      if (!student) return;
-      
-      document.getElementById('histStudentName').textContent = student.name;
-      
-      let html = '';
-      if (!student.history7Days || student.history7Days.length === 0) {
-        html = '<p class="text-center text-slate-400 py-4 text-sm font-medium">Tidak ada data riwayat.</p>';
-      } else {
-        student.history7Days.forEach(h => {
-          const isToday = h.date === getLocalDateString();
-          const hasRead = h.pagesRead > 0;
-          const bgClass = hasRead ? 'bg-sky-50 border-sky-100' : 'bg-slate-50 border-slate-100 text-slate-400';
-          const textClass = hasRead ? 'text-sky-600' : 'text-slate-400';
-          const icon = hasRead ? '<i class="fa-solid fa-check text-emerald-500"></i>' : '<i class="fa-solid fa-minus opacity-30"></i>';
-          const label = isToday ? 'Hari Ini' : formatDateID(h.date);
-          
-          html += `
-          <div class="flex justify-between items-center p-4 rounded-2xl border ${bgClass} shadow-sm">
-            <p class="font-bold text-sm ${isToday ? 'text-slate-800' : 'text-slate-600'}">${label}</p>
-            <div class="flex items-center gap-3">
-              <span class="font-black ${textClass}">${h.pagesRead} hal</span>
-              <div class="w-6 text-right">${icon}</div>
+        // Mini 7-day dots
+        const dots = s.history7.map(h =>
+          `<div class="w-2 h-2 rounded-full ${h.pagesRead > 0 ? 'bg-sky-400' : 'bg-slate-200'}"></div>`
+        ).join('');
+
+        return `
+        <div class="flex items-center gap-3 p-3 rounded-xl border border-transparent hover:border-sky-100 hover:bg-sky-50/40 transition cursor-pointer" onclick="openGuruStudentModal('${escapeJs(s.id)}')">
+          <div class="w-2 h-2 rounded-full ${statusDot} shrink-0"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-1.5">
+              <p class="font-bold text-sm text-slate-800 truncate">${escapeHtml(s.name)}</p>
+              ${s.streak >= 3 ? `<span class="text-[10px]">🔥${s.streak}</span>` : ''}
+            </div>
+            <div class="flex items-center gap-2 mt-0.5 text-[11px] font-semibold">
+              <span class="text-sky-600">Hal ${s.lastPage}</span>
+              <span class="text-slate-300">•</span>
+              ${statusText}
             </div>
           </div>
-          `;
-        });
-      }
-      
-      document.getElementById('histList').innerHTML = html;
-      openModal('modalHistory');
+          <div class="flex gap-0.5 shrink-0">${dots}</div>
+        </div>`;
+      }).join('');
     }
+
+    // ── Murid Table ─────────────────────────────────────────
+    function guruRenderMuridTable() {
+      if (!guruCache) return;
+      const keyword = (document.getElementById('guruMuridSearch').value || '').toLowerCase();
+      const filtered = guruFiltered.filter(s =>
+        !keyword || s.id.toLowerCase().includes(keyword) || s.name.toLowerCase().includes(keyword)
+      );
+      const today = new Date(); today.setHours(0,0,0,0);
+      const tbody = document.getElementById('guruMuridTableBody');
+
+      if (!filtered.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-slate-400">Tidak ada murid ditemukan.</td></tr>';
+      } else {
+        tbody.innerHTML = filtered.map(s => {
+          const isUdzur = !!s.udzurStatus;
+          let badge = '';
+          if (isUdzur)        badge = `<span class="badge badge-udzur">${escapeHtml(s.udzurStatus)}</span>`;
+          else if (s.hasReadToday) badge = `<span class="badge badge-active">✓ Aktif</span>`;
+          else if (s.isAtRisk)     badge = `<span class="badge badge-risk">⚠ ${s.diffDays}h</span>`;
+          else                     badge = `<span class="badge badge-idle">Idle</span>`;
+
+          return `<tr>
+            <td class="font-bold cursor-pointer hover:text-sky-600" onclick="openGuruStudentModal('${escapeJs(s.id)}')">${escapeHtml(s.name)}</td>
+            <td>${badge}</td>
+            <td class="text-right font-black">${s.lastPage}</td>
+            <td class="text-right text-slate-500">${s.target || '—'}</td>
+            <td class="text-right">${s.streak}🔥</td>
+            <td class="text-xs text-slate-500">${s.lastUpdate || '—'}</td>
+            <td class="text-right whitespace-nowrap">
+              <button class="icon-btn" title="Detail" onclick="openGuruStudentModal('${escapeJs(s.id)}')"><i class="fa-solid fa-eye"></i></button>
+              <button class="icon-btn" title="Edit" onclick="openGuruEditFromTable('${escapeJs(s.id)}')"><i class="fa-solid fa-pen"></i></button>
+              ${s.wa ? `<a href="https://wa.me/${escapeHtml(s.wa)}" target="_blank" class="icon-btn" title="WA"><i class="fa-brands fa-whatsapp text-green-500"></i></a>` : ''}
+            </td>
+          </tr>`;
+        }).join('');
+      }
+      document.getElementById('guruMuridTableInfo').textContent =
+        `Menampilkan ${filtered.length} dari ${guruFiltered.length} murid`;
+    }
+
+    // ── Student Detail Modal ────────────────────────────────
+    function openGuruStudentModal(studentId) {
+      if (!guruCache) return;
+      const s = guruCache.students.find(x => x.id === studentId);
+      if (!s) return;
+
+      document.getElementById('gsCurrentStudentId').value = studentId;
+      document.getElementById('gsModalName').textContent    = s.name;
+      document.getElementById('gsModalHalaqah').textContent = s.halaqah + ' · NIS: ' + s.id;
+      document.getElementById('gsModalPage').textContent    = s.lastPage;
+      document.getElementById('gsModalStreak').textContent  = s.streak;
+      document.getElementById('gsModalKhatam').textContent  = s.totalKhatam;
+      document.getElementById('gsModalPct').textContent     = s.pct + '%';
+      document.getElementById('gsModalBar').style.width     = s.pct + '%';
+      document.getElementById('gsInputPage').value  = '';
+      document.getElementById('gsInputDate').value  = new Date().toISOString().slice(0, 10);
+
+      // 7-day grid
+      const grid = document.getElementById('gsModal7Days');
+      grid.innerHTML = s.history7.map(h => {
+        const hasRead = h.pagesRead > 0;
+        const isToday = h.date === getLocalDateString();
+        return `<div class="text-center">
+          <div class="h-8 rounded-lg flex items-center justify-center text-xs font-black mb-1 ${hasRead ? 'bg-sky-100 text-sky-700' : 'bg-slate-100 text-slate-400'} ${isToday ? 'ring-2 ring-sky-400' : ''}">${hasRead ? h.pagesRead : '—'}</div>
+          <p class="text-[8px] font-bold text-slate-400">${h.date.slice(8)}</p>
+        </div>`;
+      }).join('');
+
+      // WA button
+      const waBtn = document.getElementById('gsWaBtn');
+      if (s.wa) {
+        const msg = encodeURIComponent(`Assalamu'alaikum ${s.name}, jangan lupa tilawah harian ya! Semangat 🌟`);
+        waBtn.onclick = () => window.open(`https://wa.me/${s.wa}?text=${msg}`, '_blank');
+        waBtn.disabled = false;
+      } else {
+        waBtn.onclick = () => showToast('Nomor WA belum terdaftar.', 'warning');
+        waBtn.disabled = false;
+      }
+
+      // Load catatan
+      gscript.guruGetCatatan(currentUser.id, studentId)
+        .then(res => {
+          document.getElementById('gsCatatan').value = res.catatan || '';
+          document.getElementById('gsCatatanUpdated').textContent =
+            res.updated ? 'Diupdate: ' + res.updated : 'Belum ada catatan';
+        })
+        .catch(() => {});
+
+      openModal('modalGuruStudent');
+    }
+
+    function submitGuruProgress() {
+      const studentId = document.getElementById('gsCurrentStudentId').value;
+      const page = parseInt(document.getElementById('gsInputPage').value);
+      const date = document.getElementById('gsInputDate').value;
+      if (!page || page < 1 || page > 604) { showToast('Masukkan halaman 1–604', 'warning'); return; }
+      showLoading('Menyimpan progress...');
+      gscript.guruInputProgress(currentUser.id, { targetUserId: studentId, lastPage: page, date })
+        .then(() => {
+          hideLoading();
+          showToast('Progress berhasil dicatat ✅', 'success');
+          closeModal('modalGuruStudent');
+          loadGuruDashboard();
+        })
+        .catch(err => { hideLoading(); onError(err); });
+    }
+
+    function submitGuruCatatan() {
+      const studentId = document.getElementById('gsCurrentStudentId').value;
+      const isi = document.getElementById('gsCatatan').value.trim();
+      gscript.guruSaveCatatan(currentUser.id, { studentId, isi })
+        .then(() => showToast('Catatan disimpan ✅', 'success'))
+        .catch(onError);
+    }
+
+    // ── CRUD Murid ──────────────────────────────────────────
+    function openGuruEditFromTable(studentId) {
+      openGuruStudentModal(studentId);
+    }
+
+    function openGuruEditMurid() {
+      const studentId = document.getElementById('gsCurrentStudentId').value;
+      const s = guruCache && guruCache.students.find(x => x.id === studentId);
+      if (!s) return;
+      document.getElementById('gEditId').value     = s.id;
+      document.getElementById('gEditNis').value    = s.id;
+      document.getElementById('gEditNama').value   = s.name;
+      document.getElementById('gEditWa').value     = s.wa || '';
+      document.getElementById('gEditTarget').value = s.target || 0;
+      closeModal('modalGuruStudent');
+      openModal('modalGuruEditMurid');
+    }
+
+    function submitGuruAddMurid() {
+      const data = {
+        nis        : document.getElementById('gAddNis').value.trim(),
+        password   : document.getElementById('gAddPass').value,
+        namaLengkap: document.getElementById('gAddNama').value.trim(),
+        noWa       : document.getElementById('gAddWa').value.trim(),
+        targetHarian: parseInt(document.getElementById('gAddTarget').value) || 0,
+        halamanAwal : parseInt(document.getElementById('gAddHalAwal').value) || 0
+      };
+      showLoading('Menambahkan murid...');
+      gscript.guruAddMurid(currentUser.id, data)
+        .then(() => {
+          hideLoading();
+          closeModal('modalGuruAddMurid');
+          showToast(`${data.namaLengkap} berhasil ditambahkan ✅`, 'success');
+          document.querySelectorAll('#modalGuruAddMurid input').forEach(i => { if(!i.disabled) i.value=''; });
+          document.getElementById('gAddTarget').value = '0';
+          document.getElementById('gAddHalAwal').value = '0';
+          loadGuruDashboard();
+        })
+        .catch(err => { hideLoading(); onError(err); });
+    }
+
+    function submitGuruEditMurid() {
+      const userId = document.getElementById('gEditId').value;
+      const data = {
+        namaLengkap : document.getElementById('gEditNama').value.trim(),
+        noWa        : document.getElementById('gEditWa').value.trim(),
+        targetHarian: parseInt(document.getElementById('gEditTarget').value) || 0
+      };
+      showLoading('Menyimpan...');
+      gscript.guruEditMurid(currentUser.id, userId, data)
+        .then(() => {
+          hideLoading();
+          closeModal('modalGuruEditMurid');
+          showToast('Data murid diperbarui ✅', 'success');
+          loadGuruDashboard();
+        })
+        .catch(err => { hideLoading(); onError(err); });
+    }
+
+    // ── Laporan Mingguan ────────────────────────────────────
+    function loadGuruLaporan() {
+      if (guruLaporanCache) { renderGuruLaporan(guruLaporanCache); return; }
+      showLoading('Membuat laporan...');
+      gscript.guruGetLaporanMingguan(currentUser.id)
+        .then(d => {
+          guruLaporanCache = d;
+          hideLoading();
+          renderGuruLaporan(d);
+        })
+        .catch(err => { hideLoading(); onError(err); });
+    }
+
+    function renderGuruLaporan(d) {
+      document.getElementById('guruLaporanPeriod').textContent =
+        `${d.week.start} — ${d.week.end}`;
+      document.getElementById('laporanAktif').textContent   = d.activeThisWeek;
+      document.getElementById('laporanRisiko').textContent  = d.atRisk.length;
+
+      const tbody = document.getElementById('guruLaporanBody');
+      tbody.innerHTML = d.students.map(s => {
+        const dots = s.history7.map(h =>
+          `<div class="w-4 h-4 rounded ${h.pagesRead > 0 ? 'bg-sky-400' : 'bg-slate-100'}" title="${h.date}: ${h.pagesRead} hal"></div>`
+        ).join('');
+        return `<tr>
+          <td class="font-bold ${s.isAtRisk ? 'text-red-600' : ''}">${escapeHtml(s.name)}</td>
+          <td class="text-center font-black">${s.activeDays}/7</td>
+          <td class="text-right font-black">${s.totalPages}</td>
+          <td class="text-right text-slate-500">${s.avgPages || '—'}</td>
+          <td><div class="flex gap-0.5">${dots}</div></td>
+        </tr>`;
+      }).join('');
+    }
+
+    function salinLaporan() {
+      if (!guruLaporanCache) return;
+      const d   = guruLaporanCache;
+      let txt   = `📊 Laporan Mingguan Halaqah\n${d.week.start} s/d ${d.week.end}\n\n`;
+      txt += `Aktif minggu ini: ${d.activeThisWeek}/${d.totalMurid} murid\n\n`;
+      txt += `✅ AKTIF:\n`;
+      d.students.filter(s => s.activeDays > 0).forEach((s,i) =>
+        txt += `${i+1}. ${s.name} — ${s.totalPages} hal (${s.activeDays} hari)\n`);
+      if (d.atRisk.length) {
+        txt += `\n⚠️ PERLU PERHATIAN:\n`;
+        d.atRisk.forEach((s,i) => txt += `${i+1}. ${s.name}\n`);
+      }
+      txt += `\nDihasilkan oleh KhatamKu`;
+      navigator.clipboard.writeText(txt)
+        .then(() => showToast('Laporan berhasil disalin ✅', 'success'))
+        .catch(() => showToast('Gagal menyalin', 'error'));
+    }
+
+    // ── Backward compat: generateGroupReport ───────────────
+    function generateGroupReport() {
+      if (!guruCache || !guruFiltered) return;
+      const done    = guruFiltered.filter(s => s.hasReadToday);
+      const notDone = guruFiltered.filter(s => !s.hasReadToday && !s.udzurStatus);
+      const udzur   = guruFiltered.filter(s => !!s.udzurStatus);
+      let report    = `Bismillah, Rekap Hari Ini\n\n`;
+      report += `✅ SUDAH SETOR (${done.length}):\n`;
+      done.forEach((s,i) => report += `${i+1}. ${s.name} (Hal ${s.lastPage})\n`);
+      if (!done.length) report += `- Belum ada -\n`;
+      report += `\n⏳ BELUM SETOR (${notDone.length}):\n`;
+      notDone.forEach((s,i) => report += `${i+1}. ${s.name}\n`);
+      if (!notDone.length) report += `- Alhamdulillah tuntas semua -\n`;
+      if (udzur.length) {
+        report += `\n🌸 UDZUR (${udzur.length}):\n`;
+        udzur.forEach((s,i) => report += `${i+1}. ${s.name} (${s.udzurStatus})\n`);
+      }
+      report += `\nSemangat! 💪`;
+      navigator.clipboard.writeText(report)
+        .then(() => showToast('Rekap berhasil disalin ✅', 'success'))
+        .catch(err => customAlert('Gagal', 'Gagal menyalin: ' + err, 'error'));
+    }
+
+    // ── Backward compat: openHistoryModal ──────────────────
+    function openHistoryModal(studentId) { openGuruStudentModal(studentId); }
+
+    // ── Backward compat: filterTeacherView ─────────────────
+    function filterTeacherView() { guruApplyFilter(); }
+    
+    // (fungsi guru lama sudah dipindah ke modul Portal Guru di atas)
 
     function populateProgressModal() {
       const startPage = appProfile ? (appProfile.lastPageRead || 0) : 0;
