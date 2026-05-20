@@ -227,6 +227,104 @@
     .bottom-nav-item.active i { transform: scale(1.15); }
     .bottom-nav-item i { font-size: 17px; transition: transform 0.25s ease; }
 
+    /* ── WiridKu tombol tengah menonjol ── */
+    .nav-wirid-btn {
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      font-size: 9px; font-weight: 900; letter-spacing: 0.04em;
+      color: white; cursor: pointer; flex: 1; text-align: center;
+      touch-action: manipulation; padding-bottom: 2px;
+    }
+    .nav-wirid-btn .wirid-icon-wrap {
+      width: 50px; height: 50px; border-radius: 18px;
+      background: linear-gradient(135deg, #0ea5e9, #2563eb);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 16px rgba(14,165,233,0.45);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      margin-top: -14px;
+      border: 3px solid white;
+    }
+    .nav-wirid-btn:active .wirid-icon-wrap { transform: scale(0.93); }
+    .nav-wirid-btn .wirid-label { color: #0ea5e9; font-weight: 900; margin-top: 2px; }
+
+    /* ── WiridKu Modal Styles ── */
+    .wirid-tab-bar {
+      display: flex; background: #f1f5f9; border-radius: 14px;
+      padding: 4px; gap: 3px; margin-bottom: 20px;
+    }
+    .wirid-tab {
+      flex: 1; padding: 9px 6px; border-radius: 10px; border: none;
+      background: transparent; font-size: 11px; font-weight: 800;
+      color: #64748b; cursor: pointer; transition: all 0.2s ease;
+      display: flex; align-items: center; justify-content: center; gap: 5px;
+      touch-action: manipulation;
+    }
+    .wirid-tab.active {
+      background: white; color: #059669;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .wirid-tab .wirid-tab-badge {
+      font-size: 9px; font-weight: 900; padding: 1px 5px;
+      border-radius: 999px; background: #dcfce7; color: #059669;
+    }
+    .wirid-tab.active-time .wirid-tab-badge {
+      background: #059669; color: white;
+      animation: pulseBadge 2s infinite;
+    }
+    @keyframes pulseBadge {
+      0%,100% { transform: scale(1); }
+      50%      { transform: scale(1.1); }
+    }
+
+    /* Checklist item dzikir */
+    .dzikir-item {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 12px 14px; border-radius: 16px; margin-bottom: 8px;
+      border: 1.5px solid #e2e8f0; background: white;
+      cursor: pointer; transition: all 0.2s ease;
+      touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+    }
+    .dzikir-item.done {
+      background: #f0fdf4; border-color: #bbf7d0;
+    }
+    .dzikir-item.done .dzikir-name { color: #059669; }
+    .dzikir-item.done .dzikir-arabic { opacity: 0.6; }
+    .dzikir-check {
+      width: 26px; height: 26px; border-radius: 50%; border: 2px solid #cbd5e1;
+      display: flex; align-items: center; justify-content: center;
+      shrink: 0; transition: all 0.2s ease; flex-shrink: 0; margin-top: 2px;
+    }
+    .dzikir-item.done .dzikir-check {
+      background: #059669; border-color: #059669; color: white;
+    }
+    .dzikir-name { font-size: 12px; font-weight: 800; color: #1e293b; margin-bottom: 2px; }
+    .dzikir-arabic { font-size: 15px; color: #475569; line-height: 1.8; text-align: right; direction: rtl; }
+    .dzikir-count { font-size: 10px; font-weight: 700; color: #94a3b8; margin-top: 3px; }
+
+    /* Counter Istighfar */
+    .istigfar-counter-btn {
+      width: 100%; padding: 28px 20px;
+      background: linear-gradient(135deg, #059669, #10b981);
+      border: none; border-radius: 24px; cursor: pointer;
+      display: flex; flex-direction: column; align-items: center;
+      gap: 6px; transition: transform 0.1s ease, box-shadow 0.1s ease;
+      box-shadow: 0 8px 24px rgba(16,185,129,0.35);
+      touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+    }
+    .istigfar-counter-btn:active { transform: scale(0.97); box-shadow: 0 4px 12px rgba(16,185,129,0.25); }
+    .istigfar-count-display { font-size: 72px; font-weight: 900; color: white; line-height: 1; }
+    .istigfar-count-target { font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.75); }
+
+    /* Progress cincin (3-ring) */
+    .wirid-rings { display: flex; justify-content: center; gap: 16px; margin-bottom: 20px; }
+    .wirid-ring-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .wirid-ring-item span { font-size: 9px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    @keyframes wiridEntrance {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .wirid-item-enter { animation: wiridEntrance 0.3s ease both; }
+
     /* ===== #12 Range Slider ===== */
     .range-slider {
       -webkit-appearance: none; appearance: none; width: 100%; height: 8px;
@@ -1641,7 +1739,7 @@
 
   <!-- #14 Bottom Navigation Bar -->
   <div id="bottomNav" class="bottom-nav hidden">
-    <div class="flex justify-around items-center">
+    <div class="flex justify-around items-end px-1">
       <div class="bottom-nav-item active" onclick="scrollToSection('top')" id="navHome">
         <i class="fa-solid fa-house"></i>
         <span>Beranda</span>
@@ -1650,7 +1748,13 @@
         <i class="fa-solid fa-book"></i>
         <span>Jurnal</span>
       </div>
-
+      <!-- WiridKu — tombol tengah menonjol -->
+      <div class="nav-wirid-btn" onclick="openWiridKu()" id="navWirid">
+        <div class="wirid-icon-wrap">
+          <i class="fa-solid fa-infinity text-white" style="font-size:20px"></i>
+        </div>
+        <span class="wirid-label">WiridKu</span>
+      </div>
       <div class="bottom-nav-item" onclick="openPotretModal()" id="navPotret">
         <i class="fa-solid fa-scroll"></i>
         <span>Potret</span>
@@ -1658,6 +1762,175 @@
       <div class="bottom-nav-item" onclick="openTentangModal()" id="navTentang">
         <i class="fa-solid fa-circle-info"></i>
         <span>Tentang</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       Modal: WiridKu — Dzikir Pagi, Petang & Istighfar
+  ═══════════════════════════════════════════════════════ -->
+  <div id="modalWirid" class="fixed inset-0 z-50 modal-overlay hidden flex flex-col justify-end sm:justify-center items-center">
+    <div class="modal-content w-full max-w-md rounded-t-[2.5rem] sm:rounded-3xl p-0 flex flex-col transform transition-transform translate-y-full overflow-hidden" style="max-height:92vh" id="modalWiridContent">
+
+      <!-- Header -->
+      <div class="flex justify-between items-center px-6 pt-6 pb-4 shrink-0" style="background:linear-gradient(135deg,#059669,#10b981)">
+        <div>
+          <div class="flex items-center gap-2 mb-0.5">
+            <i class="fa-solid fa-infinity text-white text-lg"></i>
+            <h3 class="text-xl font-black text-white tracking-tight">WiridKu</h3>
+          </div>
+          <p class="text-[11px] text-green-100 font-semibold" id="wiridTimeLabel">—</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <!-- 3-ring progress mini -->
+          <div class="flex gap-2" id="wiridMiniRings"></div>
+          <button onclick="closeModal('modalWirid')" class="w-9 h-9 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white transition">
+            <i class="fa-solid fa-xmark text-sm"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Tab Bar -->
+      <div class="px-5 pt-4 shrink-0 bg-white">
+        <div class="wirid-tab-bar">
+          <button class="wirid-tab" id="wtabPagi" onclick="switchWiridTab('pagi')">
+            <i class="fa-solid fa-sun"></i> Pagi
+            <span class="wirid-tab-badge" id="wbadgePagi">0/0</span>
+          </button>
+          <button class="wirid-tab" id="wtabPetang" onclick="switchWiridTab('petang')">
+            <i class="fa-solid fa-cloud-sun"></i> Petang
+            <span class="wirid-tab-badge" id="wbadgePetang">0/0</span>
+          </button>
+          <button class="wirid-tab" id="wtabIstigfar" onclick="switchWiridTab('istigfar')">
+            <i class="fa-solid fa-infinity"></i> Istighfar
+            <span class="wirid-tab-badge" id="wbadgeIstigfar">0</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Content area (scrollable) -->
+      <div class="flex-1 overflow-y-auto bg-white px-5 pb-6">
+
+        <!-- ── Tab: Dzikir Pagi ── -->
+        <div id="wpanePagi" class="wirid-pane">
+          <div class="text-center py-6">
+            <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Waktu</p>
+            <p class="text-sm font-black text-slate-600 mb-6">Setelah Subuh — sebelum Zuhur</p>
+
+            <!-- Tombol selesai besar -->
+            <button id="btnPagiDone" onclick="wiridToggleDone('pagi')"
+              class="w-full py-8 rounded-3xl border-2 transition-all duration-300 active:scale-95 mb-6">
+              <div id="pagiDoneIcon" class="text-5xl mb-3">🌅</div>
+              <div id="pagiDoneText" class="text-base font-black tracking-wide">Tandai Dzikir Pagi Selesai</div>
+              <div id="pagiDoneTime" class="text-xs font-semibold mt-1 opacity-60"></div>
+            </button>
+
+            <!-- Counter wirid pagi bebas -->
+            <div class="bg-sky-50 border border-sky-100 rounded-2xl p-4 mb-4 text-left">
+              <p class="text-[10px] font-black text-sky-600 uppercase tracking-widest mb-3">
+                <i class="fa-solid fa-infinity mr-1"></i> Hitung Wirid Pagi
+              </p>
+              <div class="flex items-center gap-3">
+                <button onclick="wiridCountPagi(-1)" class="w-10 h-10 rounded-xl bg-white border border-sky-200 text-sky-600 font-black text-lg transition active:scale-90 flex items-center justify-center">−</button>
+                <div class="flex-1 text-center">
+                  <span class="text-4xl font-black text-sky-600" id="pagiCounter">0</span>
+                </div>
+                <button onclick="wiridCountPagi(1)" class="w-10 h-10 rounded-xl bg-sky-500 text-white font-black text-lg transition active:scale-90 flex items-center justify-center shadow-md">+</button>
+              </div>
+              <div class="flex gap-2 mt-3">
+                <button onclick="wiridCountPagi(33)" class="flex-1 py-2 bg-white border border-sky-200 text-sky-600 font-black text-xs rounded-xl transition active:scale-95">+33</button>
+                <button onclick="wiridCountPagi(100)" class="flex-1 py-2 bg-white border border-sky-200 text-sky-600 font-black text-xs rounded-xl transition active:scale-95">+100</button>
+                <button onclick="wiridResetCount('pagi')" class="flex-1 py-2 bg-red-50 border border-red-200 text-red-400 font-black text-xs rounded-xl transition active:scale-95">Reset</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Tab: Dzikir Petang ── -->
+        <div id="wpanePetang" class="wirid-pane hidden">
+          <div class="text-center py-6">
+            <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Waktu</p>
+            <p class="text-sm font-black text-slate-600 mb-6">Setelah Ashar — sebelum Isya</p>
+
+            <!-- Tombol selesai besar -->
+            <button id="btnPetangDone" onclick="wiridToggleDone('petang')"
+              class="w-full py-8 rounded-3xl border-2 transition-all duration-300 active:scale-95 mb-6">
+              <div id="petangDoneIcon" class="text-5xl mb-3">🌤</div>
+              <div id="petangDoneText" class="text-base font-black tracking-wide">Tandai Dzikir Petang Selesai</div>
+              <div id="petangDoneTime" class="text-xs font-semibold mt-1 opacity-60"></div>
+            </button>
+
+            <!-- Counter wirid petang bebas -->
+            <div class="bg-sky-50 border border-sky-100 rounded-2xl p-4 mb-4 text-left">
+              <p class="text-[10px] font-black text-sky-600 uppercase tracking-widest mb-3">
+                <i class="fa-solid fa-infinity mr-1"></i> Hitung Wirid Petang
+              </p>
+              <div class="flex items-center gap-3">
+                <button onclick="wiridCountPetang(-1)" class="w-10 h-10 rounded-xl bg-white border border-sky-200 text-sky-600 font-black text-lg transition active:scale-90 flex items-center justify-center">−</button>
+                <div class="flex-1 text-center">
+                  <span class="text-4xl font-black text-sky-600" id="petangCounter">0</span>
+                </div>
+                <button onclick="wiridCountPetang(1)" class="w-10 h-10 rounded-xl bg-sky-500 text-white font-black text-lg transition active:scale-90 flex items-center justify-center shadow-md">+</button>
+              </div>
+              <div class="flex gap-2 mt-3">
+                <button onclick="wiridCountPetang(33)" class="flex-1 py-2 bg-white border border-sky-200 text-sky-600 font-black text-xs rounded-xl transition active:scale-95">+33</button>
+                <button onclick="wiridCountPetang(100)" class="flex-1 py-2 bg-white border border-sky-200 text-sky-600 font-black text-xs rounded-xl transition active:scale-95">+100</button>
+                <button onclick="wiridResetCount('petang')" class="flex-1 py-2 bg-red-50 border border-red-200 text-red-400 font-black text-xs rounded-xl transition active:scale-95">Reset</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Tab: Istighfar ── -->
+        <div id="wpaneIstigfar" class="wirid-pane hidden">
+
+          <!-- Counter tap -->
+          <button class="istigfar-counter-btn mb-4" onclick="wiridTapIstigfar()" id="istigfarBtn">
+            <div class="text-white/70 text-xs font-black uppercase tracking-widest mb-1">Ketuk untuk menghitung</div>
+            <div class="istigfar-count-display" id="istigfarCount">0</div>
+            <div class="istigfar-count-target" id="istigfarTarget">Target: 100× per hari</div>
+          </button>
+
+          <!-- Progress bar -->
+          <div class="mb-4">
+            <div class="flex justify-between text-xs font-bold text-slate-500 mb-1.5">
+              <span>Progress</span>
+              <span id="istigfarPct">0%</span>
+            </div>
+            <div class="h-3 bg-slate-100 rounded-full overflow-hidden">
+              <div id="istigfarBar" class="h-full rounded-full transition-all duration-500"
+                style="width:0%;background:linear-gradient(to right,#059669,#10b981)"></div>
+            </div>
+          </div>
+
+          <!-- Quick add buttons -->
+          <div class="grid grid-cols-4 gap-2 mb-4">
+            <button onclick="wiridAddIstigfar(10)"  class="py-3 bg-green-50 hover:bg-green-100 border border-green-200 text-green-700 font-black text-sm rounded-xl transition active:scale-95">+10</button>
+            <button onclick="wiridAddIstigfar(33)"  class="py-3 bg-green-50 hover:bg-green-100 border border-green-200 text-green-700 font-black text-sm rounded-xl transition active:scale-95">+33</button>
+            <button onclick="wiridAddIstigfar(100)" class="py-3 bg-green-50 hover:bg-green-100 border border-green-200 text-green-700 font-black text-sm rounded-xl transition active:scale-95">+100</button>
+            <button onclick="wiridResetIstigfar()"  class="py-3 bg-red-50 hover:bg-red-100 border border-red-200 text-red-500 font-black text-xs rounded-xl transition active:scale-95">Reset</button>
+          </div>
+
+          <!-- Target setting -->
+          <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4">
+            <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Ubah Target Harian</p>
+            <div class="flex gap-2">
+              <input type="number" id="istigfarTargetInput" inputmode="numeric" pattern="[0-9]*"
+                class="flex-1 admin-input text-center font-black" placeholder="100" min="1" max="9999">
+              <button onclick="wiridSetTarget()" class="btn-primary px-4 text-xs">Simpan</button>
+            </div>
+          </div>
+
+          <!-- Lafaz istighfar -->
+          <div class="mt-4 bg-green-50 border border-green-100 rounded-2xl p-4">
+            <p class="text-right text-lg text-slate-700 leading-loose mb-2" style="direction:rtl;font-family:serif">
+              أَسْتَغْفِرُ اللهَ الْعَظِيمَ الَّذِي لاَ إِلَهَ إِلاَّ هُوَ الْحَيُّ الْقَيُّومُ وَأَتُوبُ إِلَيْهِ
+            </p>
+            <p class="text-xs text-slate-600 font-semibold italic">
+              "Astaghfirullaahal 'azhiim, alladzii laa ilaaha illaa huwal hayyul qayyuum, wa atuubu ilaih"
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -2669,6 +2942,358 @@
         .catch(() => showToast('Gagal menyalin nomor.', 'error'));
     }
 
+    // ════════════════════════════════════════════════════════════
+    // WIRIDKU — Modul Dzikir Harian
+    // ════════════════════════════════════════════════════════════
+
+    // ── State ───────────────────────────────────────────────────
+    let wiridState = {
+      pagi     : { done: false, doneTime: '', count: 0, date: '' },
+      petang   : { done: false, doneTime: '', count: 0, date: '' },
+      istigfar : { count: 0, target: 100, date: '' }
+    };
+    let wiridCurrentTab = 'pagi';
+
+    const WIRID_KEY = 'khatamku_wirid';
+
+    // ── localStorage helpers ────────────────────────────────────
+    function wiridSave() {
+      try { localStorage.setItem(WIRID_KEY, JSON.stringify(wiridState)); } catch(e) {}
+    }
+    function wiridLoad() {
+      try {
+        const raw = localStorage.getItem(WIRID_KEY);
+        if (raw) {
+          const saved = JSON.parse(raw);
+          wiridState = {
+            pagi    : { done:false, doneTime:'', count:0, date:'', ...saved.pagi },
+            petang  : { done:false, doneTime:'', count:0, date:'', ...saved.petang },
+            istigfar: { count:0, target:100, date:'', ...saved.istigfar }
+          };
+        }
+      } catch(e) {}
+    }
+
+    // ── Reset berdasarkan tanggal & waktu ───────────────────────
+    function wiridCheckReset() {
+      const now   = new Date();
+      const h     = now.getHours();
+      const today = getLocalDateString();
+
+      // Dzikir Pagi reset jam 12:00 siang
+      const pagiResetDate = h >= 12 ? today : (() => {
+        const d = new Date(now); d.setDate(d.getDate() - 1);
+        return d.toISOString().slice(0,10);
+      })();
+      if (wiridState.pagi.date !== pagiResetDate) {
+        wiridState.pagi = { done:false, doneTime:'', count:0, date:pagiResetDate };
+      }
+
+      // Dzikir Petang & Istighfar reset jam 00:00
+      if (wiridState.petang.date !== today) {
+        wiridState.petang = { done:false, doneTime:'', count:0, date:today };
+      }
+      if (wiridState.istigfar.date !== today) {
+        wiridState.istigfar = { count:0, target:wiridState.istigfar.target||100, date:today };
+      }
+      wiridSave();
+    }
+
+    // ── Deteksi waktu ───────────────────────────────────────────
+    function wiridDetectTime() {
+      const h = new Date().getHours();
+      let label = '', activeTab = 'pagi';
+      if      (h >= 5  && h < 12) { label = '🌅 Waktu Dzikir Pagi';   activeTab = 'pagi'; }
+      else if (h >= 12 && h < 15) { label = '☀️ Siang — Petang mulai jam 15.00'; activeTab = 'pagi'; }
+      else if (h >= 15 && h < 18) { label = '🌤 Waktu Dzikir Petang';  activeTab = 'petang'; }
+      else if (h >= 18 && h < 24) { label = '🌙 Dzikir Petang masih terbuka'; activeTab = 'petang'; }
+      else                         { label = '🌙 Pagi & Petang terbuka';  activeTab = 'pagi'; }
+      document.getElementById('wiridTimeLabel').textContent = label;
+      ['Pagi','Petang','Istigfar'].forEach(t =>
+        document.getElementById('wtab'+t).classList.remove('active-time'));
+      const key = activeTab === 'istigfar' ? 'Istigfar' : activeTab.charAt(0).toUpperCase()+activeTab.slice(1);
+      document.getElementById('wtab'+key).classList.add('active-time');
+      return activeTab;
+    }
+
+    // ── Buka WiridKu ───────────────────────────────────────────
+    function openWiridKu() {
+      wiridLoad();
+      wiridCheckReset();
+      const activeTab = wiridDetectTime();
+      renderWiridDoneBtn('pagi');
+      renderWiridDoneBtn('petang');
+      renderWiridCounterUI('pagi');
+      renderWiridCounterUI('petang');
+      renderWiridIstigfar();
+      updateWiridBadges();
+      updateWiridMiniRings();
+      switchWiridTab(activeTab);
+      openModal('modalWirid');
+      updateActiveNav('navWirid');
+    }
+
+    // ── Switch tab ──────────────────────────────────────────────
+    function switchWiridTab(tab) {
+      wiridCurrentTab = tab;
+      ['pagi','petang','istigfar'].forEach(t => {
+        document.getElementById('wpane'+t.charAt(0).toUpperCase()+t.slice(1))
+          .classList.toggle('hidden', t !== tab);
+        const id = 'wtab'+t.charAt(0).toUpperCase()+t.slice(1);
+        document.getElementById(id).classList.toggle('active', t === tab);
+      });
+    }
+
+    // ── Render tombol done Pagi/Petang ──────────────────────────
+    function renderWiridDoneBtn(type) {
+      const s    = wiridState[type];
+      const cap  = type.charAt(0).toUpperCase() + type.slice(1);
+      const btn  = document.getElementById('btn'+cap+'Done');
+      const icon = document.getElementById(type+'DoneIcon');
+      const text = document.getElementById(type+'DoneText');
+      const time = document.getElementById(type+'DoneTime');
+      if (!btn) return;
+
+      if (s.done) {
+        btn.className  = 'w-full py-8 rounded-3xl border-2 border-emerald-300 bg-emerald-50 transition-all duration-300 active:scale-95 mb-6';
+        icon.textContent = '✅';
+        text.textContent = `Dzikir ${cap} Selesai!`;
+        text.className   = 'text-base font-black tracking-wide text-emerald-600';
+        time.textContent = s.doneTime ? 'Selesai jam ' + s.doneTime : '';
+      } else {
+        btn.className  = 'w-full py-8 rounded-3xl border-2 border-slate-200 bg-slate-50 hover:border-sky-300 hover:bg-sky-50 transition-all duration-300 active:scale-95 mb-6';
+        icon.textContent = type === 'pagi' ? '🌅' : '🌤';
+        text.textContent = `Tandai Dzikir ${cap} Selesai`;
+        text.className   = 'text-base font-black tracking-wide text-slate-600';
+        time.textContent = '';
+      }
+    }
+
+    // ── Toggle done ─────────────────────────────────────────────
+    function wiridToggleDone(type) {
+      const s   = wiridState[type];
+      s.done    = !s.done;
+      s.doneTime = s.done
+        ? new Date().toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'})
+        : '';
+      wiridSave();
+      renderWiridDoneBtn(type);
+      updateWiridBadges();
+      updateWiridMiniRings();
+      try { if (navigator.vibrate) navigator.vibrate(s.done ? [40,20,40] : 30); } catch(e) {}
+      if (s.done) {
+        const cap = type.charAt(0).toUpperCase()+type.slice(1);
+        showToast(`MasyaAllah! Dzikir ${cap} selesai! 🌟`, 'success');
+      }
+    }
+
+    // ── Counter Pagi/Petang ─────────────────────────────────────
+    function renderWiridCounterUI(type) {
+      const el = document.getElementById(type+'Counter');
+      if (el) el.textContent = wiridState[type].count || 0;
+    }
+
+    function wiridCountPagi(n) {
+      wiridState.pagi.count = Math.max(0, (wiridState.pagi.count||0) + n);
+      wiridSave();
+      renderWiridCounterUI('pagi');
+      try { if (navigator.vibrate) navigator.vibrate(25); } catch(e) {}
+    }
+
+    function wiridCountPetang(n) {
+      wiridState.petang.count = Math.max(0, (wiridState.petang.count||0) + n);
+      wiridSave();
+      renderWiridCounterUI('petang');
+      try { if (navigator.vibrate) navigator.vibrate(25); } catch(e) {}
+    }
+
+    function wiridResetCount(type) {
+      wiridState[type].count = 0;
+      wiridSave();
+      renderWiridCounterUI(type);
+    }
+
+    // ── Render Istighfar ────────────────────────────────────────
+    function renderWiridIstigfar() {
+      const { count, target } = wiridState.istigfar;
+      document.getElementById('istigfarCount').textContent  = count;
+      document.getElementById('istigfarTarget').textContent = `Target: ${target}× per hari`;
+      document.getElementById('istigfarTargetInput').value  = target;
+      const pct = Math.min(100, Math.round((count / target) * 100));
+      document.getElementById('istigfarPct').textContent    = pct + '%';
+      document.getElementById('istigfarBar').style.width    = pct + '%';
+      document.getElementById('istigfarBar').style.background =
+        pct >= 100
+          ? 'linear-gradient(to right,#d97706,#f59e0b)'
+          : 'linear-gradient(to right,#0ea5e9,#2563eb)';
+    }
+
+    function wiridTapIstigfar()    { wiridAddIstigfar(1); }
+
+    function wiridAddIstigfar(n) {
+      wiridState.istigfar.count += n;
+      wiridSave();
+      renderWiridIstigfar();
+      updateWiridBadges();
+      updateWiridMiniRings();
+      try { if (navigator.vibrate) navigator.vibrate(25); } catch(e) {}
+      const { count, target } = wiridState.istigfar;
+      if (count >= target && count - n < target)
+        setTimeout(() => showToast(`Alhamdulillah! ${target}× Istighfar selesai! 🌿`, 'success'), 100);
+    }
+
+    function wiridResetIstigfar() {
+      customConfirm('Reset Istighfar', 'Reset hitungan istighfar hari ini ke 0?', () => {
+        wiridState.istigfar.count = 0;
+        wiridSave();
+        renderWiridIstigfar();
+        updateWiridBadges();
+        updateWiridMiniRings();
+      });
+    }
+
+    function wiridSetTarget() {
+      const val = parseInt(document.getElementById('istigfarTargetInput').value);
+      if (!val || val < 1) { showToast('Target minimal 1', 'warning'); return; }
+      wiridState.istigfar.target = val;
+      wiridSave();
+      renderWiridIstigfar();
+      showToast(`Target diubah ke ${val}× ✅`, 'success');
+    }
+
+    // ── Badge update ────────────────────────────────────────────
+    function updateWiridBadges() {
+      const pagi   = wiridState.pagi.done   ? '✓' : '—';
+      const petang = wiridState.petang.done ? '✓' : '—';
+      const isti   = wiridState.istigfar.count;
+      document.getElementById('wbadgePagi').textContent    = pagi;
+      document.getElementById('wbadgePetang').textContent  = petang;
+      document.getElementById('wbadgeIstigfar').textContent = isti + '×';
+    }
+
+    // ── Mini rings di header ────────────────────────────────────
+    function updateWiridMiniRings() {
+      const rings = [
+        { pct: wiridState.pagi.done   ? 100 : 0, color:'#fbbf24' },
+        { pct: wiridState.petang.done ? 100 : 0, color:'#60a5fa' },
+        { pct: Math.min(100, (wiridState.istigfar.count/(wiridState.istigfar.target||100))*100), color:'#34d399' }
+      ];
+      const SIZE = 32, R = 12, CIRC = 2 * Math.PI * R;
+      document.getElementById('wiridMiniRings').innerHTML = rings.map(r => {
+        const dash = (r.pct/100)*CIRC;
+        return `<svg width="${SIZE}" height="${SIZE}" viewBox="0 0 ${SIZE} ${SIZE}">
+          <circle cx="${SIZE/2}" cy="${SIZE/2}" r="${R}" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="3"/>
+          <circle cx="${SIZE/2}" cy="${SIZE/2}" r="${R}" fill="none" stroke="${r.color}" stroke-width="3"
+            stroke-dasharray="${dash.toFixed(1)} ${CIRC.toFixed(1)}"
+            stroke-dashoffset="${(CIRC/4).toFixed(1)}" stroke-linecap="round"
+            style="transition:stroke-dasharray 0.5s ease"/>
+        </svg>`;
+      }).join('');
+    }
+
+    // ── Init ────────────────────────────────────────────────────
+    (function wiridInit() { wiridLoad(); })();
+
+    const WIRID_KEY = 'khatamku_wirid';
+
+    // ── localStorage helpers ────────────────────────────────────
+    function wiridSave() {
+      try { localStorage.setItem(WIRID_KEY, JSON.stringify(wiridState)); } catch(e) {}
+    }
+    function wiridLoad() {
+      try {
+        const raw = localStorage.getItem(WIRID_KEY);
+        if (raw) wiridState = { ...wiridState, ...JSON.parse(raw) };
+      } catch(e) {}
+    }
+
+    // ── Reset berdasarkan tanggal & waktu ───────────────────────
+    function wiridCheckReset() {
+      const now   = new Date();
+      const h     = now.getHours();
+      const today = getLocalDateString();
+
+      // Dzikir Pagi reset jam 12:00 siang
+      const pagiResetDate = h >= 12 ? today : (() => {
+        const d = new Date(now); d.setDate(d.getDate() - 1);
+        return d.toISOString().slice(0,10);
+      })();
+      if (wiridState.pagi.date !== pagiResetDate) {
+        wiridState.pagi = { items: {}, date: pagiResetDate };
+      }
+
+      // Dzikir Petang reset jam 00:00 malam
+      if (wiridState.petang.date !== today) {
+        wiridState.petang = { items: {}, date: today };
+      }
+
+      // Istighfar reset tiap hari baru
+      if (wiridState.istigfar.date !== today) {
+        wiridState.istigfar = {
+          count  : 0,
+          target : wiridState.istigfar.target || 100,
+          date   : today
+        };
+      }
+
+      wiridSave();
+    }
+
+    // ── Deteksi waktu & tab default ─────────────────────────────
+    function wiridDetectTime() {
+      const h = new Date().getHours();
+      // 05:00–11:59 → Pagi aktif
+      // 12:00–14:59 → keduanya (transisi, tampilkan petang dulu)
+      // 15:00–23:59 → Petang aktif
+      // 00:00–04:59 → keduanya (malam/sahur)
+      let label = '', activeTab = 'pagi';
+      if      (h >= 5  && h < 12) { label = '🌅 Waktu Dzikir Pagi';   activeTab = 'pagi'; }
+      else if (h >= 12 && h < 15) { label = '☀️ Siang — Dzikir Petang nanti jam 15.00'; activeTab = 'pagi'; }
+      else if (h >= 15 && h < 18) { label = '🌤 Waktu Dzikir Petang';  activeTab = 'petang'; }
+      else if (h >= 18 && h < 24) { label = '🌙 Petang — Dzikir Petang masih terbuka'; activeTab = 'petang'; }
+      else                         { label = '🌙 Malam — Dzikir Pagi & Petang';          activeTab = 'pagi'; }
+
+      document.getElementById('wiridTimeLabel').textContent = label;
+
+      // Tandai tab aktif berdasarkan waktu
+      ['Pagi','Petang','Istigfar'].forEach(t => {
+        const btn = document.getElementById('wtab' + t);
+        if (btn) btn.classList.remove('active-time');
+      });
+      const activeBtn = document.getElementById('wtab' + activeTab.charAt(0).toUpperCase() + activeTab.slice(1));
+      if (activeBtn) activeBtn.classList.add('active-time');
+
+      return activeTab;
+    }
+
+    // ── Buka WiridKu ───────────────────────────────────────────
+    function openWiridKu() {
+      wiridLoad();
+      wiridCheckReset();
+      const activeTab = wiridDetectTime();
+      renderWiridDoneBtn('pagi');
+      renderWiridDoneBtn('petang');
+      renderWiridCounterUI('pagi');
+      renderWiridCounterUI('petang');
+      renderWiridIstigfar();
+      updateWiridBadges();
+      updateWiridMiniRings();
+      switchWiridTab(activeTab);
+      openModal('modalWirid');
+      updateActiveNav('navWirid');
+    }
+
+    // ── Switch tab ──────────────────────────────────────────────
+    function switchWiridTab(tab) {
+      wiridCurrentTab = tab;
+      ['pagi','petang','istigfar'].forEach(t => {
+        document.getElementById('wpane' + t.charAt(0).toUpperCase() + t.slice(1)).classList.toggle('hidden', t !== tab);
+        const btn = document.getElementById('wtab' + t.charAt(0).toUpperCase() + t.slice(1));
+        if (btn) btn.classList.toggle('active', t === tab);
+      });
+    }
+
+    // ── Render checklist Pagi ───────────────────────────────────
     // ===== FITUR 8: RIWAYAT BACAAN LENGKAP =====
     let riwayatCache = null;
     let riwayatFilterAktif = null;
@@ -3167,6 +3792,11 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
     }
     function updateActiveNav(activeId) {
       document.querySelectorAll('.bottom-nav-item').forEach(el => el.classList.remove('active'));
+      // Reset wirid button ke normal
+      const wiridBtn = document.getElementById('navWirid');
+      if (wiridBtn) {
+        wiridBtn.querySelector('.wirid-icon-wrap').style.boxShadow = '0 4px 16px rgba(16,185,129,0.45)';
+      }
       const el = document.getElementById(activeId);
       if (el) el.classList.add('active');
     }
@@ -3293,8 +3923,7 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
         'modalAdminAddMurid','modalAdminEditMurid','modalAdminResetPwd',
         'modalAdminCalibrate','modalAdminMoveHalaqah','modalAdminAddHalaqah',
         'modalAdminAddGuru','modalPotretEditor','modalGuruAddMurid','modalGuruEditMurid'
-      ];
-      if (content) {
+      ];      if (content) {
         if (centerModals.includes(id)) {
           content.classList.add('scale-95', 'opacity-0');
         } else {
