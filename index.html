@@ -999,7 +999,14 @@
                 <i class="fa-solid fa-clock-rotate-left"></i> Catatan Perjalanan
               </p>
               <h3 class="text-2xl font-black text-white tracking-tight">Riwayat Bacaan</h3>
-              <p class="text-[11px] text-sky-200/80 font-semibold mt-1 italic">"Semoga setiap huruf yang sudah dibaca diterima oleh-Nya"</p>
+              <!-- Badge Khatam -->
+              <div id="riwayatKhatamBadge" class="hidden mt-2.5 inline-flex items-center gap-2 bg-white/15 border border-white/25 backdrop-blur-sm rounded-xl px-3 py-1.5">
+                <span class="flex items-center justify-center w-5 h-5 bg-amber-400 rounded-full shrink-0">
+                  <i class="fa-solid fa-star text-[8px] text-amber-900"></i>
+                </span>
+                <p class="text-[11px] text-white font-semibold leading-snug" id="riwayatKhatamText">Alhamdulillah, atas taufiq dari-Nya Anda telah khatam <span id="riwayatKhatamCount" class="text-amber-300 font-black">0</span> kali</p>
+              </div>
+              <p class="text-[11px] text-sky-200/80 font-semibold mt-2 italic">"Semoga setiap huruf yang sudah dibaca diterima oleh-Nya"</p>
             </div>
             <button onclick="closeModal('modalRiwayat')" class="text-white/70 hover:text-white bg-white/15 hover:bg-white/25 w-10 h-10 rounded-full flex items-center justify-center transition-colors shrink-0 mt-0.5"><i class="fa-solid fa-xmark"></i></button>
           </div>
@@ -1360,6 +1367,15 @@
 
     function openRiwayatModal() {
       openModal('modalRiwayat');
+      // Tampilkan badge khatam jika ada data
+      const khatamCount = (appProfile && appProfile.totalKhatam) ? appProfile.totalKhatam : 0;
+      const badge = document.getElementById('riwayatKhatamBadge');
+      if (khatamCount > 0) {
+        document.getElementById('riwayatKhatamCount').textContent = khatamCount;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
       if (!riwayatCache) {
         loadRiwayatData();
       } else {
