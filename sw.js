@@ -1,7 +1,7 @@
 // sw.js — KhatamKu Service Worker v6
 // Strategi: Network-first untuk index.html, Cache-first untuk aset statis
 
-const CACHE_NAME = 'khatamku-v6';
+const CACHE_NAME = 'khatamku-v7';
 const BASE = '/KhatamKu';
 
 // Aset yang di-cache saat install (BUKAN index.html)
