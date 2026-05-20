@@ -4862,7 +4862,7 @@ ADMIN JAVASCRIPT MODULE
             <p class="text-lg font-black text-red-600 leading-none">${s.diffDays}</p>
             <p class="text-[9px] font-bold text-red-500 uppercase tracking-wider">hari</p>
           </div>
-          ${s.wa ? `<a href="https://wa.me/${s.wa.replace(/^0/, '62').replace(/[^0-9]/g,'')}" target="_blank" class="icon-btn" title="Hubungi via WA"><i class="fa-brands fa-whatsapp text-green-500"></i></a>` : ''}
+          ${s.wa ? `<a href="https://wa.me/${String(s.wa).replace(/^0/, '62').replace(/[^0-9]/g,'')}" target="_blank" class="icon-btn" title="Hubungi via WA"><i class="fa-brands fa-whatsapp text-green-500"></i></a>` : ''}
         </div>
       `).join('');
     } else {
