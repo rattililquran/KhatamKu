@@ -1,57 +1,72 @@
-// sw.js — KhatamKu Service Worker
-// Strategi: Cache-first untuk aset statis, Network-first untuk API
+// sw.js — KhatamKu Service Worker v6
+// Strategi: Network-first untuk index.html, Cache-first untuk aset statis
 
-const CACHE_NAME = 'khatamku-v4';
+const CACHE_NAME = 'khatamku-v6';
 const BASE = '/KhatamKu';
 
-// Aset yang di-cache saat install (app shell)
+// Aset yang di-cache saat install (BUKAN index.html)
 const PRECACHE_URLS = [
-  BASE + '/',
-  BASE + '/index.html',
   BASE + '/api.js',
   BASE + '/manifest.json',
   BASE + '/icons/icon-192.png',
   BASE + '/icons/icon-512.png',
 ];
 
-// ── Install: pre-cache app shell ─────────────────────────────────
+// ── Install ──────────────────────────────────────────────────
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      console.log('[SW] Pre-caching app shell');
-      return cache.addAll(PRECACHE_URLS);
-    }).then(() => self.skipWaiting())
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(PRECACHE_URLS))
+      .then(() => self.skipWaiting())
   );
 });
 
-// ── Activate: hapus cache lama ───────────────────────────────────
+// ── Activate: hapus cache lama ───────────────────────────────
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
+    caches.keys()
+      .then(keys => Promise.all(
         keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
-      )
-    ).then(() => self.clients.claim())
+      ))
+      .then(() => self.clients.claim())
   );
 });
 
-// ── Fetch: strategi berdasarkan URL ─────────────────────────────
+// ── Fetch ────────────────────────────────────────────────────
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
-  // Request ke Apps Script (GAS_URL) → selalu Network, jangan cache
+  // 1. Apps Script API → selalu Network, tidak pernah cache
   if (url.hostname.includes('script.google.com')) {
     event.respondWith(
       fetch(event.request).catch(() =>
-        new Response(JSON.stringify({ ok: false, error: 'Kamu sedang offline. Coba lagi saat ada koneksi.' }), {
-          headers: { 'Content-Type': 'application/json' }
-        })
+        new Response(JSON.stringify({
+          ok: false,
+          error: 'Kamu sedang offline. Coba lagi saat ada koneksi.'
+        }), { headers: { 'Content-Type': 'application/json' } })
       )
     );
     return;
   }
 
-  // CDN eksternal (tailwind, fontawesome, fonts) → Network-first, fallback cache
+  // 2. index.html → Network-first, fallback cache
+  //    Selalu ambil versi terbaru dari server
+  if (url.pathname === BASE + '/' || url.pathname === BASE + '/index.html') {
+    event.respondWith(
+      fetch(event.request)
+        .then(res => {
+          // Simpan versi terbaru ke cache sebagai fallback offline
+          const clone = res.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+          return res;
+        })
+        .catch(() => caches.match(event.request)) // offline fallback
+    );
+    return;
+  }
+
+  // 3. CDN eksternal (Tailwind, FontAwesome, Google Fonts)
+  //    Network-first, fallback cache
   if (url.hostname !== self.location.hostname) {
     event.respondWith(
       fetch(event.request)
@@ -65,7 +80,7 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Aset lokal (HTML, JS, ikon) → Cache-first
+  // 4. Aset lokal lain (api.js, icons, manifest) → Cache-first
   event.respondWith(
     caches.match(event.request).then(cached => {
       if (cached) return cached;
