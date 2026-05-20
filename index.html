@@ -3161,7 +3161,7 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
         topEl.innerHTML = tops.map((t, i) => {
           const medals = ['🥇','🥈','🥉','4️⃣','5️⃣'];
           return `
-          <div class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 transition cursor-pointer" onclick="openGuruStudentModal('${escapeJs(t.id)}')">
+          <div class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 transition">
             <span class="text-lg w-6 text-center">${medals[i]}</span>
             <div class="flex-1 min-w-0">
               <p class="font-bold text-sm text-slate-800 truncate">${escapeHtml(t.name)}</p>
@@ -3208,7 +3208,7 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
         ).join('');
 
         return `
-        <div class="flex items-center gap-3 p-3 rounded-xl border border-transparent hover:border-sky-100 hover:bg-sky-50/40 transition cursor-pointer" onclick="openGuruStudentModal('${escapeJs(s.id)}')">
+        <div class="flex items-center gap-3 p-3 rounded-xl border border-transparent hover:border-sky-100 hover:bg-sky-50/40 transition">
           <div class="w-2 h-2 rounded-full ${statusDot} shrink-0"></div>
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-1.5">
@@ -3248,14 +3248,13 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
           else                     badge = `<span class="badge badge-idle">Idle</span>`;
 
           return `<tr>
-            <td class="font-bold cursor-pointer hover:text-sky-600" onclick="openGuruStudentModal('${escapeJs(s.id)}')">${escapeHtml(s.name)}</td>
+            <td class="font-bold">${escapeHtml(s.name)}</td>
             <td>${badge}</td>
             <td class="text-right font-black">${s.lastPage}</td>
             <td class="text-right text-slate-500">${s.target || '—'}</td>
             <td class="text-right">${s.streak}🔥</td>
             <td class="text-xs text-slate-500">${s.lastUpdate || '—'}</td>
             <td class="text-right whitespace-nowrap">
-              <button class="icon-btn" title="Detail" onclick="openGuruStudentModal('${escapeJs(s.id)}')"><i class="fa-solid fa-eye"></i></button>
               <button class="icon-btn" title="Edit" onclick="openGuruEditFromTable('${escapeJs(s.id)}')"><i class="fa-solid fa-pen"></i></button>
               ${s.wa ? `<a href="https://wa.me/${escapeHtml(s.wa)}" target="_blank" class="icon-btn" title="WA"><i class="fa-brands fa-whatsapp text-green-500"></i></a>` : ''}
             </td>
@@ -3369,7 +3368,15 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
 
     // ── CRUD Murid ──────────────────────────────────────────
     function openGuruEditFromTable(studentId) {
-      openGuruStudentModal(studentId);
+      if (!guruCache) return;
+      const s = guruCache.students.find(x => x.id === studentId);
+      if (!s) return;
+      document.getElementById('gEditId').value     = s.id;
+      document.getElementById('gEditNis').value    = s.id;
+      document.getElementById('gEditNama').value   = s.name;
+      document.getElementById('gEditWa').value     = s.wa || '';
+      document.getElementById('gEditTarget').value = s.target || 0;
+      openModal('modalGuruEditMurid');
     }
 
     function openGuruEditMurid() {
