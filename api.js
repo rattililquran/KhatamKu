@@ -89,6 +89,9 @@ const gscript = {
   resetReadingData: (userId) =>
     gasCall('resetReadingData', { userId }),
 
+  calibrateReadingPosition: (userId, calibrationData) =>
+    gasCall('calibrateReadingPosition', { userId, calibrationData }),
+
   // ── JURNAL ────────────────────────────────────────────────
   saveJournal: (userId, journalData) =>
     gasCall('saveJournal', { userId, journalData }),
