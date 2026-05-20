@@ -1,27 +1,37 @@
-// sw.js — KhatamKu Service Worker v6
-// Strategi: Network-first untuk index.html, Cache-first untuk aset statis
+// sw.js — KhatamKu Service Worker v7
+// Strategi: Network-first untuk HTML, Cache-first untuk aset statis self-hosted
 
 const CACHE_NAME = 'khatamku-v7';
 const BASE = '/KhatamKu';
 
-// Aset yang di-cache saat install (BUKAN index.html)
+// Aset statis yang di-cache saat install (sekarang self-hosted)
 const PRECACHE_URLS = [
   BASE + '/api.js',
   BASE + '/manifest.json',
   BASE + '/icons/icon-192.png',
   BASE + '/icons/icon-512.png',
+  BASE + '/assets/tailwind.min.css',
+  BASE + '/assets/fontawesome.min.css',
+  BASE + '/assets/confetti.min.js',
+  BASE + '/assets/webfonts/fa-solid-900.woff2',
+  BASE + '/assets/webfonts/fa-regular-400.woff2',
+  BASE + '/assets/webfonts/fa-brands-400.woff2',
 ];
 
-// ── Install ──────────────────────────────────────────────────
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(PRECACHE_URLS))
+      .then(cache => {
+        // addAll bisa gagal kalau salah satu file 404
+        // pakai Promise.allSettled agar tidak block install
+        return Promise.allSettled(
+          PRECACHE_URLS.map(url => cache.add(url).catch(() => null))
+        );
+      })
       .then(() => self.skipWaiting())
   );
 });
 
-// ── Activate: hapus cache lama ───────────────────────────────
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys()
@@ -32,11 +42,10 @@ self.addEventListener('activate', event => {
   );
 });
 
-// ── Fetch ────────────────────────────────────────────────────
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
-  // 1. Apps Script API → selalu Network, tidak pernah cache
+  // 1. Apps Script API → selalu Network
   if (url.hostname.includes('script.google.com')) {
     event.respondWith(
       fetch(event.request).catch(() =>
@@ -50,29 +59,12 @@ self.addEventListener('fetch', event => {
   }
 
   // 2. index.html → Network-first, fallback cache
-  //    Selalu ambil versi terbaru dari server
-  if (url.pathname === BASE + '/' || url.pathname === BASE + '/index.html') {
-    event.respondWith(
-      fetch(event.request)
-        .then(res => {
-          // Simpan versi terbaru ke cache sebagai fallback offline
-          const clone = res.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-          return res;
-        })
-        .catch(() => caches.match(event.request)) // offline fallback
-    );
-    return;
-  }
-
-  // 3. CDN eksternal (Tailwind, FontAwesome, Google Fonts)
-  //    Network-first, fallback cache
-  if (url.hostname !== self.location.hostname) {
+  if (url.pathname === BASE + '/' || url.pathname === BASE + '/index.html' || url.pathname === BASE) {
     event.respondWith(
       fetch(event.request)
         .then(res => {
           const clone = res.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+          caches.open(CACHE_NAME).then(c => c.put(event.request, clone));
           return res;
         })
         .catch(() => caches.match(event.request))
@@ -80,15 +72,28 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // 4. Aset lokal lain (api.js, icons, manifest) → Cache-first
+  // 3. Aset self-hosted lokal (assets/, icons/) → Cache-first, update di background
+  if (url.hostname === self.location.hostname) {
+    event.respondWith(
+      caches.match(event.request).then(cached => {
+        const fetchPromise = fetch(event.request).then(res => {
+          caches.open(CACHE_NAME).then(c => c.put(event.request, res.clone()));
+          return res;
+        });
+        return cached || fetchPromise;
+      })
+    );
+    return;
+  }
+
+  // 4. CDN eksternal (Google Fonts) → Network-first, fallback cache
   event.respondWith(
-    caches.match(event.request).then(cached => {
-      if (cached) return cached;
-      return fetch(event.request).then(res => {
+    fetch(event.request)
+      .then(res => {
         const clone = res.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+        caches.open(CACHE_NAME).then(c => c.put(event.request, clone));
         return res;
-      });
-    })
+      })
+      .catch(() => caches.match(event.request))
   );
 });
