@@ -3049,21 +3049,32 @@
     };
     let wiridCurrentTab = 'pagi';
 
-    const WIRID_KEY = 'khatamku_wirid';
+    const WIRID_KEY_PREFIX = 'khatamku_wirid_';
 
-    // ── localStorage helpers ────────────────────────────────────
+    // Key unik per akun — mencegah data bocor antar user di browser yang sama
+    function _wiridKey() {
+      return WIRID_KEY_PREFIX + (currentUser && currentUser.id ? currentUser.id : 'guest');
+    }
+
     function wiridSave() {
-      try { localStorage.setItem(WIRID_KEY, JSON.stringify(wiridState)); } catch(e) {}
+      try { localStorage.setItem(_wiridKey(), JSON.stringify(wiridState)); } catch(e) {}
     }
     function wiridLoad() {
       try {
-        const raw = localStorage.getItem(WIRID_KEY);
+        const raw = localStorage.getItem(_wiridKey());
         if (raw) {
           const saved = JSON.parse(raw);
           wiridState = {
             pagi    : { done:false, doneTime:'', date:'', ...saved.pagi },
             petang  : { done:false, doneTime:'', date:'', ...saved.petang },
             istigfar: { done:false, doneTime:'', target:100, date:'', ...saved.istigfar }
+          };
+        } else {
+          // Reset state kalau tidak ada data untuk akun ini
+          wiridState = {
+            pagi    : { done:false, doneTime:'', date:'' },
+            petang  : { done:false, doneTime:'', date:'' },
+            istigfar: { done:false, doneTime:'', target:100, date:'' }
           };
         }
       } catch(e) {}
@@ -3110,22 +3121,6 @@
     }
 
     // ── Buka WiridKu ───────────────────────────────────────────
-    function openWiridKu() {
-      wiridLoad();
-      wiridCheckReset();
-      const activeTab = wiridDetectTime();
-      renderWiridDoneBtn('pagi');
-      renderWiridDoneBtn('petang');
-      renderWiridCounterUI('pagi');
-      renderWiridCounterUI('petang');
-      renderWiridIstigfar();
-      updateWiridBadges();
-      updateWiridMiniRings();
-      switchWiridTab(activeTab);
-      openModal('modalWirid');
-      updateActiveNav('navWirid');
-    }
-
     // ── Switch tab ──────────────────────────────────────────────
     function switchWiridTab(tab) {
       wiridCurrentTab = tab;
@@ -3379,8 +3374,16 @@
       cal.innerHTML = html;
     }
 
-    // ── Init ────────────────────────────────────────────────────
-    (function wiridInit() { wiridLoad(); })();
+    // ── Init: wiridLoad dipanggil saat openWiridKu, bukan saat startup
+    // (karena currentUser belum tersedia saat halaman pertama dimuat)
+    (function wiridInit() {
+      // Kosongkan state awal — akan diisi saat openWiridKu() dipanggil
+      wiridState = {
+        pagi    : { done:false, doneTime:'', date:'' },
+        petang  : { done:false, doneTime:'', date:'' },
+        istigfar: { done:false, doneTime:'', target:100, date:'' }
+      };
+    })();
 
     // ===== FITUR 8: RIWAYAT BACAAN LENGKAP =====
     let riwayatCache = null;
