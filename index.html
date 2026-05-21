@@ -3298,10 +3298,17 @@
         if (statusEl) statusEl.textContent = 'Login diperlukan untuk melihat rekap.';
         return;
       }
-      // Tampilkan cache dulu kalau ada
-      if (wiridRekapCache) { renderWiridRekap(wiridRekapCache); return; }
 
-      if (statusEl) statusEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Memuat rekap dari server...';
+      // Selalu render cache dulu kalau ada (tampil instan)
+      if (wiridRekapCache) {
+        renderWiridRekap(wiridRekapCache);
+        if (statusEl) statusEl.textContent = '';
+      }
+
+      // Selalu fetch terbaru dari server (invalidate cache lama)
+      if (statusEl && !wiridRekapCache) {
+        statusEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Memuat rekap...';
+      }
 
       gscript.getWiridHistory(currentUser.id, 30)
         .then(data => {
@@ -3310,44 +3317,65 @@
           if (statusEl) statusEl.textContent = '';
         })
         .catch(() => {
-          if (statusEl) statusEl.textContent = 'Gagal memuat rekap. Pastikan koneksi aktif.';
+          if (statusEl) statusEl.textContent = wiridRekapCache
+            ? '' // sudah ada cache, tidak perlu tampil error
+            : 'Gagal memuat rekap. Pastikan koneksi aktif.';
         });
     }
 
     function renderWiridRekap(data) {
+      if (!data || !data.history) return;
       const { history, stats } = data;
 
       // Stats
-      document.getElementById('rekapStreakNum').textContent  = stats.currentStreak;
-      document.getElementById('rekapAllDoneNum').textContent = stats.allDone + '/30';
+      const streakEl = document.getElementById('rekapStreakNum');
+      const allEl    = document.getElementById('rekapAllDoneNum');
+      if (streakEl) streakEl.textContent = stats.currentStreak;
+      if (allEl)    allEl.textContent    = stats.allDone + '/30';
 
       const setPct = (barId, pctId, count) => {
         const pct = Math.round((count / 30) * 100);
-        document.getElementById(pctId).textContent = `${count}/30 (${pct}%)`;
-        document.getElementById(barId).style.width = pct + '%';
+        const pctEl = document.getElementById(pctId);
+        const barEl = document.getElementById(barId);
+        if (pctEl) pctEl.textContent    = `${count}/30 (${pct}%)`;
+        if (barEl) barEl.style.width    = pct + '%';
       };
       setPct('rekapPagiBar',    'rekapPagiPct',    stats.pagiDone);
       setPct('rekapPetangBar',  'rekapPetangPct',  stats.petangDone);
       setPct('rekapIstigfarBar','rekapIstigfarPct', stats.istigfarDone);
 
-      // Kalender dots (terbaru kiri-kanan, 7 kolom)
+      // Kalender — history[0] = hari ini, history[29] = 30 hari lalu
+      // Urutkan dari terlama ke terbaru untuk kalender kiri→kanan
       const cal = document.getElementById('rekapCalendar');
-      // history sudah urut terbaru di index 0 — balik agar terlama dulu (kiri atas)
-      const ordered = [...history].reverse();
-      // Padding agar mulai dari hari yang tepat
-      const firstDay = ordered.length > 0 ? new Date(ordered[0].tanggal).getDay() : 0;
+      if (!cal) return;
+
+      const ordered = [...history].reverse(); // terlama di index 0
+      const firstDayOfWeek = ordered.length > 0
+        ? new Date(ordered[0].tanggal + 'T00:00:00').getDay()
+        : 0;
+
       let html = '';
-      for (let p = 0; p < firstDay; p++) {
-        html += `<div class="aspect-square rounded-sm bg-transparent"></div>`;
+      // Padding hari di awal minggu
+      for (let p = 0; p < firstDayOfWeek; p++) {
+        html += `<div></div>`;
       }
+
       ordered.forEach(r => {
-        const done = (r.pagi ? 1:0) + (r.petang ? 1:0) + (r.istigfar ? 1:0);
-        let bg = 'bg-slate-100';
-        if (done === 3) bg = 'bg-sky-500';
-        else if (done > 0) bg = 'bg-sky-200';
-        const label = `${r.tanggal}\nPagi:${r.pagi?'✓':'✗'} Petang:${r.petang?'✓':'✗'} Istigfar:${r.istigfar?'✓':'✗'}`;
-        html += `<div class="aspect-square rounded-sm ${bg} cursor-default transition-transform hover:scale-110" title="${label}"></div>`;
+        const done  = (r.pagi ? 1:0) + (r.petang ? 1:0) + (r.istigfar ? 1:0);
+        let color   = '#f1f5f9'; // kosong = abu
+        if (done === 3) color = '#0ea5e9';      // lengkap = biru penuh
+        else if (done > 0) color = '#bae6fd';   // sebagian = biru muda
+
+        const dayNum   = r.tanggal ? r.tanggal.slice(8) : '';
+        const tooltip  = `${r.tanggal}\n🌅${r.pagi?'✓':'✗'} 🌤${r.petang?'✓':'✗'} 🤲${r.istigfar?'✓':'✗'}`;
+
+        html += `<div style="aspect-ratio:1;border-radius:4px;background:${color};cursor:default;transition:transform 0.1s"
+          title="${tooltip}"
+          onmouseover="this.style.transform='scale(1.2)'"
+          onmouseout="this.style.transform='scale(1)'">
+        </div>`;
       });
+
       cal.innerHTML = html;
     }
 
