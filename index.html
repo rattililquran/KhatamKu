@@ -1823,6 +1823,9 @@
             <i class="fa-solid fa-hand-holding-heart"></i> Istighfar
             <span class="wirid-tab-badge" id="wbadgeIstigfar">—</span>
           </button>
+          <button class="wirid-tab" id="wtabRekap" onclick="switchWiridTab('rekap')">
+            <i class="fa-solid fa-chart-simple"></i> Rekap
+          </button>
         </div>
       </div>
 
@@ -1953,6 +1956,75 @@
           <button onclick="wiridResetDone('istigfar')" class="w-full py-3 rounded-2xl border border-slate-200 text-xs font-black text-slate-400 hover:border-red-200 hover:text-red-400 transition active:scale-95">
             <i class="fa-solid fa-arrow-rotate-left mr-1"></i> Reset Istighfar Hari Ini
           </button>
+        </div>
+
+        <!-- ── Tab: Rekap 30 Hari ── -->
+        <div id="wpaneRekap" class="wirid-pane hidden pt-2">
+
+          <!-- Stats ringkas -->
+          <div class="grid grid-cols-2 gap-3 mb-4">
+            <div class="bg-sky-50 border border-sky-100 rounded-2xl p-3 text-center">
+              <p class="text-2xl font-black text-sky-600" id="rekapStreakNum">—</p>
+              <p class="text-[9px] font-black text-sky-500 uppercase tracking-widest mt-0.5">Streak Lengkap 🔥</p>
+            </div>
+            <div class="bg-sky-50 border border-sky-100 rounded-2xl p-3 text-center">
+              <p class="text-2xl font-black text-sky-600" id="rekapAllDoneNum">—</p>
+              <p class="text-[9px] font-black text-sky-500 uppercase tracking-widest mt-0.5">Hari Lengkap / 30</p>
+            </div>
+          </div>
+
+          <!-- Konsistensi per kategori -->
+          <div class="bg-white border border-slate-200 rounded-2xl p-4 mb-4">
+            <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Konsistensi 30 Hari</p>
+            <div class="space-y-3">
+              <div>
+                <div class="flex justify-between text-xs font-bold mb-1">
+                  <span class="text-slate-600"><i class="fa-solid fa-sun text-amber-400 mr-1"></i>Dzikir Pagi</span>
+                  <span class="text-sky-600" id="rekapPagiPct">—</span>
+                </div>
+                <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div id="rekapPagiBar" class="h-full rounded-full transition-all" style="width:0%;background:linear-gradient(to right,#0ea5e9,#2563eb)"></div>
+                </div>
+              </div>
+              <div>
+                <div class="flex justify-between text-xs font-bold mb-1">
+                  <span class="text-slate-600"><i class="fa-solid fa-cloud-sun text-blue-400 mr-1"></i>Dzikir Petang</span>
+                  <span class="text-sky-600" id="rekapPetangPct">—</span>
+                </div>
+                <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div id="rekapPetangBar" class="h-full rounded-full transition-all" style="width:0%;background:linear-gradient(to right,#0ea5e9,#2563eb)"></div>
+                </div>
+              </div>
+              <div>
+                <div class="flex justify-between text-xs font-bold mb-1">
+                  <span class="text-slate-600"><i class="fa-solid fa-hand-holding-heart text-sky-400 mr-1"></i>Istighfar</span>
+                  <span class="text-sky-600" id="rekapIstigfarPct">—</span>
+                </div>
+                <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div id="rekapIstigfarBar" class="h-full rounded-full transition-all" style="width:0%;background:linear-gradient(to right,#0ea5e9,#2563eb)"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Kalender dots 30 hari -->
+          <div class="bg-white border border-slate-200 rounded-2xl p-4 mb-3">
+            <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Kalender 30 Hari Terakhir</p>
+            <!-- Legend -->
+            <div class="flex gap-3 mb-3 text-[10px] font-bold text-slate-500">
+              <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-sm bg-sky-500 inline-block"></span>Lengkap</span>
+              <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-sm bg-sky-200 inline-block"></span>Sebagian</span>
+              <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-sm bg-slate-100 inline-block"></span>Kosong</span>
+            </div>
+            <div id="rekapCalendar" class="grid gap-1" style="grid-template-columns:repeat(7,1fr)">
+              <!-- diisi JS -->
+            </div>
+          </div>
+
+          <!-- Status loading/error -->
+          <p class="text-center text-xs text-slate-400 font-semibold" id="rekapStatus">
+            <i class="fa-solid fa-spinner fa-spin mr-1"></i> Memuat rekap...
+          </p>
         </div>
       </div>
     </div>
@@ -3057,12 +3129,13 @@
     // ── Switch tab ──────────────────────────────────────────────
     function switchWiridTab(tab) {
       wiridCurrentTab = tab;
-      ['pagi','petang','istigfar'].forEach(t => {
-        document.getElementById('wpane'+t.charAt(0).toUpperCase()+t.slice(1))
-          .classList.toggle('hidden', t !== tab);
-        const id = 'wtab'+t.charAt(0).toUpperCase()+t.slice(1);
-        document.getElementById(id).classList.toggle('active', t === tab);
+      ['pagi','petang','istigfar','rekap'].forEach(t => {
+        const pane = document.getElementById('wpane'+t.charAt(0).toUpperCase()+t.slice(1));
+        if (pane) pane.classList.toggle('hidden', t !== tab);
+        const btn = document.getElementById('wtab'+t.charAt(0).toUpperCase()+t.slice(1));
+        if (btn) btn.classList.toggle('active', t === tab);
       });
+      if (tab === 'rekap') loadWiridRekap();
     }
 
     // ── Render tombol done Pagi/Petang ──────────────────────────
@@ -3117,6 +3190,28 @@
         const labels = { pagi:'Pagi', petang:'Petang', istigfar:'Istighfar & Taubat' };
         showToast(`MasyaAllah! ${labels[type]} selesai! 🌟`, 'success');
       }
+      // Background sync ke server (tidak blokir UI)
+      _wiridSyncBackground();
+      // Invalidate cache rekap agar data terbaru ditampilkan
+      wiridRekapCache = null;
+    }
+
+    /**
+     * Kirim state wirid hari ini ke server secara background.
+     * Gagal tidak masalah — data lokal tetap tersimpan.
+     * Tidak mengganggu fungsi khatam sama sekali (beda sheet, beda fungsi).
+     */
+    function _wiridSyncBackground() {
+      if (!currentUser || !currentUser.id) return; // belum login, skip
+      const today = getLocalDateString();
+      const logData = {
+        tanggal : today,
+        pagi    : !!wiridState.pagi.done,
+        petang  : !!wiridState.petang.done,
+        istigfar: !!wiridState.istigfar.done
+      };
+      // Fire and forget — error diabaikan agar tidak mengganggu UX
+      gscript.saveWiridLog(currentUser.id, logData).catch(() => {});
     }
 
     // ── Reset per tab ───────────────────────────────────────────
@@ -3192,6 +3287,68 @@
       switchWiridTab(activeTab);
       openModal('modalWirid');
       updateActiveNav('navWirid');
+    }
+
+    // ── Rekap 30 Hari ───────────────────────────────────────────
+    let wiridRekapCache = null;
+
+    function loadWiridRekap() {
+      const statusEl = document.getElementById('rekapStatus');
+      if (!currentUser || !currentUser.id) {
+        if (statusEl) statusEl.textContent = 'Login diperlukan untuk melihat rekap.';
+        return;
+      }
+      // Tampilkan cache dulu kalau ada
+      if (wiridRekapCache) { renderWiridRekap(wiridRekapCache); return; }
+
+      if (statusEl) statusEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Memuat rekap dari server...';
+
+      gscript.getWiridHistory(currentUser.id, 30)
+        .then(data => {
+          wiridRekapCache = data;
+          renderWiridRekap(data);
+          if (statusEl) statusEl.textContent = '';
+        })
+        .catch(() => {
+          if (statusEl) statusEl.textContent = 'Gagal memuat rekap. Pastikan koneksi aktif.';
+        });
+    }
+
+    function renderWiridRekap(data) {
+      const { history, stats } = data;
+
+      // Stats
+      document.getElementById('rekapStreakNum').textContent  = stats.currentStreak;
+      document.getElementById('rekapAllDoneNum').textContent = stats.allDone + '/30';
+
+      const setPct = (barId, pctId, count) => {
+        const pct = Math.round((count / 30) * 100);
+        document.getElementById(pctId).textContent = `${count}/30 (${pct}%)`;
+        document.getElementById(barId).style.width = pct + '%';
+      };
+      setPct('rekapPagiBar',    'rekapPagiPct',    stats.pagiDone);
+      setPct('rekapPetangBar',  'rekapPetangPct',  stats.petangDone);
+      setPct('rekapIstigfarBar','rekapIstigfarPct', stats.istigfarDone);
+
+      // Kalender dots (terbaru kiri-kanan, 7 kolom)
+      const cal = document.getElementById('rekapCalendar');
+      // history sudah urut terbaru di index 0 — balik agar terlama dulu (kiri atas)
+      const ordered = [...history].reverse();
+      // Padding agar mulai dari hari yang tepat
+      const firstDay = ordered.length > 0 ? new Date(ordered[0].tanggal).getDay() : 0;
+      let html = '';
+      for (let p = 0; p < firstDay; p++) {
+        html += `<div class="aspect-square rounded-sm bg-transparent"></div>`;
+      }
+      ordered.forEach(r => {
+        const done = (r.pagi ? 1:0) + (r.petang ? 1:0) + (r.istigfar ? 1:0);
+        let bg = 'bg-slate-100';
+        if (done === 3) bg = 'bg-sky-500';
+        else if (done > 0) bg = 'bg-sky-200';
+        const label = `${r.tanggal}\nPagi:${r.pagi?'✓':'✗'} Petang:${r.petang?'✓':'✗'} Istigfar:${r.istigfar?'✓':'✗'}`;
+        html += `<div class="aspect-square rounded-sm ${bg} cursor-default transition-transform hover:scale-110" title="${label}"></div>`;
+      });
+      cal.innerHTML = html;
     }
 
     // ── Init ────────────────────────────────────────────────────
