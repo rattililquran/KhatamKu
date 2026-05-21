@@ -858,22 +858,25 @@
         <div class="absolute -top-8 -right-8 w-32 h-32 bg-white/10 rounded-full"></div>
         <div class="absolute -bottom-5 -left-5 w-24 h-24 bg-black/10 rounded-full"></div>
         <div class="relative z-10 p-5">
+
           <!-- Posisi Bacaan Terakhir -->
           <div class="flex items-center justify-between mb-2">
             <p class="text-[11px] font-black text-white uppercase tracking-widest">📖 Posisi Bacaan Terakhir</p>
             <div class="flex items-center gap-1.5">
               <button
                 onclick="openModal('modalCalibrate')"
-                class="flex items-center gap-1 text-[10px] font-bold text-white/70 hover:text-white bg-white/10 hover:bg-sky-500/40 border border-white/20 hover:border-sky-300/50 px-2.5 py-1 rounded-lg transition-all duration-200"
+                class="flex items-center gap-1 text-[10px] font-bold text-white/80 hover:text-white bg-white/15 hover:bg-white/25 border border-white/20 px-2.5 py-1 rounded-lg transition-all duration-200"
                 title="Sesuaikan posisi bacaan"
               ><i class="fa-solid fa-sliders text-[9px]"></i> Sesuaikan</button>
               <button
                 onclick="confirmResetReadingData()"
-                class="flex items-center gap-1 text-[10px] font-bold text-white/70 hover:text-white bg-white/10 hover:bg-red-500/40 border border-white/20 hover:border-red-300/50 px-2.5 py-1 rounded-lg transition-all duration-200"
+                class="flex items-center gap-1 text-[10px] font-bold text-white/80 hover:text-white bg-white/15 hover:bg-red-400/30 border border-white/20 px-2.5 py-1 rounded-lg transition-all duration-200"
                 title="Reset semua data bacaan"
               ><i class="fa-solid fa-rotate-left text-[9px]"></i> Reset</button>
             </div>
           </div>
+
+          <!-- Halaman & Juz -->
           <div class="flex items-center gap-3 mb-2 flex-wrap">
             <div class="flex items-baseline gap-1.5">
               <span class="text-3xl font-black text-amber-400 tracking-tight drop-shadow-sm">HAL</span>
@@ -886,25 +889,32 @@
             <p class="text-[10px] font-semibold text-white/75 flex items-center gap-1" id="smartBookmarkLastUpdate"><i class="fa-regular fa-clock text-[9px]"></i> -</p>
           </div>
 
-          <!-- Divider -->
-          <div class="border-t border-white/20 mb-4"></div>
-
-          <!-- Progress Hari Ini -->
-          <div class="flex items-center gap-3 mb-4">
-            <div class="w-12 h-12 bg-white/15 rounded-2xl flex items-center justify-center border border-white/20 shrink-0">
-              <i class="fa-solid fa-book-open-reader text-white text-xl"></i>
-            </div>
-            <div class="flex-1">
-              <h4 class="font-extrabold text-white text-base mb-1.5" id="uiDailyTargetPages">Progres: 0/0 Halaman</h4>
-              <div class="flex items-center gap-3">
-                <span class="text-sm font-extrabold text-amber-300" id="uiDailyProgressPct">0%</span>
-                <div class="flex-1 h-2.5 bg-white/30 rounded-full overflow-hidden">
-                  <div class="h-full rounded-full transition-all duration-1000" id="uiDailyProgressBar" style="width: 0%; background: #fbbf24; opacity: 0.9;"></div>
+          <!-- Kartu putih: Progress + Tombol -->
+          <div class="bg-white rounded-2xl p-4 shadow-sm">
+            <!-- Progress Hari Ini -->
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-12 h-12 bg-sky-50 rounded-2xl flex items-center justify-center border border-sky-100 shrink-0">
+                <i class="fa-solid fa-book-open-reader text-sky-500 text-xl"></i>
+              </div>
+              <div class="flex-1">
+                <h4 class="font-extrabold text-slate-800 text-base mb-1.5" id="uiDailyTargetPages">Progres: 0/0 Halaman</h4>
+                <div class="flex items-center gap-3">
+                  <span class="text-sm font-extrabold text-sky-500" id="uiDailyProgressPct">0%</span>
+                  <div class="flex-1 h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                    <div class="h-full rounded-full transition-all duration-1000" id="uiDailyProgressBar" style="width: 0%; background: linear-gradient(to right, #fbbf24, #f59e0b);"></div>
+                  </div>
                 </div>
               </div>
             </div>
+            <!-- Tombol Lanjutkan -->
+            <button id="btnLanjutkanBacaan"
+              class="w-full py-3.5 rounded-xl font-extrabold text-white text-sm tracking-widest transition-all shadow-md active:scale-[0.98]"
+              style="background: linear-gradient(135deg, #0ea5e9, #2563eb); box-shadow: 0 4px 14px rgba(14,165,233,0.35);"
+              onclick="handleLanjutkanBacaan()">
+              LANJUTKAN BACAAN
+            </button>
           </div>
-          <button id="btnLanjutkanBacaan" class="w-full py-3.5 rounded-2xl bg-white/25 hover:bg-white/40 border border-white/50 font-extrabold text-white text-sm tracking-widest transition-all shadow-sm" onclick="handleLanjutkanBacaan()">LANJUTKAN BACAAN</button>
+
         </div>
       </div>
       <p class="text-[11px] text-slate-400 font-medium mb-8 flex items-center gap-1.5 ml-2"><i class="fa-regular fa-clock"></i> Target harian akan direset setiap pukul 00:00 WIB</p>
