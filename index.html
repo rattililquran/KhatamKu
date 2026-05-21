@@ -274,23 +274,29 @@
       background: transparent; font-size: 11px; font-weight: 800;
       color: #64748b; cursor: pointer; transition: all 0.2s ease;
       display: flex; align-items: center; justify-content: center; gap: 5px;
-      touch-action: manipulation;
+      touch-action: manipulation; white-space: nowrap;
     }
     .wirid-tab.active {
-      background: white; color: #059669;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      background: white; color: #0ea5e9;
+      box-shadow: 0 2px 8px rgba(14,165,233,0.15);
     }
+    /* Badge — seragam: centang biru saat done, strip abu saat belum */
     .wirid-tab .wirid-tab-badge {
-      font-size: 9px; font-weight: 900; padding: 1px 5px;
-      border-radius: 999px; background: #dcfce7; color: #059669;
+      font-size: 11px; font-weight: 900; width: 18px; height: 18px;
+      border-radius: 999px; display: inline-flex; align-items: center;
+      justify-content: center;
+      background: #e2e8f0; color: #94a3b8; /* default: abu */
+      transition: all 0.2s ease; flex-shrink: 0;
+    }
+    .wirid-tab .wirid-tab-badge.done {
+      background: #0ea5e9; color: white;
     }
     .wirid-tab.active-time .wirid-tab-badge {
-      background: #059669; color: white;
       animation: pulseBadge 2s infinite;
     }
     @keyframes pulseBadge {
       0%,100% { transform: scale(1); }
-      50%      { transform: scale(1.1); }
+      50%      { transform: scale(1.12); }
     }
 
     /* Checklist item dzikir */
@@ -2017,18 +2023,30 @@
             </div>
           </div>
 
-          <!-- Kalender dots 30 hari -->
+          <!-- Timeline 7 hari + expand 30 hari -->
           <div class="bg-white border border-slate-200 rounded-2xl p-4 mb-3">
-            <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Kalender 30 Hari Terakhir</p>
-            <!-- Legend -->
-            <div class="flex gap-3 mb-3 text-[10px] font-bold text-slate-500">
-              <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-sm bg-sky-500 inline-block"></span>Lengkap</span>
-              <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-sm bg-sky-200 inline-block"></span>Sebagian</span>
-              <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-sm bg-slate-100 inline-block"></span>Kosong</span>
+            <div class="flex items-center justify-between mb-3">
+              <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Riwayat Harian</p>
+              <button id="btnExpandRekap" onclick="toggleRekapExpand()"
+                class="text-[10px] font-black text-sky-500 flex items-center gap-1 transition">
+                <span id="rekapExpandLabel">Lihat 30 hari</span>
+                <i class="fa-solid fa-chevron-down text-[9px]" id="rekapExpandIcon"></i>
+              </button>
             </div>
-            <div id="rekapCalendar" class="grid gap-1" style="grid-template-columns:repeat(7,1fr)">
-              <!-- diisi JS -->
+
+            <!-- Header kolom -->
+            <div class="grid grid-cols-4 gap-1.5 mb-1.5">
+              <div class="text-[9px] font-black text-slate-400 uppercase tracking-wide">Tanggal</div>
+              <div class="text-[9px] font-black text-amber-500 uppercase tracking-wide text-center">🌅 Pagi</div>
+              <div class="text-[9px] font-black text-blue-400 uppercase tracking-wide text-center">🌤 Petang</div>
+              <div class="text-[9px] font-black text-sky-400 uppercase tracking-wide text-center">🤲 Istigfar</div>
             </div>
+
+            <!-- 7 hari terakhir (selalu tampil) -->
+            <div id="rekapRows7" class="space-y-1"></div>
+
+            <!-- 8-30 hari (tersembunyi, expand saat klik) -->
+            <div id="rekapRows30" class="space-y-1 overflow-hidden transition-all duration-300" style="max-height:0;opacity:0"></div>
           </div>
 
           <!-- Status loading/error -->
@@ -3252,29 +3270,39 @@
       renderWiridDoneBtn('istigfar');
     }
 
-    // ── Badge update ────────────────────────────────────────────
+    // ── Badge update — centang biru / strip abu ─────────────────
     function updateWiridBadges() {
-      document.getElementById('wbadgePagi').textContent    = wiridState.pagi.done    ? '✓' : '—';
-      document.getElementById('wbadgePetang').textContent  = wiridState.petang.done  ? '✓' : '—';
-      document.getElementById('wbadgeIstigfar').textContent= wiridState.istigfar.done? '✓' : '—';
+      const setBadge = (id, done) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = done ? '✓' : '—';
+        el.classList.toggle('done', done);
+      };
+      setBadge('wbadgePagi',    wiridState.pagi.done);
+      setBadge('wbadgePetang',  wiridState.petang.done);
+      setBadge('wbadgeIstigfar',wiridState.istigfar.done);
     }
 
-    // ── Mini rings (biru tema) ──────────────────────────────────
+    // ── Mini rings (kontras di header biru) ────────────────────
     function updateWiridMiniRings() {
       const rings = [
-        { pct: wiridState.pagi.done     ? 100 : 0, color:'#fbbf24' },
-        { pct: wiridState.petang.done   ? 100 : 0, color:'#60a5fa' },
-        { pct: wiridState.istigfar.done ? 100 : 0, color:'#34d399' }
+        { done: wiridState.pagi.done,     color:'#fcd34d', label:'Pagi' },
+        { done: wiridState.petang.done,   color:'#ffffff', label:'Petang' },
+        { done: wiridState.istigfar.done, color:'#6ee7b7', label:'Istigfar' }
       ];
-      const SIZE = 32, R = 12, CIRC = 2 * Math.PI * R;
+      const SIZE = 34, R = 12, SW = 3.5, CIRC = 2 * Math.PI * R;
       document.getElementById('wiridMiniRings').innerHTML = rings.map(r => {
-        const dash = (r.pct/100)*CIRC;
-        return `<svg width="${SIZE}" height="${SIZE}" viewBox="0 0 ${SIZE} ${SIZE}">
-          <circle cx="${SIZE/2}" cy="${SIZE/2}" r="${R}" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="3"/>
-          <circle cx="${SIZE/2}" cy="${SIZE/2}" r="${R}" fill="none" stroke="${r.color}" stroke-width="3"
+        const dash = r.done ? CIRC : 0;
+        return `<svg width="${SIZE}" height="${SIZE}" viewBox="0 0 ${SIZE} ${SIZE}" title="${r.label}">
+          <circle cx="${SIZE/2}" cy="${SIZE/2}" r="${R}" fill="none"
+            stroke="rgba(255,255,255,0.25)" stroke-width="${SW}"/>
+          <circle cx="${SIZE/2}" cy="${SIZE/2}" r="${R}" fill="none"
+            stroke="${r.color}" stroke-width="${SW}"
             stroke-dasharray="${dash.toFixed(1)} ${CIRC.toFixed(1)}"
-            stroke-dashoffset="${(CIRC/4).toFixed(1)}" stroke-linecap="round"
-            style="transition:stroke-dasharray 0.5s ease"/>
+            stroke-dashoffset="${(CIRC/4).toFixed(1)}"
+            stroke-linecap="round"
+            style="transition:stroke-dasharray 0.6s ease"/>
+          ${r.done ? `<circle cx="${SIZE/2}" cy="${SIZE/2}" r="4" fill="${r.color}"/>` : ''}
         </svg>`;
       }).join('');
     }
@@ -3328,6 +3356,53 @@
         });
     }
 
+    let rekapExpanded = false;
+
+    function toggleRekapExpand() {
+      rekapExpanded = !rekapExpanded;
+      const rows30  = document.getElementById('rekapRows30');
+      const label   = document.getElementById('rekapExpandLabel');
+      const icon    = document.getElementById('rekapExpandIcon');
+      if (rekapExpanded) {
+        rows30.style.maxHeight = rows30.scrollHeight + 'px';
+        rows30.style.opacity   = '1';
+        label.textContent = 'Sembunyikan';
+        icon.className    = 'fa-solid fa-chevron-up text-[9px]';
+      } else {
+        rows30.style.maxHeight = '0';
+        rows30.style.opacity   = '0';
+        label.textContent = 'Lihat 30 hari';
+        icon.className    = 'fa-solid fa-chevron-down text-[9px]';
+      }
+    }
+
+    function _wiridRowHtml(r, isToday) {
+      const dot = done => done
+        ? `<div style="width:24px;height:24px;border-radius:50%;background:#0ea5e9;display:flex;align-items:center;justify-content:center;margin:auto"><svg width="12" height="12" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>`
+        : `<div style="width:24px;height:24px;border-radius:50%;background:#f1f5f9;display:flex;align-items:center;justify-content:center;margin:auto"><div style="width:6px;height:2px;background:#cbd5e1;border-radius:2px"></div></div>`;
+
+      const d      = new Date(r.tanggal + 'T00:00:00');
+      const dayNames = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+      const day    = dayNames[d.getDay()];
+      const dateN  = String(d.getDate()).padStart(2,'0');
+      const month  = String(d.getMonth()+1).padStart(2,'0');
+      const allDone= r.pagi && r.petang && r.istigfar;
+      const bg     = isToday ? 'background:#eff6ff;border:1px solid #bfdbfe;'
+                   : allDone ? 'background:#f0f9ff;' : 'background:transparent;';
+
+      return `<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;align-items:center;padding:6px 4px;border-radius:10px;${bg}">
+        <div style="display:flex;align-items:center;gap:4px">
+          <div style="text-align:center;min-width:28px">
+            <div style="font-size:9px;font-weight:800;color:${isToday?'#0ea5e9':'#94a3b8'};text-transform:uppercase">${isToday?'Hari ini':day}</div>
+            <div style="font-size:13px;font-weight:900;color:${isToday?'#0ea5e9':'#1e293b'};line-height:1">${dateN}/${month}</div>
+          </div>
+        </div>
+        <div style="text-align:center">${dot(r.pagi)}</div>
+        <div style="text-align:center">${dot(r.petang)}</div>
+        <div style="text-align:center">${dot(r.istigfar)}</div>
+      </div>`;
+    }
+
     function renderWiridRekap(data) {
       if (!data || !data.history) return;
       const { history, stats } = data;
@@ -3339,49 +3414,42 @@
       if (allEl)    allEl.textContent    = stats.allDone + '/30';
 
       const setPct = (barId, pctId, count) => {
-        const pct = Math.round((count / 30) * 100);
+        const pct   = Math.round((count / 30) * 100);
         const pctEl = document.getElementById(pctId);
         const barEl = document.getElementById(barId);
-        if (pctEl) pctEl.textContent    = `${count}/30 (${pct}%)`;
-        if (barEl) barEl.style.width    = pct + '%';
+        if (pctEl) pctEl.textContent = `${count}/30 (${pct}%)`;
+        if (barEl) barEl.style.width = pct + '%';
       };
       setPct('rekapPagiBar',    'rekapPagiPct',    stats.pagiDone);
       setPct('rekapPetangBar',  'rekapPetangPct',  stats.petangDone);
       setPct('rekapIstigfarBar','rekapIstigfarPct', stats.istigfarDone);
 
-      // Kalender — history[0] = hari ini, history[29] = 30 hari lalu
-      // Urutkan dari terlama ke terbaru untuk kalender kiri→kanan
-      const cal = document.getElementById('rekapCalendar');
-      if (!cal) return;
+      // Timeline — history[0] = hari ini, terbaru di atas
+      const today7  = document.getElementById('rekapRows7');
+      const rest30  = document.getElementById('rekapRows30');
+      if (!today7 || !rest30) return;
 
-      const ordered = [...history].reverse(); // terlama di index 0
-      const firstDayOfWeek = ordered.length > 0
-        ? new Date(ordered[0].tanggal + 'T00:00:00').getDay()
-        : 0;
+      const todayStr = getLocalDateString();
+      let html7 = '', html30 = '';
 
-      let html = '';
-      // Padding hari di awal minggu
-      for (let p = 0; p < firstDayOfWeek; p++) {
-        html += `<div></div>`;
-      }
-
-      ordered.forEach(r => {
-        const done  = (r.pagi ? 1:0) + (r.petang ? 1:0) + (r.istigfar ? 1:0);
-        let color   = '#f1f5f9'; // kosong = abu
-        if (done === 3) color = '#0ea5e9';      // lengkap = biru penuh
-        else if (done > 0) color = '#bae6fd';   // sebagian = biru muda
-
-        const dayNum   = r.tanggal ? r.tanggal.slice(8) : '';
-        const tooltip  = `${r.tanggal}\n🌅${r.pagi?'✓':'✗'} 🌤${r.petang?'✓':'✗'} 🤲${r.istigfar?'✓':'✗'}`;
-
-        html += `<div style="aspect-ratio:1;border-radius:4px;background:${color};cursor:default;transition:transform 0.1s"
-          title="${tooltip}"
-          onmouseover="this.style.transform='scale(1.2)'"
-          onmouseout="this.style.transform='scale(1)'">
-        </div>`;
+      history.forEach((r, idx) => {
+        const isToday = r.tanggal === todayStr;
+        const row     = _wiridRowHtml(r, isToday);
+        if (idx < 7)  html7  += row;
+        else          html30 += row;
       });
 
-      cal.innerHTML = html;
+      today7.innerHTML = html7;
+      rest30.innerHTML = html30;
+
+      // Reset expand state saat data baru dimuat
+      rekapExpanded = false;
+      rest30.style.maxHeight = '0';
+      rest30.style.opacity   = '0';
+      const label = document.getElementById('rekapExpandLabel');
+      const icon  = document.getElementById('rekapExpandIcon');
+      if (label) label.textContent = 'Lihat 30 hari';
+      if (icon)  icon.className    = 'fa-solid fa-chevron-down text-[9px]';
     }
 
     // ── Init: wiridLoad dipanggil saat openWiridKu, bukan saat startup
