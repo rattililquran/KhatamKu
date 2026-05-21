@@ -1,7 +1,7 @@
-// sw.js — KhatamKu Service Worker v7
+// sw.js — KhatamKu Service Worker v8
 // Strategi: Network-first untuk HTML, Cache-first untuk aset statis self-hosted
 
-const CACHE_NAME = 'khatamku-v7';
+const CACHE_NAME = 'khatamku-v8';
 const BASE = '/KhatamKu';
 
 // Aset statis yang di-cache saat install (sekarang self-hosted)
