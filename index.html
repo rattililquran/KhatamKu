@@ -1968,11 +1968,20 @@
           </button>
 
           <!-- Info card -->
-          <div class="bg-sky-50 border border-sky-100 rounded-2xl p-4 mb-4">
-            <p class="text-[10px] font-black text-sky-600 uppercase tracking-widest mb-2">💡 Panduan</p>
-            <p class="text-xs text-slate-600 leading-relaxed">
-              Setelah selesai dzikir pagi lengkap (Ayat Kursi, Al-Ikhlas+Falaq+Nas, tasbih 33×, hamdallah 33×, takbir 34×, dll), ketuk kartu di atas untuk menandai selesai.
-            </p>
+          <!-- Panduan expandable -->
+          <div class="bg-sky-50 border border-sky-100 rounded-2xl mb-4 overflow-hidden">
+            <button onclick="toggleWiridPanduan('pagi')" class="w-full flex items-center justify-between p-4 active:bg-sky-100 transition">
+              <span class="text-[10px] font-black text-sky-600 uppercase tracking-widest">💡 Panduan Dzikir Pagi</span>
+              <i id="panduanIconPagi" class="fa-solid fa-chevron-down text-sky-400 text-xs transition-transform duration-300"></i>
+            </button>
+            <div id="panduanBodyPagi" class="overflow-hidden transition-all duration-300" style="max-height:0">
+              <div class="px-4 pb-4 space-y-3 text-xs text-slate-600 leading-relaxed">
+                <p>Membaca wirid atau dzikir pagi adalah rutinitas yang sangat baik untuk membuka hari dengan keberkahan, perlindungan, dan ketenangan hati.</p>
+                <p>Waktu utama untuk membaca wirid pagi adalah setelah salat Subuh hingga matahari terbit. Namun, jika terlewat karena kesibukan, Anda masih bisa membacanya hingga menjelang waktu Zuhur.</p>
+                <p>Setelah selesai dzikir pagi, ketuk kartu di atas untuk menandai selesai.</p>
+                <p class="text-sky-600 font-bold">Semoga Allah terima 🤲</p>
+              </div>
+            </div>
           </div>
 
           <!-- Reset -->
@@ -2005,11 +2014,19 @@
           </button>
 
           <!-- Info card -->
-          <div class="bg-sky-50 border border-sky-100 rounded-2xl p-4 mb-4">
-            <p class="text-[10px] font-black text-sky-600 uppercase tracking-widest mb-2">💡 Panduan</p>
-            <p class="text-xs text-slate-600 leading-relaxed">
-              Setelah selesai dzikir petang lengkap (Ayat Kursi, Al-Ikhlas+Falaq+Nas, a'udzu bikalimat, tasbih 33×, hamdallah 33×, takbir 34×, dll), ketuk kartu di atas untuk menandai selesai.
-            </p>
+          <div class="bg-sky-50 border border-sky-100 rounded-2xl mb-4 overflow-hidden">
+            <button onclick="toggleWiridPanduan('petang')" class="w-full flex items-center justify-between p-4 active:bg-sky-100 transition">
+              <span class="text-[10px] font-black text-sky-600 uppercase tracking-widest">💡 Panduan Dzikir Petang</span>
+              <i id="panduanIconPetang" class="fa-solid fa-chevron-down text-sky-400 text-xs transition-transform duration-300"></i>
+            </button>
+            <div id="panduanBodyPetang" class="overflow-hidden transition-all duration-300" style="max-height:0">
+              <div class="px-4 pb-4 space-y-3 text-xs text-slate-600 leading-relaxed">
+                <p>Membaca wirid atau dzikir petang adalah penutup hari yang sangat baik untuk memohon ampunan atas kesalahan sepanjang hari, serta meminta perlindungan dan ketenangan untuk malam yang akan dilewati.</p>
+                <p>Waktu utama untuk membaca wirid petang adalah setelah salat Asar hingga matahari terbenam (Magrib). Namun, jika terlewat, para ulama menyebutkan Anda masih bisa membacanya pada awal malam (setelah Magrib hingga Isya).</p>
+                <p>Setelah selesai dzikir petang, ketuk kartu di atas untuk menandai selesai.</p>
+                <p class="text-sky-600 font-bold">Semoga Allah terima 🤲</p>
+              </div>
+            </div>
           </div>
 
           <!-- Reset -->
@@ -3327,7 +3344,20 @@
       }
     }
 
-    // ── Toggle centang ──────────────────────────────────────────
+    // ── Toggle panduan expand ────────────────────────────────────
+    function toggleWiridPanduan(type) {
+      const body = document.getElementById('panduanBody' + type.charAt(0).toUpperCase() + type.slice(1));
+      const icon = document.getElementById('panduanIcon' + type.charAt(0).toUpperCase() + type.slice(1));
+      if (!body) return;
+      const isOpen = body.style.maxHeight !== '0px' && body.style.maxHeight !== '';
+      if (isOpen) {
+        body.style.maxHeight = '0';
+        if (icon) icon.style.transform = 'rotate(0deg)';
+      } else {
+        body.style.maxHeight = body.scrollHeight + 'px';
+        if (icon) icon.style.transform = 'rotate(180deg)';
+      }
+    }
     function wiridToggleDone(type) {
       const s  = wiridState[type];
       s.done   = !s.done;
