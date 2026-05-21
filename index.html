@@ -1687,6 +1687,42 @@
               <div><label class="admin-label">Link YouTube</label><input type="url" id="ad_yt_link" class="admin-input" placeholder="https://youtube.com/..."></div>
             </div>
             <div><label class="admin-label">Footer Text</label><input type="text" id="ad_footer_text" class="admin-input"></div>
+
+            <!-- Donasi Rekening -->
+            <div class="border-t border-slate-100 pt-4">
+              <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">
+                <i class="fa-solid fa-heart text-purple-400 mr-1"></i> Rekening Donasi (maks. 3)
+              </p>
+              <div class="space-y-3">
+                <!-- Rekening 1 -->
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-3">
+                  <p class="text-[9px] font-black text-slate-400 uppercase tracking-wider mb-2">Rekening 1</p>
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <div><label class="admin-label">Nama Bank</label><input type="text" id="ad_donasi_bank1_nama" class="admin-input" placeholder="BSI / BCA / GoPay..."></div>
+                    <div><label class="admin-label">Nomor Rekening</label><input type="text" id="ad_donasi_bank1_nomor" class="admin-input" placeholder="1234567890"></div>
+                    <div><label class="admin-label">Atas Nama</label><input type="text" id="ad_donasi_bank1_atas" class="admin-input" placeholder="Yayasan Rattilil..."></div>
+                  </div>
+                </div>
+                <!-- Rekening 2 -->
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-3">
+                  <p class="text-[9px] font-black text-slate-400 uppercase tracking-wider mb-2">Rekening 2</p>
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <div><label class="admin-label">Nama Bank</label><input type="text" id="ad_donasi_bank2_nama" class="admin-input" placeholder="BSI / BCA / GoPay..."></div>
+                    <div><label class="admin-label">Nomor Rekening</label><input type="text" id="ad_donasi_bank2_nomor" class="admin-input" placeholder="0812345678"></div>
+                    <div><label class="admin-label">Atas Nama</label><input type="text" id="ad_donasi_bank2_atas" class="admin-input" placeholder="Rattilil Qur'an"></div>
+                  </div>
+                </div>
+                <!-- Rekening 3 -->
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-3">
+                  <p class="text-[9px] font-black text-slate-400 uppercase tracking-wider mb-2">Rekening 3 <span class="text-slate-300 font-normal normal-case">(opsional)</span></p>
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <div><label class="admin-label">Nama Bank</label><input type="text" id="ad_donasi_bank3_nama" class="admin-input" placeholder="BSI / BCA / GoPay..."></div>
+                    <div><label class="admin-label">Nomor Rekening</label><input type="text" id="ad_donasi_bank3_nomor" class="admin-input" placeholder="0812345678"></div>
+                    <div><label class="admin-label">Atas Nama</label><input type="text" id="ad_donasi_bank3_atas" class="admin-input" placeholder="Rattilil Qur'an"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
             <div class="flex justify-end gap-2 pt-2">
               <button type="button" class="btn-secondary" onclick="loadTentangAdmin()"><i class="fa-solid fa-arrow-rotate-left"></i> Reset</button>
               <button type="submit" class="btn-primary"><i class="fa-solid fa-save"></i> Simpan</button>
@@ -2420,28 +2456,9 @@
               </div>
             </div>
             <p class="text-xs text-purple-100 leading-relaxed mb-4">Jazakallahu khairan atas dukunganmu. Setiap donasi membantu kami menjaga server, mengembangkan fitur, dan memperluas program tilawah. 🤲</p>
-            <!-- Rekening -->
-            <div class="space-y-2">
-              <div class="bg-white/15 backdrop-blur rounded-xl p-3 flex items-center justify-between">
-                <div>
-                  <p class="text-[9px] font-black text-purple-200 uppercase tracking-wider">Bank Syariah Indonesia (BSI)</p>
-                  <p class="text-base font-black text-white tracking-wider">7145 2233 44</p>
-                  <p class="text-[10px] text-purple-200">a.n. Yayasan Rattilil Qur'an</p>
-                </div>
-                <button onclick="copyRekening('7145223344','BSI')" class="w-9 h-9 bg-white/20 hover:bg-white/30 rounded-lg flex items-center justify-center transition active:scale-90">
-                  <i class="fa-regular fa-copy text-white text-xs"></i>
-                </button>
-              </div>
-              <div class="bg-white/15 backdrop-blur rounded-xl p-3 flex items-center justify-between">
-                <div>
-                  <p class="text-[9px] font-black text-purple-200 uppercase tracking-wider">GoPay / OVO / Dana</p>
-                  <p class="text-base font-black text-white tracking-wider">0812 3456 7890</p>
-                  <p class="text-[10px] text-purple-200">a.n. Rattilil Qur'an</p>
-                </div>
-                <button onclick="copyRekening('081234567890','GoPay/OVO/Dana')" class="w-9 h-9 bg-white/20 hover:bg-white/30 rounded-lg flex items-center justify-center transition active:scale-90">
-                  <i class="fa-regular fa-copy text-white text-xs"></i>
-                </button>
-              </div>
+            <!-- Rekening — diisi dinamis dari _applyTentangData -->
+            <div class="space-y-2" id="donasiRekeningList">
+              <p class="text-xs text-purple-200 italic">Memuat info rekening...</p>
             </div>
           </div>
         </div>
@@ -2783,27 +2800,81 @@
         .catch(() => {}); // Silent fail, pakai default
     }
 
-    function openTentangModal() {
-      // Isi konten dari data spreadsheet (atau fallback ke teks default)
-      document.getElementById('tentangJudul').textContent = tentangData.judul_app || 'KhatamKu';
-      document.getElementById('tentangVersi').textContent = 'v' + (tentangData.versi_app || '1.0.0');
-      document.getElementById('tentangDeskApp').textContent = tentangData.deskripsi_app ||
-        'KhatamKu adalah aplikasi pelacak bacaan Al-Quran berbasis Google Sheets.';
-      document.getElementById('tentangDeskRattil').textContent = tentangData.tentang_rattil ||
-        'Rattilil Quran adalah program tahsin dan tilawah Al-Quran.';
-      document.getElementById('tentangFooter').textContent = tentangData.footer_text ||
-        'Dibuat dengan ❤️ untuk para pecinta Al-Qur\'an';
-
-      // Sosial media links
+    function _applyTentangData(data) {
+      document.getElementById('tentangJudul').textContent     = data.judul_app    || 'KhatamKu';
+      document.getElementById('tentangVersi').textContent     = 'v' + (data.versi_app || '1.0.0');
+      document.getElementById('tentangDeskApp').textContent   = data.deskripsi_app  || 'KhatamKu adalah aplikasi pelacak bacaan Al-Quran berbasis Google Sheets.';
+      document.getElementById('tentangDeskRattil').textContent= data.tentang_rattil || 'Rattilil Quran adalah program tahsin dan tilawah Al-Quran.';
+      document.getElementById('tentangFooter').textContent    = data.footer_text    || 'Dibuat dengan ❤️ untuk para pecinta Al-Qur\'an';
       const wa = document.getElementById('tentangWA');
       const ig = document.getElementById('tentangIG');
       const yt = document.getElementById('tentangYT');
-      if (wa) wa.href = tentangData.wa_link || '#';
-      if (ig) ig.href = tentangData.ig_link || '#';
-      if (yt) yt.href = tentangData.yt_link || '#';
+      if (wa) wa.href = data.wa_link || '#';
+      if (ig) ig.href = data.ig_link || '#';
+      if (yt) yt.href = data.yt_link || '#';
 
+      // Render rekening donasi dinamis
+      const rekeningEl = document.getElementById('donasiRekeningList');
+      if (!rekeningEl) return;
+      const items = [];
+      // Rekening 1
+      if (data.donasi_bank1_nama && data.donasi_bank1_nomor) {
+        items.push({
+          bank  : data.donasi_bank1_nama,
+          nomor : data.donasi_bank1_nomor,
+          atas  : data.donasi_bank1_atas || ''
+        });
+      }
+      // Rekening 2
+      if (data.donasi_bank2_nama && data.donasi_bank2_nomor) {
+        items.push({
+          bank  : data.donasi_bank2_nama,
+          nomor : data.donasi_bank2_nomor,
+          atas  : data.donasi_bank2_atas || ''
+        });
+      }
+      // Rekening 3 (opsional)
+      if (data.donasi_bank3_nama && data.donasi_bank3_nomor) {
+        items.push({
+          bank  : data.donasi_bank3_nama,
+          nomor : data.donasi_bank3_nomor,
+          atas  : data.donasi_bank3_atas || ''
+        });
+      }
+
+      if (items.length === 0) {
+        // Fallback ke data dummy jika belum dikonfigurasi
+        rekeningEl.innerHTML = `
+          <p class="text-xs text-purple-200 italic text-center py-2">
+            Rekening belum dikonfigurasi.<br>
+            <span class="text-purple-300">Admin dapat mengaturnya di Portal Admin → Konten → Tentang.</span>
+          </p>`;
+        return;
+      }
+
+      rekeningEl.innerHTML = items.map(r => `
+        <div class="bg-white/15 backdrop-blur rounded-xl p-3 flex items-center justify-between">
+          <div>
+            <p class="text-[9px] font-black text-purple-200 uppercase tracking-wider">${escapeHtml(r.bank)}</p>
+            <p class="text-base font-black text-white tracking-wider">${escapeHtml(r.nomor)}</p>
+            ${r.atas ? `<p class="text-[10px] text-purple-200">a.n. ${escapeHtml(r.atas)}</p>` : ''}
+          </div>
+          <button onclick="copyRekening('${escapeHtml(r.nomor.replace(/\s/g,''))}','${escapeHtml(r.bank)}')"
+            class="w-9 h-9 bg-white/20 hover:bg-white/30 rounded-lg flex items-center justify-center transition active:scale-90">
+            <i class="fa-regular fa-copy text-white text-xs"></i>
+          </button>
+        </div>`).join('');
+    }
+
+    function openTentangModal() {
+      // Tampilkan cache dulu agar modal langsung terbuka
+      _applyTentangData(tentangData);
       openModal('modalTentang');
       updateActiveNav('navTentang');
+      // Selalu fetch terbaru dari server — update tampilan tanpa tutup modal
+      gscript.getTentangContent()
+        .then(data => { tentangData = data; _applyTentangData(data); })
+        .catch(() => {});
     }
 
     // ═══════════════════════════════════════════════════════
@@ -7268,31 +7339,39 @@ ADMIN JAVASCRIPT MODULE
   })();
 
   // ── KONTEN: TENTANG ────────────────────────────────────────
+  const _TENTANG_FIELDS = [
+    'judul_app','versi_app','deskripsi_app','tentang_rattil',
+    'wa_link','ig_link','yt_link','footer_text',
+    'donasi_bank1_nama','donasi_bank1_nomor','donasi_bank1_atas',
+    'donasi_bank2_nama','donasi_bank2_nomor','donasi_bank2_atas',
+    'donasi_bank3_nama','donasi_bank3_nomor','donasi_bank3_atas'
+  ];
+
   function loadTentangAdmin() {
     gscript.getTentangContent()
       .then(d => {
         adminDataCache.tentang = d;
-        ['judul_app','versi_app','deskripsi_app','tentang_rattil','wa_link','ig_link','yt_link','footer_text']
-          .forEach(k => {
-            const el = document.getElementById('ad_' + k);
-            if (el) el.value = d[k] || '';
-          });
+        _TENTANG_FIELDS.forEach(k => {
+          const el = document.getElementById('ad_' + k);
+          if (el) el.value = d[k] || '';
+        });
       })
       .catch(onError);
   }
 
   function saveTentangContent() {
     const data = {};
-    ['judul_app','versi_app','deskripsi_app','tentang_rattil','wa_link','ig_link','yt_link','footer_text']
-      .forEach(k => {
-        const el = document.getElementById('ad_' + k);
-        if (el) data[k] = el.value;
-      });
+    _TENTANG_FIELDS.forEach(k => {
+      const el = document.getElementById('ad_' + k);
+      if (el) data[k] = el.value;
+    });
     showLoading('Menyimpan konten Tentang...');
     gscript.adminUpdateTentang(currentUser.id, data)
       .then(() => {
         hideLoading();
         showToast('Konten Tentang berhasil diperbarui ✅', 'success');
+        // Update cache murid juga agar langsung tampil
+        if (typeof tentangData !== 'undefined') tentangData = { ...tentangData, ...data };
       })
       .catch(err => { hideLoading(); onError(err); });
   }
