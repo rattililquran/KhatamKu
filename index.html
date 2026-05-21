@@ -7168,17 +7168,54 @@ ADMIN JAVASCRIPT MODULE
       </tr>`).join('') + (rows.length > 100 ? `<tr><td colspan="7" class="text-center text-slate-400 italic">... dan ${rows.length-100} baris lainnya</td></tr>` : '');
   }
 
-  function executeCSVImport() {
+  async function executeCSVImport() {
     if (!adminDataCache.csvParsedRows) return;
-    showLoading(`MENGIMPOR ${adminDataCache.csvParsedRows.length} MURID...`);
-    gscript.adminImportCSV(currentUser.id, adminDataCache.csvParsedRows)
-      .then(res => {
+    const allRows   = adminDataCache.csvParsedRows;
+    const BATCH     = 50; // max 50 murid per request
+    const totalBatch = Math.ceil(allRows.length / BATCH);
+
+    // Akumulasi hasil dari semua batch
+    let totalImported = 0, totalSkipped = 0, totalErrors = 0;
+    const allDetails  = { imported:[], skipped:[], errors:[] };
+
+    for (let b = 0; b < totalBatch; b++) {
+      const start = b * BATCH;
+      const chunk = allRows.slice(start, start + BATCH);
+      const progress = Math.round(((b) / totalBatch) * 100);
+      showLoading(`MENGIMPOR MURID... BATCH ${b+1}/${totalBatch} (${progress}%)`);
+
+      try {
+        const res = await gscript.adminImportCSV(currentUser.id, chunk);
+        totalImported += res.imported;
+        totalSkipped  += res.skipped;
+        totalErrors   += res.errors;
+        if (res.details) {
+          allDetails.imported.push(...(res.details.imported || []));
+          allDetails.skipped.push(...(res.details.skipped   || []));
+          allDetails.errors.push(...(res.details.errors     || []));
+        }
+      } catch (err) {
         hideLoading();
-        renderCSVResult(res);
-        showToast(`Import selesai: ${res.imported} berhasil, ${res.skipped} dilewati, ${res.errors} error.`,
-          res.errors > 0 ? 'warning' : 'success');
-      })
-      .catch(err => { hideLoading(); onError(err); });
+        onError(new Error(`Gagal pada batch ${b+1}: ${err.message}`));
+        return;
+      }
+
+      // Jeda 500ms antar batch agar tidak throttle Apps Script
+      if (b < totalBatch - 1) await new Promise(r => setTimeout(r, 500));
+    }
+
+    hideLoading();
+    const combinedRes = {
+      imported: totalImported,
+      skipped : totalSkipped,
+      errors  : totalErrors,
+      details : allDetails
+    };
+    renderCSVResult(combinedRes);
+    showToast(
+      `Import selesai: ${totalImported} berhasil, ${totalSkipped} dilewati, ${totalErrors} error.`,
+      totalErrors > 0 ? 'warning' : 'success'
+    );
   }
 
   function renderCSVResult(res) {
