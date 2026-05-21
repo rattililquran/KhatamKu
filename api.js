@@ -6,7 +6,7 @@
 // ── WAJIB DIISI: URL deploy Apps Script kamu ──────────────
 // Setelah deploy Apps Script → salin URL-nya ke sini
 // Contoh: https://script.google.com/macros/s/AKfycbx.../exec
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbxHdSgmDPGYZu_DKlPbUWTk_FE4Y3JYZq_TPJqPiTnZ0fxvc_G3ztdDqiqzgXJVvkgaOA/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxdZawVi8ETb0ihpp8pGsITZlPmNwQuVbAL3hJHkm4N9yX6Mnd48Z1xbnX14xbI7gKKoA/exec';
 // ──────────────────────────────────────────────────────────
 
 /**
@@ -132,6 +132,22 @@ const gscript = {
     gasCall('guruGetCatatan', { guruId, studentId }, 'GET'),
   guruGetLaporanMingguan: (guruId) =>
     gasCall('guruGetLaporanMingguan', { guruId }, 'GET'),
+
+  // ── WIRIDKU ───────────────────────────────────────────────────
+  /**
+   * Simpan log wirid harian (background sync, tidak blokir UI).
+   * @param {object} logData — { tanggal, pagi, petang, istigfar }
+   */
+  saveWiridLog: (userId, logData) =>
+    gasCall('saveWiridLog', { userId, logData }),
+
+  /**
+   * Ambil histori wirid N hari terakhir untuk tab Rekap.
+   * @param {number} [days=30]
+   * @returns {{ history: Array, stats: object }}
+   */
+  getWiridHistory: (userId, days = 30) =>
+    gasCall('getWiridHistory', { userId, days }, 'GET'),
 
   // ── ADMIN: HEALTH DASHBOARD ───────────────────────────────
   adminGetHealthDashboard: (adminId) =>
