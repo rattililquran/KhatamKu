@@ -1791,7 +1791,7 @@
     <div class="modal-content w-full max-w-md rounded-t-[2.5rem] sm:rounded-3xl p-0 flex flex-col transform transition-transform translate-y-full overflow-hidden" style="max-height:92vh" id="modalWiridContent">
 
       <!-- Header -->
-      <div class="flex justify-between items-center px-6 pt-6 pb-4 shrink-0" style="background:linear-gradient(135deg,#059669,#10b981)">
+      <div class="flex justify-between items-center px-6 pt-6 pb-4 shrink-0" style="background:linear-gradient(135deg,#0ea5e9,#2563eb)">
         <div>
           <div class="flex items-center gap-2 mb-0.5">
             <i class="fa-solid fa-infinity text-white text-lg"></i>
@@ -1813,141 +1813,146 @@
         <div class="wirid-tab-bar">
           <button class="wirid-tab" id="wtabPagi" onclick="switchWiridTab('pagi')">
             <i class="fa-solid fa-sun"></i> Pagi
-            <span class="wirid-tab-badge" id="wbadgePagi">0/0</span>
+            <span class="wirid-tab-badge" id="wbadgePagi">—</span>
           </button>
           <button class="wirid-tab" id="wtabPetang" onclick="switchWiridTab('petang')">
             <i class="fa-solid fa-cloud-sun"></i> Petang
-            <span class="wirid-tab-badge" id="wbadgePetang">0/0</span>
+            <span class="wirid-tab-badge" id="wbadgePetang">—</span>
           </button>
           <button class="wirid-tab" id="wtabIstigfar" onclick="switchWiridTab('istigfar')">
-            <i class="fa-solid fa-infinity"></i> Istighfar
-            <span class="wirid-tab-badge" id="wbadgeIstigfar">0</span>
+            <i class="fa-solid fa-hand-holding-heart"></i> Istighfar
+            <span class="wirid-tab-badge" id="wbadgeIstigfar">—</span>
           </button>
         </div>
       </div>
 
       <!-- Content area (scrollable) -->
-      <div class="flex-1 overflow-y-auto bg-white px-5 pb-6">
+      <div class="flex-1 overflow-y-auto bg-white px-5 pb-8">
 
         <!-- ── Tab: Dzikir Pagi ── -->
-        <div id="wpanePagi" class="wirid-pane">
-          <div class="text-center py-6">
-            <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Waktu</p>
-            <p class="text-sm font-black text-slate-600 mb-6">Setelah Subuh — sebelum Zuhur</p>
+        <div id="wpanePagi" class="wirid-pane pt-2">
+          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center mb-4">Setelah Subuh — sebelum Zuhur</p>
 
-            <!-- Tombol selesai besar -->
-            <button id="btnPagiDone" onclick="wiridToggleDone('pagi')"
-              class="w-full py-8 rounded-3xl border-2 transition-all duration-300 active:scale-95 mb-6">
-              <div id="pagiDoneIcon" class="text-5xl mb-3">🌅</div>
-              <div id="pagiDoneText" class="text-base font-black tracking-wide">Tandai Dzikir Pagi Selesai</div>
-              <div id="pagiDoneTime" class="text-xs font-semibold mt-1 opacity-60"></div>
-            </button>
-
-            <!-- Counter wirid pagi bebas -->
-            <div class="bg-sky-50 border border-sky-100 rounded-2xl p-4 mb-4 text-left">
-              <p class="text-[10px] font-black text-sky-600 uppercase tracking-widest mb-3">
-                <i class="fa-solid fa-infinity mr-1"></i> Hitung Wirid Pagi
-              </p>
-              <div class="flex items-center gap-3">
-                <button onclick="wiridCountPagi(-1)" class="w-10 h-10 rounded-xl bg-white border border-sky-200 text-sky-600 font-black text-lg transition active:scale-90 flex items-center justify-center">−</button>
-                <div class="flex-1 text-center">
-                  <span class="text-4xl font-black text-sky-600" id="pagiCounter">0</span>
-                </div>
-                <button onclick="wiridCountPagi(1)" class="w-10 h-10 rounded-xl bg-sky-500 text-white font-black text-lg transition active:scale-90 flex items-center justify-center shadow-md">+</button>
+          <!-- Tombol centang besar -->
+          <button id="btnPagiDone" onclick="wiridToggleDone('pagi')"
+            class="w-full rounded-3xl border-2 border-slate-200 bg-slate-50 transition-all duration-300 active:scale-[0.98] mb-5 overflow-hidden">
+            <div class="flex items-center gap-4 px-6 py-5">
+              <div id="pagiCheckCircle"
+                class="w-14 h-14 rounded-full border-2 border-slate-300 flex items-center justify-center shrink-0 transition-all duration-300">
+                <i class="fa-solid fa-check text-slate-300 text-xl transition-all duration-300" id="pagiCheckIcon"></i>
               </div>
-              <div class="flex gap-2 mt-3">
-                <button onclick="wiridCountPagi(33)" class="flex-1 py-2 bg-white border border-sky-200 text-sky-600 font-black text-xs rounded-xl transition active:scale-95">+33</button>
-                <button onclick="wiridCountPagi(100)" class="flex-1 py-2 bg-white border border-sky-200 text-sky-600 font-black text-xs rounded-xl transition active:scale-95">+100</button>
-                <button onclick="wiridResetCount('pagi')" class="flex-1 py-2 bg-red-50 border border-red-200 text-red-400 font-black text-xs rounded-xl transition active:scale-95">Reset</button>
+              <div class="text-left flex-1">
+                <div class="text-base font-black text-slate-700" id="pagiDoneText">Dzikir Pagi</div>
+                <div class="text-xs font-semibold text-slate-400 mt-0.5" id="pagiDoneTime">Belum ditandai hari ini</div>
               </div>
+              <div class="text-3xl" id="pagiDoneIcon">🌅</div>
             </div>
+            <!-- Progress strip -->
+            <div class="h-1 w-full bg-slate-100">
+              <div id="pagiProgressBar" class="h-full transition-all duration-500 rounded-full" style="width:0%"></div>
+            </div>
+          </button>
+
+          <!-- Info card -->
+          <div class="bg-sky-50 border border-sky-100 rounded-2xl p-4 mb-4">
+            <p class="text-[10px] font-black text-sky-600 uppercase tracking-widest mb-2">💡 Panduan</p>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Setelah selesai dzikir pagi lengkap (Ayat Kursi, Al-Ikhlas+Falaq+Nas, tasbih 33×, hamdallah 33×, takbir 34×, dll), ketuk kartu di atas untuk menandai selesai.
+            </p>
           </div>
+
+          <!-- Reset -->
+          <button onclick="wiridResetDone('pagi')" class="w-full py-3 rounded-2xl border border-slate-200 text-xs font-black text-slate-400 hover:border-red-200 hover:text-red-400 transition active:scale-95">
+            <i class="fa-solid fa-arrow-rotate-left mr-1"></i> Reset Dzikir Pagi
+          </button>
         </div>
 
         <!-- ── Tab: Dzikir Petang ── -->
-        <div id="wpanePetang" class="wirid-pane hidden">
-          <div class="text-center py-6">
-            <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Waktu</p>
-            <p class="text-sm font-black text-slate-600 mb-6">Setelah Ashar — sebelum Isya</p>
+        <div id="wpanePetang" class="wirid-pane hidden pt-2">
+          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center mb-4">Setelah Ashar — sebelum Isya</p>
 
-            <!-- Tombol selesai besar -->
-            <button id="btnPetangDone" onclick="wiridToggleDone('petang')"
-              class="w-full py-8 rounded-3xl border-2 transition-all duration-300 active:scale-95 mb-6">
-              <div id="petangDoneIcon" class="text-5xl mb-3">🌤</div>
-              <div id="petangDoneText" class="text-base font-black tracking-wide">Tandai Dzikir Petang Selesai</div>
-              <div id="petangDoneTime" class="text-xs font-semibold mt-1 opacity-60"></div>
-            </button>
-
-            <!-- Counter wirid petang bebas -->
-            <div class="bg-sky-50 border border-sky-100 rounded-2xl p-4 mb-4 text-left">
-              <p class="text-[10px] font-black text-sky-600 uppercase tracking-widest mb-3">
-                <i class="fa-solid fa-infinity mr-1"></i> Hitung Wirid Petang
-              </p>
-              <div class="flex items-center gap-3">
-                <button onclick="wiridCountPetang(-1)" class="w-10 h-10 rounded-xl bg-white border border-sky-200 text-sky-600 font-black text-lg transition active:scale-90 flex items-center justify-center">−</button>
-                <div class="flex-1 text-center">
-                  <span class="text-4xl font-black text-sky-600" id="petangCounter">0</span>
-                </div>
-                <button onclick="wiridCountPetang(1)" class="w-10 h-10 rounded-xl bg-sky-500 text-white font-black text-lg transition active:scale-90 flex items-center justify-center shadow-md">+</button>
+          <!-- Tombol centang besar -->
+          <button id="btnPetangDone" onclick="wiridToggleDone('petang')"
+            class="w-full rounded-3xl border-2 border-slate-200 bg-slate-50 transition-all duration-300 active:scale-[0.98] mb-5 overflow-hidden">
+            <div class="flex items-center gap-4 px-6 py-5">
+              <div id="petangCheckCircle"
+                class="w-14 h-14 rounded-full border-2 border-slate-300 flex items-center justify-center shrink-0 transition-all duration-300">
+                <i class="fa-solid fa-check text-slate-300 text-xl transition-all duration-300" id="petangCheckIcon"></i>
               </div>
-              <div class="flex gap-2 mt-3">
-                <button onclick="wiridCountPetang(33)" class="flex-1 py-2 bg-white border border-sky-200 text-sky-600 font-black text-xs rounded-xl transition active:scale-95">+33</button>
-                <button onclick="wiridCountPetang(100)" class="flex-1 py-2 bg-white border border-sky-200 text-sky-600 font-black text-xs rounded-xl transition active:scale-95">+100</button>
-                <button onclick="wiridResetCount('petang')" class="flex-1 py-2 bg-red-50 border border-red-200 text-red-400 font-black text-xs rounded-xl transition active:scale-95">Reset</button>
+              <div class="text-left flex-1">
+                <div class="text-base font-black text-slate-700" id="petangDoneText">Dzikir Petang</div>
+                <div class="text-xs font-semibold text-slate-400 mt-0.5" id="petangDoneTime">Belum ditandai hari ini</div>
               </div>
+              <div class="text-3xl" id="petangDoneIcon">🌤</div>
             </div>
-          </div>
-        </div>
-
-        <!-- ── Tab: Istighfar ── -->
-        <div id="wpaneIstigfar" class="wirid-pane hidden">
-
-          <!-- Counter tap -->
-          <button class="istigfar-counter-btn mb-4" onclick="wiridTapIstigfar()" id="istigfarBtn">
-            <div class="text-white/70 text-xs font-black uppercase tracking-widest mb-1">Ketuk untuk menghitung</div>
-            <div class="istigfar-count-display" id="istigfarCount">0</div>
-            <div class="istigfar-count-target" id="istigfarTarget">Target: 100× per hari</div>
+            <div class="h-1 w-full bg-slate-100">
+              <div id="petangProgressBar" class="h-full transition-all duration-500 rounded-full" style="width:0%"></div>
+            </div>
           </button>
 
-          <!-- Progress bar -->
-          <div class="mb-4">
-            <div class="flex justify-between text-xs font-bold text-slate-500 mb-1.5">
-              <span>Progress</span>
-              <span id="istigfarPct">0%</span>
-            </div>
-            <div class="h-3 bg-slate-100 rounded-full overflow-hidden">
-              <div id="istigfarBar" class="h-full rounded-full transition-all duration-500"
-                style="width:0%;background:linear-gradient(to right,#059669,#10b981)"></div>
-            </div>
+          <!-- Info card -->
+          <div class="bg-sky-50 border border-sky-100 rounded-2xl p-4 mb-4">
+            <p class="text-[10px] font-black text-sky-600 uppercase tracking-widest mb-2">💡 Panduan</p>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Setelah selesai dzikir petang lengkap (Ayat Kursi, Al-Ikhlas+Falaq+Nas, a'udzu bikalimat, tasbih 33×, hamdallah 33×, takbir 34×, dll), ketuk kartu di atas untuk menandai selesai.
+            </p>
           </div>
 
-          <!-- Quick add buttons -->
-          <div class="grid grid-cols-4 gap-2 mb-4">
-            <button onclick="wiridAddIstigfar(10)"  class="py-3 bg-green-50 hover:bg-green-100 border border-green-200 text-green-700 font-black text-sm rounded-xl transition active:scale-95">+10</button>
-            <button onclick="wiridAddIstigfar(33)"  class="py-3 bg-green-50 hover:bg-green-100 border border-green-200 text-green-700 font-black text-sm rounded-xl transition active:scale-95">+33</button>
-            <button onclick="wiridAddIstigfar(100)" class="py-3 bg-green-50 hover:bg-green-100 border border-green-200 text-green-700 font-black text-sm rounded-xl transition active:scale-95">+100</button>
-            <button onclick="wiridResetIstigfar()"  class="py-3 bg-red-50 hover:bg-red-100 border border-red-200 text-red-500 font-black text-xs rounded-xl transition active:scale-95">Reset</button>
+          <!-- Reset -->
+          <button onclick="wiridResetDone('petang')" class="w-full py-3 rounded-2xl border border-slate-200 text-xs font-black text-slate-400 hover:border-red-200 hover:text-red-400 transition active:scale-95">
+            <i class="fa-solid fa-arrow-rotate-left mr-1"></i> Reset Dzikir Petang
+          </button>
+        </div>
+
+        <!-- ── Tab: Istighfar & Taubat ── -->
+        <div id="wpaneIstigfar" class="wirid-pane hidden pt-2">
+
+          <!-- Tombol centang istighfar -->
+          <button id="btnIstigfarDone" onclick="wiridToggleDone('istigfar')"
+            class="w-full rounded-3xl border-2 border-slate-200 bg-slate-50 transition-all duration-300 active:scale-[0.98] mb-5 overflow-hidden">
+            <div class="flex items-center gap-4 px-6 py-5">
+              <div id="istigfarCheckCircle"
+                class="w-14 h-14 rounded-full border-2 border-slate-300 flex items-center justify-center shrink-0 transition-all duration-300">
+                <i class="fa-solid fa-check text-slate-300 text-xl" id="istigfarCheckIcon"></i>
+              </div>
+              <div class="text-left flex-1">
+                <div class="text-base font-black text-slate-700">Istighfar & Taubat</div>
+                <div class="text-xs font-semibold text-slate-400 mt-0.5" id="istigfarDoneTime">Belum ditandai hari ini</div>
+              </div>
+              <div class="text-3xl">🤲</div>
+            </div>
+            <div class="h-1 w-full bg-slate-100">
+              <div id="istigfarProgressBar" class="h-full transition-all duration-500 rounded-full" style="width:0%"></div>
+            </div>
+          </button>
+
+          <!-- Lafaz -->
+          <div class="bg-sky-50 border border-sky-100 rounded-2xl p-4 mb-4">
+            <p class="text-right text-base text-slate-700 leading-loose mb-2" style="direction:rtl;font-family:serif">
+              أَسْتَغْفِرُ اللهَ الْعَظِيمَ الَّذِي لاَ إِلَهَ إِلاَّ هُوَ الْحَيُّ الْقَيُّومُ وَأَتُوبُ إِلَيْهِ
+            </p>
+            <p class="text-xs text-slate-500 font-semibold italic text-center">
+              "Astaghfirullaahal 'azhiim alladzii laa ilaaha illaa huwal hayyul qayyuum wa atuubu ilaih"
+            </p>
           </div>
 
-          <!-- Target setting -->
-          <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4">
-            <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Ubah Target Harian</p>
+          <!-- Target pengingat -->
+          <div class="bg-white border border-sky-200 rounded-2xl p-4 mb-4">
+            <p class="text-[10px] font-black text-sky-600 uppercase tracking-widest mb-1">
+              <i class="fa-solid fa-bell mr-1"></i> Pengingat Target Harian
+            </p>
+            <p class="text-[11px] text-slate-400 mb-3">Target: <span class="font-black text-sky-600" id="istigfarTargetDisplay">100×</span> per hari</p>
             <div class="flex gap-2">
               <input type="number" id="istigfarTargetInput" inputmode="numeric" pattern="[0-9]*"
-                class="flex-1 admin-input text-center font-black" placeholder="100" min="1" max="9999">
+                class="flex-1 admin-input text-center font-black text-sm" placeholder="100" min="1" max="9999">
               <button onclick="wiridSetTarget()" class="btn-primary px-4 text-xs">Simpan</button>
             </div>
           </div>
 
-          <!-- Lafaz istighfar -->
-          <div class="mt-4 bg-green-50 border border-green-100 rounded-2xl p-4">
-            <p class="text-right text-lg text-slate-700 leading-loose mb-2" style="direction:rtl;font-family:serif">
-              أَسْتَغْفِرُ اللهَ الْعَظِيمَ الَّذِي لاَ إِلَهَ إِلاَّ هُوَ الْحَيُّ الْقَيُّومُ وَأَتُوبُ إِلَيْهِ
-            </p>
-            <p class="text-xs text-slate-600 font-semibold italic">
-              "Astaghfirullaahal 'azhiim, alladzii laa ilaaha illaa huwal hayyul qayyuum, wa atuubu ilaih"
-            </p>
-          </div>
+          <!-- Reset -->
+          <button onclick="wiridResetDone('istigfar')" class="w-full py-3 rounded-2xl border border-slate-200 text-xs font-black text-slate-400 hover:border-red-200 hover:text-red-400 transition active:scale-95">
+            <i class="fa-solid fa-arrow-rotate-left mr-1"></i> Reset Istighfar Hari Ini
+          </button>
         </div>
       </div>
     </div>
@@ -2966,9 +2971,9 @@
 
     // ── State ───────────────────────────────────────────────────
     let wiridState = {
-      pagi     : { done: false, doneTime: '', count: 0, date: '' },
-      petang   : { done: false, doneTime: '', count: 0, date: '' },
-      istigfar : { count: 0, target: 100, date: '' }
+      pagi     : { done: false, doneTime: '', date: '' },
+      petang   : { done: false, doneTime: '', date: '' },
+      istigfar : { done: false, doneTime: '', target: 100, date: '' }
     };
     let wiridCurrentTab = 'pagi';
 
@@ -2984,9 +2989,9 @@
         if (raw) {
           const saved = JSON.parse(raw);
           wiridState = {
-            pagi    : { done:false, doneTime:'', count:0, date:'', ...saved.pagi },
-            petang  : { done:false, doneTime:'', count:0, date:'', ...saved.petang },
-            istigfar: { count:0, target:100, date:'', ...saved.istigfar }
+            pagi    : { done:false, doneTime:'', date:'', ...saved.pagi },
+            petang  : { done:false, doneTime:'', date:'', ...saved.petang },
+            istigfar: { done:false, doneTime:'', target:100, date:'', ...saved.istigfar }
           };
         }
       } catch(e) {}
@@ -2998,22 +3003,20 @@
       const h     = now.getHours();
       const today = getLocalDateString();
 
-      // Dzikir Pagi reset jam 12:00 siang
+      // Pagi: reset jam 12:00
       const pagiResetDate = h >= 12 ? today : (() => {
         const d = new Date(now); d.setDate(d.getDate() - 1);
         return d.toISOString().slice(0,10);
       })();
-      if (wiridState.pagi.date !== pagiResetDate) {
-        wiridState.pagi = { done:false, doneTime:'', count:0, date:pagiResetDate };
-      }
+      if (wiridState.pagi.date !== pagiResetDate)
+        wiridState.pagi = { done:false, doneTime:'', date:pagiResetDate };
 
-      // Dzikir Petang & Istighfar reset jam 00:00
-      if (wiridState.petang.date !== today) {
-        wiridState.petang = { done:false, doneTime:'', count:0, date:today };
-      }
-      if (wiridState.istigfar.date !== today) {
-        wiridState.istigfar = { count:0, target:wiridState.istigfar.target||100, date:today };
-      }
+      // Petang & Istigfar: reset jam 00:00
+      if (wiridState.petang.date !== today)
+        wiridState.petang = { done:false, doneTime:'', date:today };
+      if (wiridState.istigfar.date !== today)
+        wiridState.istigfar = { done:false, doneTime:'', target:wiridState.istigfar.target||100, date:today };
+
       wiridSave();
     }
 
@@ -3063,36 +3066,47 @@
     }
 
     // ── Render tombol done Pagi/Petang ──────────────────────────
+    // ── Render tombol centang (Pagi / Petang / Istigfar) ────────
     function renderWiridDoneBtn(type) {
-      const s    = wiridState[type];
-      const cap  = type.charAt(0).toUpperCase() + type.slice(1);
-      const btn  = document.getElementById('btn'+cap+'Done');
-      const icon = document.getElementById(type+'DoneIcon');
-      const text = document.getElementById(type+'DoneText');
-      const time = document.getElementById(type+'DoneTime');
-      if (!btn) return;
+      const s = wiridState[type];
+      const done = !!s.done;
 
-      if (s.done) {
-        btn.className  = 'w-full py-8 rounded-3xl border-2 border-emerald-300 bg-emerald-50 transition-all duration-300 active:scale-95 mb-6';
-        icon.textContent = '✅';
-        text.textContent = `Dzikir ${cap} Selesai!`;
-        text.className   = 'text-base font-black tracking-wide text-emerald-600';
-        time.textContent = s.doneTime ? 'Selesai jam ' + s.doneTime : '';
+      // Map elemen per type
+      const map = {
+        pagi    : { circle:'pagiCheckCircle',    icon:'pagiCheckIcon',    time:'pagiDoneTime',    bar:'pagiProgressBar' },
+        petang  : { circle:'petangCheckCircle',  icon:'petangCheckIcon',  time:'petangDoneTime',  bar:'petangProgressBar' },
+        istigfar: { circle:'istigfarCheckCircle',icon:'istigfarCheckIcon',time:'istigfarDoneTime', bar:'istigfarProgressBar' }
+      };
+      const ids = map[type]; if (!ids) return;
+
+      const circle = document.getElementById(ids.circle);
+      const icon   = document.getElementById(ids.icon);
+      const time   = document.getElementById(ids.time);
+      const bar    = document.getElementById(ids.bar);
+      const btn    = document.getElementById('btn' + type.charAt(0).toUpperCase() + type.slice(1) + 'Done');
+
+      if (done) {
+        // Warna biru — sesuai tema
+        if (circle) { circle.className = 'w-14 h-14 rounded-full border-2 border-sky-400 bg-sky-500 flex items-center justify-center shrink-0 transition-all duration-300'; }
+        if (icon)   { icon.className   = 'fa-solid fa-check text-white text-xl transition-all duration-300'; }
+        if (time)   { time.textContent = s.doneTime ? 'Selesai jam ' + s.doneTime : 'Sudah ditandai ✓'; time.className = 'text-xs font-bold text-sky-500 mt-0.5'; }
+        if (bar)    { bar.style.width = '100%'; bar.style.background = 'linear-gradient(to right,#0ea5e9,#2563eb)'; }
+        if (btn)    { btn.className = btn.className.replace('border-slate-200 bg-slate-50','border-sky-300 bg-sky-50'); }
       } else {
-        btn.className  = 'w-full py-8 rounded-3xl border-2 border-slate-200 bg-slate-50 hover:border-sky-300 hover:bg-sky-50 transition-all duration-300 active:scale-95 mb-6';
-        icon.textContent = type === 'pagi' ? '🌅' : '🌤';
-        text.textContent = `Tandai Dzikir ${cap} Selesai`;
-        text.className   = 'text-base font-black tracking-wide text-slate-600';
-        time.textContent = '';
+        if (circle) { circle.className = 'w-14 h-14 rounded-full border-2 border-slate-300 flex items-center justify-center shrink-0 transition-all duration-300'; }
+        if (icon)   { icon.className   = 'fa-solid fa-check text-slate-300 text-xl transition-all duration-300'; }
+        if (time)   { time.textContent = 'Belum ditandai hari ini'; time.className = 'text-xs font-semibold text-slate-400 mt-0.5'; }
+        if (bar)    { bar.style.width = '0%'; }
+        if (btn)    { btn.className = btn.className.replace('border-sky-300 bg-sky-50','border-slate-200 bg-slate-50'); }
       }
     }
 
-    // ── Toggle done ─────────────────────────────────────────────
+    // ── Toggle centang ──────────────────────────────────────────
     function wiridToggleDone(type) {
-      const s   = wiridState[type];
-      s.done    = !s.done;
+      const s  = wiridState[type];
+      s.done   = !s.done;
       s.doneTime = s.done
-        ? new Date().toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'})
+        ? new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' })
         : '';
       wiridSave();
       renderWiridDoneBtn(type);
@@ -3100,101 +3114,57 @@
       updateWiridMiniRings();
       try { if (navigator.vibrate) navigator.vibrate(s.done ? [40,20,40] : 30); } catch(e) {}
       if (s.done) {
-        const cap = type.charAt(0).toUpperCase()+type.slice(1);
-        showToast(`MasyaAllah! Dzikir ${cap} selesai! 🌟`, 'success');
+        const labels = { pagi:'Pagi', petang:'Petang', istigfar:'Istighfar & Taubat' };
+        showToast(`MasyaAllah! ${labels[type]} selesai! 🌟`, 'success');
       }
     }
 
-    // ── Counter Pagi/Petang ─────────────────────────────────────
-    function renderWiridCounterUI(type) {
-      const el = document.getElementById(type+'Counter');
-      if (el) el.textContent = wiridState[type].count || 0;
-    }
-
-    function wiridCountPagi(n) {
-      wiridState.pagi.count = Math.max(0, (wiridState.pagi.count||0) + n);
-      wiridSave();
-      renderWiridCounterUI('pagi');
-      try { if (navigator.vibrate) navigator.vibrate(25); } catch(e) {}
-    }
-
-    function wiridCountPetang(n) {
-      wiridState.petang.count = Math.max(0, (wiridState.petang.count||0) + n);
-      wiridSave();
-      renderWiridCounterUI('petang');
-      try { if (navigator.vibrate) navigator.vibrate(25); } catch(e) {}
-    }
-
-    function wiridResetCount(type) {
-      wiridState[type].count = 0;
-      wiridSave();
-      renderWiridCounterUI(type);
-    }
-
-    // ── Render Istighfar ────────────────────────────────────────
-    function renderWiridIstigfar() {
-      const { count, target } = wiridState.istigfar;
-      document.getElementById('istigfarCount').textContent  = count;
-      document.getElementById('istigfarTarget').textContent = `Target: ${target}× per hari`;
-      document.getElementById('istigfarTargetInput').value  = target;
-      const pct = Math.min(100, Math.round((count / target) * 100));
-      document.getElementById('istigfarPct').textContent    = pct + '%';
-      document.getElementById('istigfarBar').style.width    = pct + '%';
-      document.getElementById('istigfarBar').style.background =
-        pct >= 100
-          ? 'linear-gradient(to right,#d97706,#f59e0b)'
-          : 'linear-gradient(to right,#0ea5e9,#2563eb)';
-    }
-
-    function wiridTapIstigfar()    { wiridAddIstigfar(1); }
-
-    function wiridAddIstigfar(n) {
-      wiridState.istigfar.count += n;
-      wiridSave();
-      renderWiridIstigfar();
-      updateWiridBadges();
-      updateWiridMiniRings();
-      try { if (navigator.vibrate) navigator.vibrate(25); } catch(e) {}
-      const { count, target } = wiridState.istigfar;
-      if (count >= target && count - n < target)
-        setTimeout(() => showToast(`Alhamdulillah! ${target}× Istighfar selesai! 🌿`, 'success'), 100);
-    }
-
-    function wiridResetIstigfar() {
-      customConfirm('Reset Istighfar', 'Reset hitungan istighfar hari ini ke 0?', () => {
-        wiridState.istigfar.count = 0;
+    // ── Reset per tab ───────────────────────────────────────────
+    function wiridResetDone(type) {
+      const labels = { pagi:'Dzikir Pagi', petang:'Dzikir Petang', istigfar:'Istighfar' };
+      customConfirm(`Reset ${labels[type]}`, `Reset centang ${labels[type]} hari ini?`, () => {
+        wiridState[type].done     = false;
+        wiridState[type].doneTime = '';
         wiridSave();
-        renderWiridIstigfar();
+        renderWiridDoneBtn(type);
         updateWiridBadges();
         updateWiridMiniRings();
       });
     }
 
+    // ── Target istighfar (pengingat) ────────────────────────────
     function wiridSetTarget() {
       const val = parseInt(document.getElementById('istigfarTargetInput').value);
       if (!val || val < 1) { showToast('Target minimal 1', 'warning'); return; }
       wiridState.istigfar.target = val;
       wiridSave();
-      renderWiridIstigfar();
-      showToast(`Target diubah ke ${val}× ✅`, 'success');
+      const disp = document.getElementById('istigfarTargetDisplay');
+      if (disp) disp.textContent = val + '×';
+      showToast(`Target istighfar diubah ke ${val}× ✅`, 'success');
+    }
+
+    function renderWiridIstigfar() {
+      const target = wiridState.istigfar.target || 100;
+      const disp   = document.getElementById('istigfarTargetDisplay');
+      const inp    = document.getElementById('istigfarTargetInput');
+      if (disp) disp.textContent = target + '×';
+      if (inp)  inp.value = target;
+      renderWiridDoneBtn('istigfar');
     }
 
     // ── Badge update ────────────────────────────────────────────
     function updateWiridBadges() {
-      const pagi   = wiridState.pagi.done   ? '✓' : '—';
-      const petang = wiridState.petang.done ? '✓' : '—';
-      const isti   = wiridState.istigfar.count;
-      document.getElementById('wbadgePagi').textContent    = pagi;
-      document.getElementById('wbadgePetang').textContent  = petang;
-      document.getElementById('wbadgeIstigfar').textContent = isti + '×';
+      document.getElementById('wbadgePagi').textContent    = wiridState.pagi.done    ? '✓' : '—';
+      document.getElementById('wbadgePetang').textContent  = wiridState.petang.done  ? '✓' : '—';
+      document.getElementById('wbadgeIstigfar').textContent= wiridState.istigfar.done? '✓' : '—';
     }
 
-    // ── Mini rings di header ────────────────────────────────────
+    // ── Mini rings (biru tema) ──────────────────────────────────
     function updateWiridMiniRings() {
       const rings = [
-        { pct: wiridState.pagi.done   ? 100 : 0, color:'#fbbf24' },
-        { pct: wiridState.petang.done ? 100 : 0, color:'#60a5fa' },
-        { pct: Math.min(100, (wiridState.istigfar.count/(wiridState.istigfar.target||100))*100), color:'#34d399' }
+        { pct: wiridState.pagi.done     ? 100 : 0, color:'#fbbf24' },
+        { pct: wiridState.petang.done   ? 100 : 0, color:'#60a5fa' },
+        { pct: wiridState.istigfar.done ? 100 : 0, color:'#34d399' }
       ];
       const SIZE = 32, R = 12, CIRC = 2 * Math.PI * R;
       document.getElementById('wiridMiniRings').innerHTML = rings.map(r => {
@@ -3207,6 +3177,21 @@
             style="transition:stroke-dasharray 0.5s ease"/>
         </svg>`;
       }).join('');
+    }
+
+    // ── openWiridKu updated ─────────────────────────────────────
+    function openWiridKu() {
+      wiridLoad();
+      wiridCheckReset();
+      const activeTab = wiridDetectTime();
+      renderWiridDoneBtn('pagi');
+      renderWiridDoneBtn('petang');
+      renderWiridIstigfar();
+      updateWiridBadges();
+      updateWiridMiniRings();
+      switchWiridTab(activeTab);
+      openModal('modalWirid');
+      updateActiveNav('navWirid');
     }
 
     // ── Init ────────────────────────────────────────────────────
