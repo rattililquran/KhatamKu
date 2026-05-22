@@ -1,10 +1,9 @@
-// sw.js — KhatamKu Service Worker v8
-// Strategi: Network-first untuk HTML, Cache-first untuk aset statis self-hosted
+// sw.js — KhatamKu Service Worker v9
+// Network-first untuk index.html, Cache-first untuk aset statis
 
-const CACHE_NAME = 'khatamku-v8';
+const CACHE_NAME = 'khatamku-v9';
 const BASE = '/KhatamKu';
 
-// Aset statis yang di-cache saat install (sekarang self-hosted)
 const PRECACHE_URLS = [
   BASE + '/api.js',
   BASE + '/manifest.json',
@@ -21,13 +20,9 @@ const PRECACHE_URLS = [
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => {
-        // addAll bisa gagal kalau salah satu file 404
-        // pakai Promise.allSettled agar tidak block install
-        return Promise.allSettled(
-          PRECACHE_URLS.map(url => cache.add(url).catch(() => null))
-        );
-      })
+      .then(cache => Promise.allSettled(
+        PRECACHE_URLS.map(url => cache.add(url).catch(() => null))
+      ))
       .then(() => self.skipWaiting())
   );
 });
@@ -59,7 +54,11 @@ self.addEventListener('fetch', event => {
   }
 
   // 2. index.html → Network-first, fallback cache
-  if (url.pathname === BASE + '/' || url.pathname === BASE + '/index.html' || url.pathname === BASE) {
+  if (
+    url.pathname === BASE + '/' ||
+    url.pathname === BASE + '/index.html' ||
+    url.pathname === BASE
+  ) {
     event.respondWith(
       fetch(event.request)
         .then(res => {
@@ -72,14 +71,14 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // 3. Aset self-hosted lokal (assets/, icons/) → Cache-first, update di background
+  // 3. Aset lokal (assets/, icons/) → Cache-first, update background
   if (url.hostname === self.location.hostname) {
     event.respondWith(
       caches.match(event.request).then(cached => {
         const fetchPromise = fetch(event.request).then(res => {
           caches.open(CACHE_NAME).then(c => c.put(event.request, res.clone()));
           return res;
-        });
+        }).catch(() => null);
         return cached || fetchPromise;
       })
     );
