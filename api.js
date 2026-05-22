@@ -6,7 +6,7 @@
 // ── WAJIB DIISI: URL deploy Apps Script kamu ──────────────
 // Setelah deploy Apps Script → salin URL-nya ke sini
 // Contoh: https://script.google.com/macros/s/AKfycbx.../exec
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbwVkPvepGO6yI0xFtGs-1HwRPfIBV7BrOLtF344fRVBJdgOJtWLAv5S45GiOoKTEUZCHw/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbwci9xRbMmAEHP_BrUa0R_-JkhF3tQaZH9D1Qi_KjIvZ4Sti2iiQJ22VjSuhEGIf3_KYw/exec';
 // ──────────────────────────────────────────────────────────
 
 /**
@@ -19,25 +19,28 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbwVkPvepGO6yI0xFtGs-1Hw
  * @param {object} params   - parameter yang dikirim
  * @param {string} method   - 'GET' | 'POST' (default 'POST')
  */
-async function gasCall(action, params = {}, method = 'POST') {
-  // Apps Script tidak mendukung CORS preflight dengan body,
-  // jadi kita pakai GET dengan params JSON-encoded untuk query,
-  // dan POST no-cors redirect untuk mutasi.
+async function gasCall(action, params = {}, method = 'GET') {
+  // Apps Script Web App: GET untuk query ringan, POST untuk data besar
   const url = new URL(GAS_URL);
 
   let fetchOptions;
+  const payloadSize = JSON.stringify(params).length;
 
-  if (method === 'GET') {
-    url.searchParams.set('action', action);
-    url.searchParams.set('params', JSON.stringify(params));
-    fetchOptions = { method: 'GET' };
+  // Pakai POST kalau: method=POST atau payload > 4000 karakter
+  const usePost = method === 'POST' || payloadSize > 4000;
+
+  if (usePost) {
+    // POST dengan body JSON — Apps Script baca via e.postData.contents
+    fetchOptions = {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' }, // text/plain agar tidak trigger CORS preflight
+      body: JSON.stringify({ action, params }),
+      redirect: 'follow'
+    };
   } else {
-    // POST: Apps Script redirect ke GET setelah auth,
-    // jadi kita tetap kirim sebagai GET dengan query string
-    // (pola paling andal untuk Apps Script tanpa OAuth)
     url.searchParams.set('action', action);
     url.searchParams.set('params', JSON.stringify(params));
-    fetchOptions = { method: 'GET' };
+    fetchOptions = { method: 'GET', redirect: 'follow' };
   }
 
   const res = await fetch(url.toString(), fetchOptions);
