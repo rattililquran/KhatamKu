@@ -792,7 +792,7 @@
         <button type="submit" class="w-full glass-btn font-extrabold py-3 rounded-xl tracking-widest text-sm shadow-lg mt-1">Masuk</button>
         <!-- Demo hint -->
         <p class="text-center text-[11px] text-slate-400 font-medium pt-1">
-          Demo: <span class="font-bold text-slate-500">rattil</span> / <span class="font-bold text-slate-500">1234</span>
+
         </p>
       </form>
 
@@ -2295,7 +2295,7 @@
       <div class="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
         <i class="fa-solid fa-crown text-4xl text-amber-500"></i>
       </div>
-      <h3 class="text-2xl font-black tracking-tight text-slate-800 mb-2">Masya Allah! Alhamdulillah 🥳</h3>
+      <h3 class="text-2xl font-black tracking-tight text-slate-800 mb-2">Masya Allah! Alhamdulillah</h3>
       <p class="text-[14px] text-slate-500 font-medium leading-relaxed mb-8">
         Selamat, perjuanganmu luar biasa! Kamu baru saja resmi melangkah masuk ke <br>
         <span class="text-2xl font-black text-sky-600 block mt-3">Juz <span id="milestoneJuzNumber"></span></span>
@@ -6469,13 +6469,6 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
 
       pageInput.oninput = () => updateCalibrateFeedback(pageInput.value);
       slider.oninput    = () => { pageInput.value = slider.value; updateCalibrateFeedback(slider.value); };
-    }
-
-    function getJuzFromPage(page) {
-      // Setiap juz ~20 halaman, juz 1 = hal 1-20
-      if (page <= 0) return 1;
-      if (page >= 604) return 30;
-      return Math.min(30, Math.ceil(page / 20));
     }
 
     function handleCalibrateSubmit(e) {
