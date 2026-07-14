@@ -378,7 +378,7 @@ function setupGestures(){
     clearTimeout(lpTimer); suppress=true; setTimeout(()=>suppress=false,450);
     if(longFired) return;
     const t=e.changedTouches[0], dx=t.clientX-sx, dy=t.clientY-sy, dt=Date.now()-st;
-    if(Math.abs(dx)>SWIPE && Math.abs(dx)>Math.abs(dy)*1.4){ if(dx<0) go(page+1); else go(page-1); return; }   // RTL: geser kiri = maju
+    if(Math.abs(dx)>SWIPE && Math.abs(dx)>Math.abs(dy)*1.4){ if(dx>0) go(page+1); else go(page-1); return; }   // RTL: geser kanan = maju
     if(Math.abs(dx)<MOVE && Math.abs(dy)<MOVE && dt<500){ toggleControls(); }
   },{passive:true});
   stage.addEventListener("click",e=>{                 // desktop
