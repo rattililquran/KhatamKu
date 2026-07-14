@@ -555,7 +555,8 @@
               </div>
             </div>
           </div>
-          <button id="btnLanjutkanBacaan" class="w-full py-3.5 rounded-2xl bg-white/25 hover:bg-white/40 border border-white/50 font-extrabold text-white text-sm tracking-widest transition-all shadow-sm" onclick="handleLanjutkanBacaan()">LANJUTKAN BACAAN</button>
+          <button id="btnLanjutkanBacaan" class="w-full py-3.5 rounded-2xl bg-white/25 hover:bg-white/40 border border-white/50 font-extrabold text-white text-sm tracking-widest transition-all shadow-sm" onclick="handleLanjutkanBacaan()">📖 LANJUTKAN BACAAN</button>
+          <button id="btnCatatManual" class="w-full mt-2.5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/30 font-bold text-white/90 text-xs tracking-wide transition-all flex items-center justify-center gap-2" onclick="handleCatatManual()"><i class="fa-solid fa-pen-to-square"></i> Catat Bacaan Manual (Mushaf Fisik)</button>
         </div>
       </div>
       <p class="text-[11px] text-slate-400 font-medium mb-8 flex items-center gap-1.5 ml-2"><i class="fa-regular fa-clock"></i> Target harian akan direset setiap pukul 00:00 WIB</p>
@@ -3777,6 +3778,14 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
     // FITUR 1: handleLanjutkanBacaan — cek target sebelum buka modal
     // ================================================================
     function handleLanjutkanBacaan() {
+      // Buka mushaf DIGITAL langsung di halaman lanjutan (halaman terakhir + 1)
+      var last = appProfile ? (parseInt(appProfile.lastPageRead) || 0) : 0;
+      var next = last >= 604 ? 604 : (last < 1 ? 1 : last + 1);
+      window.location.href = 'reader.html?p=' + next;
+    }
+
+    // Catat manual — untuk murid yang membaca dari MUSHAF FISIK (input nomor halaman)
+    function handleCatatManual() {
       if (!appProfile || !appProfile.dailyTargetPages || appProfile.dailyTargetPages <= 0) {
         customConfirm(
           '📋 Target Belum Ditentukan',
