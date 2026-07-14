@@ -102,7 +102,7 @@ body.immersive .stage{padding:16px 12px;}
 .sheet.show{transform:translateY(0);}
 .sheet .row{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
 .sheet .tag{background:var(--gold);color:#1a1206;font-weight:800;font-size:12px;padding:3px 10px;border-radius:20px;}
-.sheet .bk{margin-left:auto;background:#2b313a;border:0;color:#c9a44c;font-size:18px;width:34px;height:34px;border-radius:50%;cursor:pointer;}
+.sheet .bk{background:#2b313a;border:0;color:#c9a44c;font-size:17px;width:34px;height:34px;border-radius:50%;cursor:pointer;flex:0 0 auto;}
 .sheet .ar{font-size:26px;line-height:2;text-align:right;direction:rtl;color:#f3ede0;margin:10px 0;}
 .sheet h3{font-size:12px;margin:14px 0 5px;color:var(--gold);text-transform:uppercase;letter-spacing:.05em;}
 .sheet .lt{font-size:12px;color:#9aa0a8;font-style:italic;}
@@ -149,6 +149,8 @@ body.immersive .stage{padding:16px 12px;}
 
 <div id="sheet" class="sheet">
   <div class="row"><span class="tag" id="s-ayat">QS</span>
+    <span style="flex:1"></span>
+    <button class="bk" id="s-cp" title="Salin ayat & terjemah" onclick="copyAyat()">📋</button>
     <button class="bk" id="s-bk" title="Bookmark" onclick="toggleBookmark()">☆</button>
     <button class="close" onclick="hideSheet()">×</button></div>
   <div class="ar" id="s-ar"></div>
@@ -265,6 +267,17 @@ async function openAyat(vk){
 }
 function hideSheet(){ document.getElementById("sheet").classList.remove("show");
   document.querySelectorAll(".w.active").forEach(e=>e.classList.remove("active")); }
+async function copyAyat(){
+  if(!curAyat) return;
+  try{
+    const su = await loadSurah(curAyat.s);
+    const ay = su.ayat.find(x=>x.n===curAyat.a) || {};
+    const txt = `QS ${su.nama} : ${curAyat.a}\n\n${ay.ar||""}\n\n${ay.id||""}`;
+    if(navigator.clipboard && navigator.clipboard.writeText){ await navigator.clipboard.writeText(txt); }
+    else { const ta=document.createElement("textarea"); ta.value=txt; ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove(); }
+    toast("📋 Ayat & terjemah disalin");
+  }catch(e){ toast("Gagal menyalin."); }
+}
 
 // ── Bookmark: Supabase bila login, fallback localStorage bila belum ──
 const bkMap = {};                     // "s:a" → id bookmark (server)
@@ -351,7 +364,7 @@ function setupGestures(){
   const stage=document.querySelector(".stage");
   stage.addEventListener("contextmenu", e=>e.preventDefault());   // cegah popup copy saat tekan lama
   let sx=0,sy=0,st=0,moved=false,longFired=false,lpTimer=null,lpWord=null,suppress=false;
-  const LP=1000, MOVE=12, SWIPE=55;
+  const LP=500, MOVE=12, SWIPE=55;
   stage.addEventListener("touchstart",e=>{
     if(e.touches.length>1) return;
     const t=e.touches[0]; sx=t.clientX; sy=t.clientY; st=Date.now(); moved=false; longFired=false;
