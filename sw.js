@@ -1,7 +1,7 @@
 // sw.js — KhatamKu Service Worker
 // Strategi: Cache-first untuk aset statis, Network-first untuk API
 
-const CACHE_NAME = 'khatamku-v13';
+const CACHE_NAME = 'khatamku-v14';
 const BASE = '/KhatamKu';
 
 // Aset yang di-cache saat install (app shell)
@@ -37,19 +37,9 @@ self.addEventListener('activate', event => {
 
 // ── Fetch: strategi berdasarkan URL ─────────────────────────────
 self.addEventListener('fetch', event => {
+  // Hanya tangani GET; POST/PATCH (Supabase RPC/auth) dibiarkan lewat ke jaringan apa adanya
+  if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
-
-  // Request ke Apps Script (GAS_URL) → selalu Network, jangan cache
-  if (url.hostname.includes('script.google.com')) {
-    event.respondWith(
-      fetch(event.request).catch(() =>
-        new Response(JSON.stringify({ ok: false, error: 'Kamu sedang offline. Coba lagi saat ada koneksi.' }), {
-          headers: { 'Content-Type': 'application/json' }
-        })
-      )
-    );
-    return;
-  }
 
   // CDN eksternal (tailwind, fontawesome, fonts) → Network-first, fallback cache
   if (url.hostname !== self.location.hostname) {
