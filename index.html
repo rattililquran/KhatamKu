@@ -174,6 +174,24 @@
       box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.1);
     }
 
+    /* ===== Dzikir & Doa ===== */
+    @font-face {
+      font-family: 'AmiriKhatam';
+      font-style: normal; font-weight: 400; font-display: swap;
+      src: url('fonts/amiri-arabic.woff2') format('woff2');
+      unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF;
+    }
+    .dzikir-arabic {
+      font-family: 'AmiriKhatam', 'Amiri', 'Scheherazade New', 'Traditional Arabic', 'Geeza Pro', 'Noto Naskh Arabic', 'Al Bayan', serif;
+      font-size: 26px; line-height: 2.15; letter-spacing: 0;
+    }
+    .dzc-btn { background: linear-gradient(135deg, #0ea5e9, #2563eb); box-shadow: 0 4px 14px rgba(14,165,233,0.35); }
+    .dzc-btn.done { background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 4px 14px rgba(16,185,129,0.4); }
+    .dzc-bar { background: linear-gradient(90deg, #38bdf8, #2563eb); }
+    .dzc-bar.done { background: linear-gradient(90deg, #34d399, #059669); }
+    .dz-fawaid { max-height: 0; overflow: hidden; transition: max-height .35s ease; }
+    .dz-fawaid.open { max-height: 500px; }
+
     /* ===== #1 Skeleton Loading Shimmer ===== */
     .skeleton { position: relative; overflow: hidden; border-radius: 1rem; background: #e2e8f0; }
     .skeleton::after {
@@ -789,9 +807,9 @@
         <i class="fa-solid fa-book-quran"></i>
         <span>Baca Mushaf</span>
       </div>
-      <div class="bottom-nav-item" onclick="openModal('modalJournal')" id="navJurnal">
-        <i class="fa-solid fa-book"></i>
-        <span>Jurnal</span>
+      <div class="bottom-nav-item" onclick="openModal('modalDzikir')" id="navDzikir">
+        <i class="fa-solid fa-hands-praying"></i>
+        <span>Dzikir</span>
       </div>
 
       <div class="bottom-nav-item" onclick="openPotretModal()" id="navPotret">
@@ -961,32 +979,36 @@
     </div>
   </div>
 
-  <!-- Modal: Journal -->
-  <div id="modalJournal" class="fixed inset-0 z-50 modal-overlay hidden flex flex-col justify-end sm:justify-center items-center">
-    <div class="modal-content w-full max-w-md h-[90vh] sm:h-[85vh] rounded-t-[2.5rem] sm:rounded-3xl p-7 flex flex-col transform transition-transform translate-y-full text-slate-800" id="modalJournalContent">
-      <div class="flex justify-between items-center mb-5 shrink-0 border-b border-slate-100 pb-5">
-        <h3 class="text-2xl font-black tracking-tight">Jurnal Refleksi</h3>
-        <button onclick="closeModal('modalJournal')" class="text-slate-400 bg-slate-100 hover:bg-slate-200 w-10 h-10 rounded-full flex items-center justify-center transition-colors shadow-inner"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      
-      <div class="flex-1 overflow-y-auto mb-4 pr-3 space-y-4" id="journalList">
+  <!-- Modal: Dzikir & Doa Harian (pengganti Jurnal) -->
+  <div id="modalDzikir" class="fixed inset-0 z-50 modal-overlay hidden flex flex-col justify-end sm:justify-center items-center">
+    <div class="modal-content w-full max-w-md h-[92vh] sm:h-[88vh] rounded-t-[2.5rem] sm:rounded-3xl flex flex-col transform transition-transform translate-y-full text-slate-800 overflow-hidden" id="modalDzikirContent">
+
+      <!-- Header -->
+      <div class="shrink-0 px-7 pt-7 pb-5">
+        <div class="flex justify-between items-start mb-4">
+          <div>
+            <h3 class="text-2xl font-black tracking-tight leading-none">Dzikir &amp; Doa</h3>
+            <p class="text-[11px] font-semibold text-slate-400 mt-1.5 tracking-wide">Pagi · Petang · Harian — sesuai sunnah</p>
+          </div>
+          <button onclick="closeModal('modalDzikir')" class="text-slate-400 bg-slate-100 hover:bg-slate-200 w-10 h-10 rounded-full flex items-center justify-center transition-colors shadow-inner shrink-0"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <!-- Tab segmented control -->
+        <div class="flex gap-1 bg-slate-100 rounded-2xl p-1" id="dzikirTabs"></div>
+        <!-- Cari doa -->
+        <div class="relative mt-3">
+          <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 text-xs pointer-events-none"></i>
+          <input id="dzikirSearch" type="text" oninput="renderDzikirList()" placeholder="Cari doa / dzikir…" autocomplete="off" class="w-full pl-10 pr-9 py-3 text-[13px] bg-slate-100 border border-transparent focus:border-sky-300 focus:bg-white rounded-2xl outline-none font-medium transition-all">
+          <button id="dzikirSearchClear" onclick="clearDzikirSearch()" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 w-6 h-6 flex items-center justify-center"><i class="fa-solid fa-circle-xmark text-sm"></i></button>
+        </div>
       </div>
 
-      <form id="journalForm" class="shrink-0 pt-6 border-t border-slate-100 space-y-4">
-        <input type="hidden" id="journalId">
-        <div class="grid grid-cols-2 gap-3">
-          <select id="journalSurah" class="w-full px-4 py-4 text-sm glass-input rounded-2xl outline-none font-bold text-sky-600"></select>
-          <div class="flex gap-2">
-            <input type="number" id="journalAyahStart" class="w-full px-4 py-4 text-sm glass-input rounded-2xl outline-none text-center font-bold" placeholder="Dari">
-            <input type="number" id="journalAyahEnd" class="w-full px-4 py-4 text-sm glass-input rounded-2xl outline-none text-center font-bold" placeholder="Sampai">
-          </div>
-        </div>
-        <textarea id="journalNote" rows="2" class="w-full px-5 py-4 text-sm glass-input rounded-2xl outline-none font-medium leading-relaxed" placeholder="Tuliskan hikmah/catatan hari ini..." required></textarea>
-        <div class="flex gap-3">
-          <button type="button" class="w-1/3 py-4 text-sm font-bold text-slate-500 bg-slate-100 border border-slate-200 rounded-2xl hover:bg-slate-200 transition-colors hidden" id="btnCancelJournal" onclick="resetJournalForm()">BATAL</button>
-          <button type="submit" class="flex-1 glass-btn py-4 text-sm font-extrabold rounded-2xl tracking-widest shadow-lg" id="btnSaveJournal">SIMPAN JURNAL</button>
-        </div>
-      </form>
+      <!-- List -->
+      <div class="flex-1 overflow-y-auto px-6 pb-4 space-y-4" id="dzikirList"></div>
+
+      <!-- Atribusi -->
+      <div class="shrink-0 px-7 py-3 border-t border-slate-100 text-center">
+        <p class="text-[10px] text-slate-400 font-semibold tracking-wide">Sumber data: Fitrahive · dua-dhikr (MIT)</p>
+      </div>
     </div>
   </div>
 
@@ -1332,7 +1354,6 @@
 
     let currentUser = null;
     let appProfile = null;
-    let appJournals = [];
     let todayProgressCount = 0;
     let tentangData = {}; // Data halaman Tentang dari spreadsheet
 
@@ -1819,21 +1840,18 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
     }
 
     // ===== #7 localStorage Cache Keys =====
-    const CACHE_KEYS = { profile: 'khatamku_profile', journals: 'khatamku_journals', todayProgress: 'khatamku_todayProg' };
+    const CACHE_KEYS = { profile: 'khatamku_profile', todayProgress: 'khatamku_todayProg' };
     function saveToCache() {
       try {
         if (appProfile) localStorage.setItem(CACHE_KEYS.profile, JSON.stringify(appProfile));
-        if (appJournals) localStorage.setItem(CACHE_KEYS.journals, JSON.stringify(appJournals));
         localStorage.setItem(CACHE_KEYS.todayProgress, todayProgressCount.toString());
       } catch(e) {}
     }
     function loadFromCache() {
       try {
         const p = localStorage.getItem(CACHE_KEYS.profile);
-        const j = localStorage.getItem(CACHE_KEYS.journals);
         const t = localStorage.getItem(CACHE_KEYS.todayProgress);
         if (p) appProfile = JSON.parse(p);
-        if (j) appJournals = JSON.parse(j);
         if (t) todayProgressCount = parseInt(t) || 0;
         return !!p;
       } catch(e) { return false; }
@@ -1908,7 +1926,6 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       document.getElementById('inputTargetPages').addEventListener('input', calculateTargetPagesPreview);
       document.getElementById('progressForm').addEventListener('submit', handleProgressSubmit);
       document.getElementById('targetForm').addEventListener('submit', handleTargetSubmit);
-      document.getElementById('journalForm').addEventListener('submit', handleJournalSubmit);
       // Live feedback saat user mengetik halaman
       document.getElementById('progressLastPage').addEventListener('input', handleProgressLiveFeedback);
 
@@ -1943,6 +1960,7 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
     function openModal(id) {
       if (id === 'modalCalibrate') { setTimeout(initCalibrateModal, 50); }
       if (id === 'modalProgress') populateProgressModal();
+      if (id === 'modalDzikir') initDzikir();
       const modal = document.getElementById(id);
       const content = document.getElementById(id + 'Content');
       modal.classList.remove('hidden');
@@ -1982,7 +2000,6 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       Object.values(CACHE_KEYS).forEach(k => localStorage.removeItem(k));
       currentUser = null;
       appProfile = null;
-      appJournals = [];
       todayProgressCount = 0;
       document.getElementById('loginUsername').value = '';
       document.getElementById('loginPassword').value = '';
@@ -2036,7 +2053,7 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
             initAppWithData(response.dashboardData);
           } else {
             // Fallback: muat data setelah login
-            initAppWithData({ profile: null, journals: [], todayProgress: 0 });
+            initAppWithData({ profile: null, todayProgress: 0 });
           }
         })
         .catch(err => {
@@ -2134,7 +2151,6 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
         if (hasCachedData) {
           hideSkeleton();
           updateDashboard();
-          updateJournalUI();
           if (appProfile && appProfile.dailyTargetPages) {
             document.getElementById('inputTargetPages').value = appProfile.dailyTargetPages;
           }
@@ -2184,18 +2200,15 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
         
         const today = getLocalDateString();
         document.getElementById('progressDate').value = today;
-        populateSurahDropdowns();
-        
+
         if (data && data.profile) {
           // Data sudah dibawa dari server saat login
           appProfile = data.profile;
-          appJournals = data.journals || [];
           todayProgressCount = data.todayProgress || 0;
           saveToCache();
           document.getElementById('inputTargetPages').value = appProfile.dailyTargetPages || '';
           hideSkeleton();
           updateDashboard();
-          updateJournalUI();
           checkAndShowOnboarding();
         } else {
           // Fallback: muat data secara terpisah
@@ -2220,17 +2233,14 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       showSkeleton();
       const today = getLocalDateString();
       document.getElementById('progressDate').value = today;
-      populateSurahDropdowns();
 
       gscript.getInitialData(currentUser.id)
         .then(data => {
           appProfile = data.profile;
-          appJournals = data.journals || [];
           todayProgressCount = data.todayProgress || 0;
           saveToCache();
           hideSkeleton();
           updateDashboard();
-          updateJournalUI();
           checkAndShowOnboarding();
           if (appProfile.dailyTargetPages) {
             document.getElementById('inputTargetPages').value = appProfile.dailyTargetPages;
@@ -2245,16 +2255,13 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
     function loadStudentDataSilent() {
       const today = getLocalDateString();
       document.getElementById('progressDate').value = today;
-      populateSurahDropdowns();
 
       gscript.getInitialData(currentUser.id)
         .then(data => {
           appProfile = data.profile;
-          appJournals = data.journals || [];
           todayProgressCount = data.todayProgress || 0;
           saveToCache();
           updateDashboard();
-          updateJournalUI();
           if (appProfile.dailyTargetPages) {
             document.getElementById('inputTargetPages').value = appProfile.dailyTargetPages;
           }
@@ -3541,12 +3548,6 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       return new Date(dateStr).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
     }
 
-    function populateSurahDropdowns() {
-      let html = '<option value="" class="text-slate-400">Pilih Surah...</option>';
-      QURAN_METADATA.forEach(s => html += `<option value="${s.id}" class="text-slate-800 font-bold">${s.id}. ${s.name}</option>`);
-      document.getElementById('journalSurah').innerHTML = html;
-    }
-
     let currentTargetMode = 'reguler';
 
     function switchTargetMode(mode) {
@@ -3724,64 +3725,174 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       setTimeout(() => { toast.classList.remove('show'); }, 4000);
     }
 
-    function handleJournalSubmit(e) {
-      e.preventDefault();
-      const payload = {
-        id: document.getElementById('journalId').value,
-        surahId: document.getElementById('journalSurah').value,
-        ayahStart: document.getElementById('journalAyahStart').value,
-        ayahEnd: document.getElementById('journalAyahEnd').value,
-        note: document.getElementById('journalNote').value
-      };
-      showLoading("MENYIMPAN JURNAL...");
-      gscript.saveJournal(currentUser.id, payload)
-        .then(journals => { appJournals = journals; updateJournalUI(); resetJournalForm(); hideLoading(); saveToCache(); })
-        .catch(onError);
+    // ================================================================
+    // DZIKIR & DOA HARIAN (pengganti Jurnal) — data statis github/dzikir/*.json
+    // ================================================================
+    const DZIKIR_TABS = [
+      { slug: 'morning-dhikr', label: 'Pagi',   icon: 'fa-sun' },
+      { slug: 'evening-dhikr', label: 'Petang', icon: 'fa-cloud-sun' },
+      { slug: 'daily-dua',     label: 'Harian', icon: 'fa-hands-praying' },
+    ];
+    let _dzikirData = {};              // slug -> { name, items }
+    let _dzikirActive = 'morning-dhikr';
+    let _dzikirCount = {};             // uid -> hitungan berjalan
+    let _dzikirInit = false;
+
+    function _dzEsc(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+    function dzUid(slug, id) { return (slug + '-' + id).replace(/[^a-z0-9]/gi, ''); }
+
+    function initDzikir() {
+      renderDzikirTabs();
+      if (_dzikirData[_dzikirActive]) renderDzikirList();
+      else loadDzikir(_dzikirActive);
     }
 
-    function resetJournalForm() {
-      document.getElementById('journalForm').reset(); document.getElementById('journalId').value = '';
-      document.getElementById('btnCancelJournal').classList.add('hidden');
-      document.getElementById('btnSaveJournal').classList.remove('w-1/2');
-      document.getElementById('btnSaveJournal').classList.add('flex-1');
-      document.getElementById('btnSaveJournal').textContent = 'SIMPAN JURNAL';
+    function renderDzikirTabs() {
+      const wrap = document.getElementById('dzikirTabs');
+      if (!wrap) return;
+      wrap.innerHTML = DZIKIR_TABS.map(t => {
+        const on = t.slug === _dzikirActive;
+        return `<button onclick="switchDzikirTab('${t.slug}')" class="flex-1 py-2.5 text-[11px] font-bold tracking-widest uppercase rounded-xl transition-all ${on ? 'bg-white shadow-sm text-sky-600' : 'text-slate-400 hover:text-slate-600'}"><i class="fa-solid ${t.icon} mr-1.5"></i>${t.label}</button>`;
+      }).join('');
     }
 
-    function editJournal(id) {
-      const j = appJournals.find(x => x.id === id); if(!j) return;
-      document.getElementById('journalId').value = j.id;
-      document.getElementById('journalSurah').value = j.surahId || '';
-      document.getElementById('journalAyahStart').value = j.ayahStart || '';
-      document.getElementById('journalAyahEnd').value = j.ayahEnd || '';
-      document.getElementById('journalNote').value = j.note;
-      document.getElementById('btnCancelJournal').classList.remove('hidden');
-      document.getElementById('btnSaveJournal').textContent = 'PERBARUI JURNAL';
+    function switchDzikirTab(slug) {
+      if (slug === _dzikirActive) return;
+      _dzikirActive = slug;
+      const s = document.getElementById('dzikirSearch'); if (s) s.value = '';
+      renderDzikirTabs();
+      if (_dzikirData[slug]) renderDzikirList();
+      else loadDzikir(slug);
     }
 
-    function deleteJournalEntry(id) {
-      customConfirm("Hapus Jurnal", "Hapus jurnal ini secara permanen?", () => {
-        showLoading("MENGHAPUS...");
-        gscript.deleteJournal(currentUser.id, id)
-          .then(journals => { appJournals = journals; updateJournalUI(); hideLoading(); })
-          .catch(onError);
-      }, 'warning');
+    function clearDzikirSearch() {
+      const el = document.getElementById('dzikirSearch');
+      if (el) { el.value = ''; el.focus(); }
+      renderDzikirList();
     }
 
-    function updateJournalUI() {
-      const container = document.getElementById('journalList');
-      if(appJournals.length === 0) return container.innerHTML = '<div class="text-sm text-slate-400 text-center py-10 font-medium"><i class="fa-solid fa-book-open text-4xl mb-4 opacity-30"></i><p>Belum ada catatan jurnal.</p></div>';
-      let html = '';
-      appJournals.forEach(j => {
-        let ref = '';
-        if(j.surahId) {
-          const s = QURAN_METADATA.find(x => x.id == j.surahId);
-          ref = s ? s.name : '';
-          if(j.ayahStart && j.ayahEnd) ref += ` (${j.ayahStart}-${j.ayahEnd})`;
-          else if(j.ayahStart) ref += ` Ayat ${j.ayahStart}`;
-        }
-        html += `<div class="bg-slate-50 border border-slate-200 rounded-3xl p-6 shadow-sm"><div class="flex justify-between items-start mb-3"><div><p class="text-[10px] font-black text-sky-500 uppercase tracking-widest mb-1">${formatDateID(j.date)}</p>${ref ? `<p class="text-xs text-slate-800 font-bold"><i class="fa-solid fa-tag text-sky-400 mr-1"></i> ${ref}</p>` : ''}</div><div class="flex gap-2"><button onclick="editJournal('${j.id}')" class="text-slate-400 hover:text-sky-500 hover:bg-sky-50 transition-colors w-8 h-8 rounded-full flex justify-center items-center"><i class="fa-solid fa-pen text-xs"></i></button><button onclick="deleteJournalEntry('${j.id}')" class="text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors w-8 h-8 rounded-full flex justify-center items-center"><i class="fa-solid fa-trash text-xs"></i></button></div></div><p class="text-[14px] text-slate-600 whitespace-pre-wrap mt-3 leading-relaxed font-medium">${j.note}</p></div>`;
+    function loadDzikir(slug) {
+      const list = document.getElementById('dzikirList');
+      if (!list) return;
+      list.innerHTML = '<div class="skeleton h-40 rounded-3xl"></div><div class="skeleton h-40 rounded-3xl"></div><div class="skeleton h-40 rounded-3xl"></div>';
+      fetch('dzikir/' + slug + '.json')
+        .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .then(d => { _dzikirData[slug] = d; if (_dzikirActive === slug) renderDzikirList(); })
+        .catch(() => {
+          if (_dzikirActive !== slug) return;
+          list.innerHTML = '<div class="text-sm text-slate-400 text-center py-16 font-medium"><i class="fa-solid fa-cloud-arrow-down text-4xl mb-4 opacity-30"></i><p>Gagal memuat. Periksa koneksi lalu buka lagi.</p></div>';
+        });
+    }
+
+    function renderDzikirList() {
+      const list = document.getElementById('dzikirList');
+      const d = _dzikirData[_dzikirActive];
+      if (!list) return;
+      const qEl = document.getElementById('dzikirSearch');
+      const q = qEl ? qEl.value.trim().toLowerCase() : '';
+      const clr = document.getElementById('dzikirSearchClear');
+      if (clr) clr.classList.toggle('hidden', !q);
+      if (!d || !d.items || !d.items.length) {
+        list.innerHTML = '<div class="text-sm text-slate-400 text-center py-16 font-medium"><i class="fa-regular fa-moon text-4xl mb-4 opacity-30"></i><p>Belum ada data.</p></div>';
+        return;
+      }
+      let items = d.items;
+      if (q) {
+        items = items.filter(it => (
+          (it.title || '') + ' ' + (it.translation || '') + ' ' + (it.notes || '') + ' ' + (it.fawaid || '') + ' ' + (it.source || '')
+        ).toLowerCase().includes(q));
+      }
+      if (!items.length) {
+        list.innerHTML = '<div class="text-sm text-slate-400 text-center py-16 font-medium"><i class="fa-solid fa-magnifying-glass text-4xl mb-4 opacity-30"></i><p>Tidak ada hasil untuk “' + _dzEsc(q) + '”.</p></div>';
+        return;
+      }
+      list.innerHTML = items.map((it, i) => dzikirCard(it, i)).join('');
+      // pulihkan tampilan counter yang sudah dihitung
+      items.forEach(it => {
+        const m = String(it.notes || '').match(/(\d+)/);
+        const target = m ? parseInt(m[1], 10) : 0;
+        if (target > 1) updateDzikirCounter(dzUid(_dzikirActive, it.id), target);
       });
-      container.innerHTML = html;
+    }
+
+    function dzikirCard(it, i) {
+      const uid = dzUid(_dzikirActive, it.id);
+      const m = String(it.notes || '').match(/(\d+)/);
+      const target = m ? parseInt(m[1], 10) : 0;
+      const hasCounter = target > 1;
+
+      const counter = hasCounter ? (
+        '<div class="flex items-center gap-3 bg-slate-50 rounded-2xl p-2.5 mb-1">' +
+          '<button onclick="dzikirTick(\'' + uid + '\',' + target + ')" id="dzcb-' + uid + '" class="dzc-btn shrink-0 w-14 h-14 rounded-2xl text-white font-black flex items-center justify-center active:scale-90 transition-transform">' +
+            '<span id="dzcn-' + uid + '" class="text-lg">0</span>' +
+          '</button>' +
+          '<div class="flex-1 min-w-0">' +
+            '<div class="h-2 bg-slate-200 rounded-full overflow-hidden"><div id="dzcbar-' + uid + '" class="dzc-bar h-full rounded-full transition-all" style="width:0%"></div></div>' +
+            '<p class="text-[10.5px] text-slate-400 font-bold mt-1.5"><span id="dzcl-' + uid + '">0</span> / ' + target + '× &middot; ketuk untuk menghitung</p>' +
+          '</div>' +
+          '<button onclick="dzikirReset(\'' + uid + '\',' + target + ')" class="shrink-0 w-9 h-9 rounded-xl text-slate-300 hover:text-slate-500 hover:bg-slate-100 flex items-center justify-center transition-colors"><i class="fa-solid fa-rotate-left text-xs"></i></button>' +
+        '</div>'
+      ) : '';
+
+      const fawaid = it.fawaid ? (
+        '<div id="dzf-' + uid + '" class="dz-fawaid"><div class="bg-sky-50/70 border border-sky-100 rounded-2xl p-3.5 mt-2 mb-1"><p class="text-[10px] font-black text-sky-500 uppercase tracking-widest mb-1.5"><i class="fa-solid fa-star mr-1"></i>Keutamaan</p><p class="text-[12px] text-slate-600 leading-relaxed">' + _dzEsc(it.fawaid) + '</p></div></div>'
+      ) : '';
+
+      const fawaidBtn = it.fawaid ? (
+        '<button onclick="toggleFawaid(\'' + uid + '\')" class="shrink-0 text-[11px] font-bold text-sky-600 hover:text-sky-700 flex items-center gap-1"><span>Keutamaan</span><i id="dzfi-' + uid + '" class="fa-solid fa-chevron-down text-[9px] transition-transform"></i></button>'
+      ) : '';
+
+      return '<div class="bg-white/70 border border-slate-200/70 rounded-3xl p-5 shadow-sm">' +
+        '<div class="flex items-start justify-between gap-3 mb-3">' +
+          '<div class="flex items-center gap-2.5 min-w-0">' +
+            '<span class="shrink-0 w-7 h-7 rounded-full bg-sky-100 text-sky-600 text-[12px] font-black flex items-center justify-center">' + (i + 1) + '</span>' +
+            '<h4 class="text-[15px] font-black text-slate-800 truncate">' + _dzEsc(it.title) + '</h4>' +
+          '</div>' +
+          (it.notes ? '<span class="shrink-0 text-[10px] font-bold text-amber-600 bg-amber-50 border border-amber-100 px-2.5 py-1 rounded-full">' + _dzEsc(it.notes) + '</span>' : '') +
+        '</div>' +
+        '<p dir="rtl" lang="ar" class="dzikir-arabic text-right text-slate-800 mb-3">' + _dzEsc(it.arabic) + '</p>' +
+        (it.translation ? '<p class="text-[13px] text-slate-600 leading-relaxed mb-3">"' + _dzEsc(it.translation) + '"</p>' : '') +
+        counter +
+        fawaid +
+        '<div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">' +
+          '<span class="text-[10.5px] text-slate-400 font-semibold truncate"><i class="fa-solid fa-book-bookmark text-sky-300 mr-1"></i>' + _dzEsc(it.source || '—') + '</span>' +
+          fawaidBtn +
+        '</div>' +
+      '</div>';
+    }
+
+    function toggleFawaid(uid) {
+      const box = document.getElementById('dzf-' + uid);
+      const ico = document.getElementById('dzfi-' + uid);
+      if (!box) return;
+      const open = box.classList.toggle('open');
+      if (ico) ico.style.transform = open ? 'rotate(180deg)' : '';
+    }
+
+    function dzikirTick(uid, target) {
+      const c = Math.min((_dzikirCount[uid] || 0) + 1, target);
+      _dzikirCount[uid] = c;
+      if (navigator.vibrate) navigator.vibrate(c >= target ? [25, 35, 25] : 12);
+      updateDzikirCounter(uid, target);
+    }
+    function dzikirReset(uid, target) {
+      _dzikirCount[uid] = 0;
+      updateDzikirCounter(uid, target);
+    }
+    function updateDzikirCounter(uid, target) {
+      const c = _dzikirCount[uid] || 0;
+      const done = c >= target;
+      const num = document.getElementById('dzcn-' + uid);
+      const lbl = document.getElementById('dzcl-' + uid);
+      const bar = document.getElementById('dzcbar-' + uid);
+      const btn = document.getElementById('dzcb-' + uid);
+      if (num) num.innerHTML = done ? '<i class="fa-solid fa-check"></i>' : c;
+      if (lbl) lbl.textContent = c;
+      if (bar) { bar.style.width = Math.round(c / target * 100) + '%'; bar.classList.toggle('done', done); }
+      if (btn) btn.classList.toggle('done', done);
     }
 
     // ================================================================
@@ -3935,17 +4046,15 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
     function confirmResetReadingData() {
       customConfirm(
         '⚠️ Reset Data Bacaan',
-        'Apakah Anda yakin ingin mereset?\n\nData bacaan (posisi halaman, target, streak, riwayat log, dan jurnal) akan dihapus secara permanen.',
+        'Apakah Anda yakin ingin mereset?\n\nData bacaan (posisi halaman, target, streak, dan riwayat log) akan dihapus secara permanen.',
         () => {
           showLoading('MERESET DATA...');
           gscript.resetReadingData(currentUser.id)
             .then(freshProfile => {
               appProfile         = freshProfile;
-              appJournals        = [];
               todayProgressCount = 0;
               saveToCache();
               updateDashboard();
-              updateJournalUI();
               hideLoading();
               showToast('Data bacaan berhasil direset. Bismillah, mulai dari awal! 🌟', 'success');
             })

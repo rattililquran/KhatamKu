@@ -74,10 +74,6 @@ const gscript = {
   calibrateReadingPosition: (_userId, c) =>
     rpc("app_calibrate", { p_page: parseInt(c.page), p_surah: c.surahId ? parseInt(c.surahId) : null }),
 
-  // ── JURNAL ────────────────────────────────────────────────
-  saveJournal: (_userId, j) => rpc("app_save_journal", { p: j }),
-  deleteJournal: (_userId, id) => rpc("app_delete_journal", { p_id: id }),
-
   // ── BOOKMARK (FITUR BARU) — langsung tabel via RLS ────────
   addBookmark: async (surahId, ayat, catatan) => {
     const { data, error } = await sb.from("bookmark")
