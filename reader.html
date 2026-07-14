@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Mushaf Madinah — KhatamKu</title>
+<style>
+:root{--ink:#2c2117;--cream:#fbf5e6;--frame:#b08d4f;--gold:#c9a44c;--bg:#20242a;}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:#e8e8e8;
+  min-height:100vh;display:flex;flex-direction:column;}
+/* ── top bar ── */
+.bar{display:flex;align-items:center;gap:10px;padding:12px 14px;background:#191c21;
+  position:sticky;top:0;z-index:5;border-bottom:1px solid #2c313a;}
+.bar .back{background:#2b313a;border:0;color:#cfd3d8;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;}
+.bar .info{flex:1;text-align:center;}
+.bar .info b{font-size:14px;font-weight:800;display:block;}
+.bar .info span{font-size:11px;color:#9aa0a8;}
+.bar .jump{width:56px;background:#2b313a;border:1px solid #3a4048;color:#e8e8e8;border-radius:8px;
+  padding:6px;text-align:center;font-weight:700;}
+.bar .bkbtn{background:#2b313a;border:0;color:var(--gold);width:36px;height:36px;border-radius:10px;font-size:16px;cursor:pointer;}
+.bk-item{display:flex;align-items:center;gap:10px;padding:12px 4px;border-bottom:1px solid #2c313a;cursor:pointer;}
+.bk-item:active{background:#262b32;}
+.bk-item .n{background:var(--gold);color:#1a1206;font-weight:800;font-size:11px;padding:3px 9px;border-radius:20px;white-space:nowrap;}
+.bk-item .t{flex:1;font-size:14px;color:#e8e8e8;}
+.bk-item .t small{color:#9aa0a8;display:block;font-size:12px;margin-top:2px;}
+.bk-item .del{background:none;border:0;color:#7a828c;font-size:16px;cursor:pointer;padding:4px;}
+.bk-empty{color:#8a8f96;text-align:center;padding:30px;font-size:14px;}
+/* mark-read + toast + panel cari */
+.markbar{padding:8px 14px 4px;background:#191c21;}
+.markbar button{width:100%;padding:12px;border:0;border-radius:12px;background:var(--gold);color:#1a1206;font-weight:800;font-size:14px;cursor:pointer;}
+.markbar button:disabled{opacity:.4;}
+.toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%) translateY(16px);opacity:0;
+  background:#111418;color:#fff;padding:12px 18px;border-radius:12px;font-size:13px;z-index:60;
+  transition:all .25s;max-width:88%;text-align:center;pointer-events:none;border:1px solid #3a4048;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.qbox{width:100%;background:#2b313a;border:1px solid #3a4048;color:#e8e8e8;border-radius:10px;padding:10px 12px;font-size:14px;margin:6px 0 8px;}
+.nav-item{padding:11px 4px;border-bottom:1px solid #2c313a;cursor:pointer;display:flex;align-items:center;gap:10px;}
+.nav-item:active{background:#262b32;}
+.nav-item .num{background:#2b313a;color:var(--gold);font-weight:800;font-size:12px;min-width:34px;text-align:center;padding:4px 0;border-radius:6px;}
+.nav-item .t{flex:1;font-size:14px;}
+.nav-item .t small{color:#9aa0a8;display:block;font-size:12px;margin-top:1px;}
+.sec{color:var(--gold);font-size:11px;text-transform:uppercase;letter-spacing:.05em;margin:14px 0 2px;font-weight:800;}
+/* ── halaman mushaf ── */
+.stage{flex:1;display:flex;align-items:center;justify-content:center;padding:16px 12px;}
+.mushaf{width:100%;max-width:520px;background:var(--cream);color:var(--ink);border-radius:8px;
+  padding:20px 16px;box-shadow:0 10px 30px rgba(0,0,0,.45);
+  border:1px solid var(--frame);outline:3px double var(--frame);outline-offset:4px;}
+@font-face{font-family:'surahname';src:url(fonts/surah-name/surah-name-v2.woff2) format('woff2');font-display:block;}
+.surah-head{text-align:center;margin:10px 0 4px;padding:5px 10px;
+  border-top:2px solid var(--frame);border-bottom:2px solid var(--frame);background:rgba(176,141,79,.12);
+  display:flex;flex-direction:column;align-items:center;gap:0;}
+.surah-head .sglyph{font-family:'surahname';font-feature-settings:"liga" 1;font-size:38px;line-height:1.15;color:#5a4416;
+  -webkit-font-smoothing:antialiased;}
+.surah-head .slat{font-size:10px;font-weight:700;color:#8a6a2a;letter-spacing:.08em;text-transform:uppercase;}
+.basmalah{text-align:center;direction:rtl;font-size:23px;color:var(--ink);padding:2px 0 8px;
+  -webkit-font-smoothing:antialiased;}
+.line{display:flex;justify-content:space-between;align-items:center;direction:rtl;
+  padding:3px 0;min-height:2em;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+.w{font-size:27px;line-height:2;color:var(--ink);cursor:pointer;white-space:nowrap;font-weight:400;
+  border-radius:4px;padding:0 1px;transition:background .12s;}
+.w.end{color:#9a7a2e;}
+.w.active{background:rgba(201,164,76,.4);}
+.loading,.err{color:#8a8f96;text-align:center;padding:40px;font-size:14px;}
+/* ── nav bawah ── */
+.nav{display:flex;gap:10px;padding:12px 14px;background:#191c21;border-top:1px solid #2c313a;
+  position:sticky;bottom:0;}
+.nav button{flex:1;padding:12px;border:0;border-radius:12px;background:#2b313a;color:#e8e8e8;
+  font-weight:700;font-size:14px;cursor:pointer;}
+.nav button:disabled{opacity:.35;}
+.nav .g{background:var(--gold);color:#1a1206;}
+/* ── bottom sheet ── */
+.sheet{position:fixed;left:0;right:0;bottom:0;background:#20242a;border-top:2px solid var(--gold);
+  border-radius:16px 16px 0 0;padding:16px 18px 28px;max-height:66vh;overflow:auto;z-index:20;
+  transform:translateY(102%);transition:transform .25s;box-shadow:0 -10px 30px rgba(0,0,0,.5);}
+.sheet.show{transform:translateY(0);}
+.sheet .row{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.sheet .tag{background:var(--gold);color:#1a1206;font-weight:800;font-size:12px;padding:3px 10px;border-radius:20px;}
+.sheet .bk{margin-left:auto;background:#2b313a;border:0;color:#c9a44c;font-size:18px;width:34px;height:34px;border-radius:50%;cursor:pointer;}
+.sheet .ar{font-size:26px;line-height:2;text-align:right;direction:rtl;color:#f3ede0;margin:10px 0;}
+.sheet h3{font-size:12px;margin:14px 0 5px;color:var(--gold);text-transform:uppercase;letter-spacing:.05em;}
+.sheet .lt{font-size:12px;color:#9aa0a8;font-style:italic;}
+.sheet p{font-size:14px;color:#dfe3e8;}
+.sheet .tafsir{font-size:13px;color:#c3c8ce;line-height:1.75;}
+.close{background:#3a4048;border:0;color:#cfd3d8;width:30px;height:30px;border-radius:50%;font-size:16px;cursor:pointer;flex:0 0 auto;}
+</style>
+<!-- Supabase adapter: sesi login dari index.html menular (same-origin, storageKey khatamku_auth) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="api.supabase.js"></script>
+</head>
+<body>
+<div class="bar">
+  <button class="back" onclick="history.length>1?history.back():location.href='index.html'">‹</button>
+  <div class="info"><b id="surahName">Mushaf Madinah</b><span id="pageInfo">memuat…</span></div>
+  <button class="bkbtn" onclick="openNav()" title="Daftar surat & cari">📚</button>
+  <button class="bkbtn" onclick="openBkPanel()" title="Daftar bookmark">🔖</button>
+  <input class="jump" id="jump" type="number" min="1" max="604" placeholder="Hal" title="Loncat ke halaman">
+</div>
+
+<div class="stage"><div id="mushaf" class="mushaf"><div class="loading">Memuat mushaf…</div></div></div>
+
+<div class="markbar"><button id="markBtn" onclick="markRead()">✓ Tandai sudah dibaca sampai halaman ini</button></div>
+<div class="nav">
+  <button id="prev" onclick="go(page-1)">← Sebelumnya</button>
+  <button id="next" class="g" onclick="go(page+1)">Selanjutnya →</button>
+</div>
+<div id="toast" class="toast"></div>
+
+<div id="sheet" class="sheet">
+  <div class="row"><span class="tag" id="s-ayat">QS</span>
+    <button class="bk" id="s-bk" title="Bookmark" onclick="toggleBookmark()">☆</button>
+    <button class="close" onclick="hideSheet()">×</button></div>
+  <div class="ar" id="s-ar"></div>
+  <p class="lt" id="s-lt"></p>
+  <h3>Terjemah (Kemenag)</h3><p id="s-id"></p>
+  <h3>Tafsir (Kemenag)</h3><p class="tafsir" id="s-tf"></p>
+</div>
+
+<div id="bkPanel" class="sheet">
+  <div class="row"><span class="tag">🔖 Bookmark</span>
+    <button class="close" onclick="hideBk()" style="margin-left:auto">×</button></div>
+  <div id="bkList"><div class="bk-empty">Memuat…</div></div>
+</div>
+
+<div id="navPanel" class="sheet">
+  <div class="row"><span class="tag">📚 Daftar &amp; Cari</span>
+    <button class="close" onclick="hideNav()" style="margin-left:auto">×</button></div>
+  <input id="q" class="qbox" placeholder="Cari surat, kata dalam terjemah, atau ketik 2:255…" oninput="doSearch(this.value)">
+  <div id="navList"></div>
+</div>
+
+<script>
+const FONT_BASE = "https://static.qurancdn.com/fonts/quran/hafs/v2/woff2"; // CORS * → aman
+const BASMALAH = "ﱁﱂﱃﱄ"; // glyph basmalah dari font halaman 1 (QS 1:1, tanpa penanda ayat)
+let page = parseInt(new URLSearchParams(location.search).get("p")) || 3;
+const surahCache = {}, fontLoaded = new Set();
+let curAyat = null;
+
+function ensureFont(p){
+  if(!fontLoaded.has(p)){
+    const st = document.createElement("style");
+    st.textContent = `@font-face{font-family:'qcf${p}';src:url(${FONT_BASE}/p${p}.woff2) format('woff2');font-display:block;}`;
+    document.head.appendChild(st);
+    fontLoaded.add(p);
+  }
+  try{ return document.fonts.load(`24px 'qcf${p}'`); }catch(_){ return Promise.resolve(); }
+}
+async function loadSurah(s){
+  if(surahCache[s]) return surahCache[s];
+  const r = await fetch(`quran/${s}.json`);
+  if(!r.ok) throw new Error("teks surah belum tersedia");
+  const d = await r.json(); surahCache[s] = d; return d;
+}
+async function go(p){
+  if(p<1||p>604) return;
+  page = p; hideSheet();
+  const box = document.getElementById("mushaf");
+  box.innerHTML = '<div class="loading">Memuat halaman '+p+'…</div>';
+  document.getElementById("jump").value = p;
+  let d;
+  try{ const r = await fetch(`mushaf/${p}.json`); if(!r.ok) throw 0; d = await r.json(); }
+  catch(e){ box.innerHTML = '<div class="err">Halaman '+p+' belum diunduh (ingest berjalan). Coba lagi sebentar.</div>'; updateNav(); return; }
+  await Promise.all([ensureFont(p), ensureFont(1),     // tunggu font halaman + basmalah + nama-surat → hindari kedip
+    document.fonts.load("38px 'surahname'").catch(()=>{})]);
+  // muat nama semua surah di halaman ini (untuk banner)
+  const names = {};
+  for(const s of d.surahs){ try{ names[s] = await loadSurah(s); }catch(_){ names[s] = {nama:"Surah "+s, nama_arab:""}; } }
+  document.getElementById("surahName").textContent = "QS " + (names[d.surahs[0]] && names[d.surahs[0]].nama || d.surahs[0]);
+
+  // baris pertama tiap surah (min line di mana S:1 muncul) → sisipkan banner+basmalah sebelumnya
+  const startAtLine = {}; const seen = {};
+  d.lines.forEach(l=> l.words.forEach(w=>{
+    const [s,a] = w.v.split(":").map(Number);
+    if(a===1 && seen[s]===undefined){ seen[s]=l.n; startAtLine[l.n]=s; }
+  }));
+
+  box.innerHTML = "";
+  d.lines.slice().sort((a,b)=>a.n-b.n).forEach(l=>{
+    const S = startAtLine[l.n];
+    if(S!==undefined){                                 // banner untuk SEMUA surah (termasuk Al-Fatihah)
+      const su = names[S] || {};
+      const b = document.createElement("div"); b.className="surah-head";
+      b.innerHTML = `<span class="sglyph">s${String(S).padStart(3,"0")}</span><span class="slat">${su.nama||("Surah "+S)}</span>`;
+      box.appendChild(b);
+      if(S!==9 && S!==1){                               // basmalah kecuali At-Taubah(9) & Al-Fatihah(1: basmalah=ayat 1)
+        ensureFont(1);
+        const bs = document.createElement("div"); bs.className="basmalah"; bs.style.fontFamily="'qcf1'";
+        bs.textContent = BASMALAH;
+        box.appendChild(bs);
+      }
+    }
+    const row = document.createElement("div"); row.className="line"; row.style.fontFamily=`'qcf${p}'`;
+    l.words.forEach(w=>{
+      const s = document.createElement("span");
+      s.className = "w" + (w.e?" end":""); s.textContent = w.g; s.dataset.v = w.v;
+      s.onclick = ()=>openAyat(w.v);
+      row.appendChild(s);
+    });
+    box.appendChild(row);
+  });
+  document.getElementById("pageInfo").textContent = "Halaman "+p+" · Juz "+(d.juz||"-");
+  updateNav();
+}
+function updateNav(){
+  document.getElementById("prev").disabled = page<=1;
+  document.getElementById("next").disabled = page>=604;
+}
+async function openAyat(vk){
+  const [s,a] = vk.split(":").map(Number);
+  document.querySelectorAll(".w.active").forEach(e=>e.classList.remove("active"));
+  document.querySelectorAll(`.w[data-v="${vk}"]`).forEach(e=>e.classList.add("active"));
+  curAyat = {s,a,vk};
+  document.getElementById("s-ayat").textContent = "QS " + vk;
+  const set=(id,v)=>document.getElementById(id).textContent=v;
+  set("s-ar","…"); set("s-lt",""); set("s-id","Memuat…"); set("s-tf","");
+  document.getElementById("sheet").classList.add("show");
+  refreshBk();
+  try{
+    const su = await loadSurah(s);
+    const ay = su.ayat.find(x=>x.n===a) || {};
+    set("s-ar", ay.ar||""); set("s-lt", ay.lt||"");
+    set("s-id", ay.id||"(terjemah belum tersedia)"); set("s-tf", ay.tf||"(tafsir belum tersedia)");
+  }catch(e){ set("s-id","Teks surah "+s+" belum diunduh."); set("s-tf",""); }
+}
+function hideSheet(){ document.getElementById("sheet").classList.remove("show");
+  document.querySelectorAll(".w.active").forEach(e=>e.classList.remove("active")); }
+
+// ── Bookmark: Supabase bila login, fallback localStorage bila belum ──
+const bkMap = {};                     // "s:a" → id bookmark (server)
+function bkKey(){ return "khatamku_bk"; }
+function getBk(){ try{return JSON.parse(localStorage.getItem(bkKey())||"[]");}catch(_){return[];} }
+async function hasSession(){ try{ return !!(window.sb && (await sb.auth.getSession()).data.session); }catch(_){ return false; } }
+async function initBookmarks(){
+  if(!(await hasSession()) || !window.gscript) return;
+  try{ (await gscript.listBookmarks()||[]).forEach(b=> bkMap[`${b.surah_id}:${b.ayat}`]=b.id); }catch(_){}
+}
+function refreshBk(){
+  if(!curAyat) return;
+  const on = (curAyat.vk in bkMap) || getBk().some(b=>b.v===curAyat.vk);
+  document.getElementById("s-bk").textContent = on ? "★" : "☆";
+}
+async function toggleBookmark(){
+  if(!curAyat) return;
+  const key = curAyat.vk;
+  if(window.gscript && await hasSession()){
+    try{
+      if(key in bkMap){ await gscript.deleteBookmark(bkMap[key]); delete bkMap[key]; }
+      else{ const row = await gscript.addBookmark(curAyat.s, curAyat.a); bkMap[key] = row.id; }
+      refreshBk(); return;
+    }catch(e){ /* jatuh ke localStorage */ }
+  }
+  let bk = getBk(); const i = bk.findIndex(b=>b.v===key);
+  if(i>=0) bk.splice(i,1); else bk.push({v:key,s:curAyat.s,a:curAyat.a});
+  localStorage.setItem(bkKey(), JSON.stringify(bk)); refreshBk();
+}
+// ── Panel daftar bookmark ──
+let PAGEIDX = {};
+async function loadIndex(){ try{ PAGEIDX = await (await fetch("mushaf/index.json")).json(); }catch(_){} }
+async function getAllBookmarks(){
+  if(window.gscript && await hasSession()){
+    try{ return (await gscript.listBookmarks()||[]).map(b=>({s:b.surah_id,a:b.ayat,id:b.id})); }catch(_){}
+  }
+  return getBk().map(b=>({s:b.s,a:b.a}));
+}
+async function openBkPanel(){
+  document.getElementById("bkPanel").classList.add("show");
+  const list = document.getElementById("bkList");
+  list.innerHTML = '<div class="bk-empty">Memuat…</div>';
+  const items = await getAllBookmarks();
+  if(!items.length){ list.innerHTML = '<div class="bk-empty">Belum ada bookmark. Ketuk ★ pada ayat untuk menyimpan.</div>'; return; }
+  list.innerHTML = "";
+  for(const it of items){
+    let nama = "Surah "+it.s, preview = "";
+    try{ const su = await loadSurah(it.s); nama = su.nama; const ay = su.ayat.find(x=>x.n===it.a); if(ay) preview = (ay.id||"").slice(0,60)+"…"; }catch(_){}
+    const row = document.createElement("div"); row.className="bk-item";
+    row.innerHTML = `<span class="n">${it.s}:${it.a}</span><div class="t">${nama}<small>${preview}</small></div><button class="del" title="Hapus">🗑</button>`;
+    const jump = ()=>gotoAyat(it.s,it.a);
+    row.querySelector(".t").onclick = jump; row.querySelector(".n").onclick = jump;
+    row.querySelector(".del").onclick = async(e)=>{ e.stopPropagation(); await removeBk(it); openBkPanel(); };
+    list.appendChild(row);
+  }
+}
+function hideBk(){ document.getElementById("bkPanel").classList.remove("show"); }
+async function removeBk(it){
+  const key = it.s+":"+it.a;
+  if(window.gscript && await hasSession() && it.id!=null){
+    try{ await gscript.deleteBookmark(it.id); delete bkMap[key]; return; }catch(_){}
+  }
+  let bk = getBk(); const i = bk.findIndex(b=>b.v===key);
+  if(i>=0){ bk.splice(i,1); localStorage.setItem(bkKey(), JSON.stringify(bk)); }
+}
+async function gotoAyat(s,a){ hideBk(); await go(PAGEIDX[s+":"+a] || 1); openAyat(s+":"+a); }
+
+// ── Tandai sudah dibaca (progres → dashboard) ──
+function toast(msg){
+  const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show");
+  clearTimeout(window._tt); window._tt=setTimeout(()=>t.classList.remove("show"),3200);
+}
+async function markRead(){
+  if(!(window.gscript && await hasSession())){ toast("Login dulu (lewat halaman utama) untuk mencatat progres."); return; }
+  if(!confirm("Catat bahwa Anda sudah membaca sampai halaman "+page+"?")) return;
+  const btn=document.getElementById("markBtn"); btn.disabled=true;
+  try{
+    const r = await gscript.saveProgressUpdate(null, {lastPageInput: page});
+    if(r.isKhatamNow) toast("🎉 Alhamdulillah, khatam! Total khatam: "+r.profile.totalKhatam);
+    else toast("✓ Tercatat s/d halaman "+page+" · streak "+r.profile.streakDays+" hari");
+  }catch(e){
+    const m=(e.message||e).toString();
+    toast(m.includes("lebih kecil")? "Halaman ini sudah terlewati dari progresmu." : ("Gagal: "+m));
+  }finally{ btn.disabled=false; }
+}
+
+// ── Daftar surat & pencarian ──
+let SURAHS=null, SEARCH=null, _searchT=null;
+async function loadSurahs(){ if(!SURAHS) SURAHS = await (await fetch("quran/surah_index.json")).json(); return SURAHS; }
+async function loadSearch(){ if(!SEARCH) SEARCH = await (await fetch("quran/search.json")).json(); return SEARCH; }
+async function openNav(){ document.getElementById("navPanel").classList.add("show"); await loadSurahs(); doSearch(document.getElementById("q").value||""); }
+function hideNav(){ document.getElementById("navPanel").classList.remove("show"); }
+function gotoSurah(pg){ hideNav(); go(pg); }
+function esc(s){ return (s||"").replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])); }
+
+function doSearch(qraw){
+  const q=(qraw||"").trim().toLowerCase();
+  const list=document.getElementById("navList"); list.innerHTML="";
+  const m=q.match(/^(\d{1,3})[:\s.](\d{1,3})$/);      // a) referensi langsung s:a
+  if(m){ const s=+m[1],a=+m[2];
+    const d=document.createElement("div"); d.className="nav-item";
+    d.innerHTML=`<span class="num">↗</span><div class="t">Buka QS ${s}:${a}</div>`;
+    d.onclick=()=>{ hideNav(); gotoAyat(s,a); }; list.appendChild(d);
+  }
+  const sur=(SURAHS||[]).filter(x=> !q || (''+x.n)===q || x.nama.toLowerCase().includes(q) || (x.arti||'').toLowerCase().includes(q));
+  if(sur.length){                                     // b) daftar / filter surat
+    const h=document.createElement("div"); h.className="sec"; h.textContent = q? "Surat" : "Semua Surat (114)"; list.appendChild(h);
+    sur.forEach(x=>{
+      const d=document.createElement("div"); d.className="nav-item";
+      d.innerHTML=`<span class="num">${x.n}</span><div class="t">${esc(x.nama)} <small>${esc(x.arti)} · ${x.jml} ayat · hal ${x.hal}</small></div>`;
+      d.onclick=()=>gotoSurah(x.hal); list.appendChild(d);
+    });
+  }
+  if(q.length>=3 && !m){                               // c) cari dalam terjemah
+    const h=document.createElement("div"); h.className="sec"; h.textContent="Dalam Terjemah";
+    const holder=document.createElement("div"); list.appendChild(h); list.appendChild(holder);
+    holder.innerHTML='<div class="bk-empty">mencari…</div>';
+    clearTimeout(_searchT);
+    _searchT=setTimeout(async()=>{
+      await loadSearch();
+      const hits=[]; for(const it of SEARCH){ if(it.t.toLowerCase().includes(q)){ hits.push(it); if(hits.length>=40) break; } }
+      holder.innerHTML="";
+      if(!hits.length){ holder.innerHTML='<div class="bk-empty">Tak ada ayat cocok.</div>'; return; }
+      hits.forEach(it=>{
+        const [s,a]=it.k.split(":").map(Number);
+        const d=document.createElement("div"); d.className="nav-item";
+        d.innerHTML=`<span class="num">${it.k}</span><div class="t"><small>${esc(it.t.slice(0,90))}…</small></div>`;
+        d.onclick=()=>{ hideNav(); gotoAyat(s,a); }; holder.appendChild(d);
+      });
+    },250);
+  }
+  if(!list.children.length) list.innerHTML='<div class="bk-empty">Tak ada hasil.</div>';
+}
+
+document.getElementById("jump").addEventListener("change",e=>{ const p=parseInt(e.target.value); if(p) go(p); });
+go(page);
+initBookmarks();
+loadIndex();
+</script>
+</body>
+</html>
