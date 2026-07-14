@@ -75,8 +75,9 @@ body.immersive #fsExit{display:block;}
 .basmalah{text-align:center;direction:rtl;font-size:23px;color:var(--ink);padding:2px 0 8px;
   -webkit-font-smoothing:antialiased;}
 .line{display:flex;justify-content:space-between;align-items:center;direction:rtl;
-  padding:3px 0;min-height:2em;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
-.w{font-size:27px;line-height:2;color:var(--ink);cursor:pointer;white-space:nowrap;font-weight:400;
+  padding:3px 0;min-height:1.6em;font-size:27px;line-height:2;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+.w{line-height:2;color:var(--ink);cursor:pointer;white-space:nowrap;font-weight:400;
   border-radius:4px;padding:0 1px;transition:background .12s;}
 .w.end{color:#9a7a2e;}
 .w.active{background:rgba(201,164,76,.4);}
@@ -231,6 +232,7 @@ async function go(p){
     box.appendChild(row);
   });
   document.getElementById("pageInfo").textContent = "Halaman "+p+" · Juz "+(d.juz||"-");
+  fitPage();
   updateNav();
 }
 function updateNav(){
@@ -443,6 +445,20 @@ function doSearch(qraw){
   }
   if(!list.children.length) list.innerHTML='<div class="bk-empty">Tak ada hasil.</div>';
 }
+
+// auto-skala font agar tiap baris pas selebar wadah (anti meluber horizontal)
+function fitPage(){
+  const box=document.getElementById("mushaf");
+  const lines=box.querySelectorAll(".line");
+  if(!lines.length) return;
+  const base=28, avail=box.clientWidth-34;
+  lines.forEach(l=> l.style.fontSize=base+"px");
+  let maxW=0;
+  lines.forEach(l=>{ let w=0; l.querySelectorAll(".w").forEach(s=> w+=s.getBoundingClientRect().width); if(w>maxW) maxW=w; });
+  if(maxW>0 && maxW>avail){ const fs=Math.max(13, base*avail/maxW); lines.forEach(l=> l.style.fontSize=fs+"px"); }
+}
+let _rz=null;
+window.addEventListener("resize", ()=>{ clearTimeout(_rz); _rz=setTimeout(fitPage,150); });
 
 document.getElementById("jump").addEventListener("change",e=>{ const p=parseInt(e.target.value); if(p) go(p); });
 go(page);
