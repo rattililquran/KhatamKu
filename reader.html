@@ -351,7 +351,7 @@ function setupGestures(){
   const stage=document.querySelector(".stage");
   stage.addEventListener("contextmenu", e=>e.preventDefault());   // cegah popup copy saat tekan lama
   let sx=0,sy=0,st=0,moved=false,longFired=false,lpTimer=null,lpWord=null,suppress=false;
-  const LP=1500, MOVE=12, SWIPE=55;
+  const LP=1000, MOVE=12, SWIPE=55;
   stage.addEventListener("touchstart",e=>{
     if(e.touches.length>1) return;
     const t=e.touches[0]; sx=t.clientX; sy=t.clientY; st=Date.now(); moved=false; longFired=false;
