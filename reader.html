@@ -42,7 +42,26 @@ body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:v
 .nav-item .t small{color:#9aa0a8;display:block;font-size:12px;margin-top:1px;}
 .sec{color:var(--gold);font-size:11px;text-transform:uppercase;letter-spacing:.05em;margin:14px 0 2px;font-weight:800;}
 /* ── halaman mushaf ── */
-.stage{flex:1;display:flex;align-items:center;justify-content:center;padding:16px 12px;}
+.stage{flex:1;display:flex;align-items:flex-start;justify-content:center;padding:14px 12px;
+  overflow-y:auto;-webkit-overflow-scrolling:touch;}
+/* immersive / layar penuh */
+body.immersive .bar,body.immersive .markbar,body.immersive .nav{display:none;}
+body.immersive .stage{padding-top:10px;}
+.fsbtn{background:#2b313a;border:0;color:var(--gold);width:36px;height:36px;border-radius:10px;font-size:15px;cursor:pointer;}
+#fsExit{position:fixed;top:10px;left:10px;z-index:40;display:none;background:rgba(0,0,0,.55);color:#fff;border:0;width:42px;height:42px;border-radius:50%;font-size:16px;cursor:pointer;}
+body.immersive #fsExit{display:block;}
+/* modal konfirmasi + doa */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:70;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal.show{display:flex;}
+.modal .box{background:#20242a;border:1px solid #3a4048;border-radius:18px;padding:22px;max-width:400px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.5);}
+.modal .box h3{font-size:16px;font-weight:800;color:var(--gold);margin-bottom:8px;}
+.modal .box p{font-size:14px;color:#dfe3e8;margin-bottom:8px;line-height:1.5;}
+.modal .box .ar{direction:rtl;font-size:21px;color:#f3ede0;line-height:2;margin:12px 0 6px;-webkit-font-smoothing:antialiased;}
+.modal .box .tr{font-size:12px;color:#9aa0a8;font-style:italic;margin-bottom:16px;}
+.modal .box .btns{display:flex;gap:10px;}
+.modal .box .btns button{flex:1;padding:12px;border:0;border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;}
+.modal .box .btns .ok{background:var(--gold);color:#1a1206;}
+.modal .box .btns .no{background:#2b313a;color:#cfd3d8;}
 .mushaf{width:100%;max-width:520px;background:var(--cream);color:var(--ink);border-radius:8px;
   padding:20px 16px;box-shadow:0 10px 30px rgba(0,0,0,.45);
   border:1px solid var(--frame);outline:3px double var(--frame);outline-offset:4px;}
@@ -94,6 +113,7 @@ body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:v
   <div class="info"><b id="surahName">Mushaf Madinah</b><span id="pageInfo">memuat…</span></div>
   <button class="bkbtn" onclick="openNav()" title="Daftar surat & cari">📚</button>
   <button class="bkbtn" onclick="openBkPanel()" title="Daftar bookmark">🔖</button>
+  <button class="fsbtn" onclick="toggleFS()" title="Layar penuh / fokus baca">⛶</button>
   <input class="jump" id="jump" type="number" min="1" max="604" placeholder="Hal" title="Loncat ke halaman">
 </div>
 
@@ -105,6 +125,18 @@ body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:v
   <button id="prev" onclick="go(page-1)">Sebelumnya →</button>
 </div>
 <div id="toast" class="toast"></div>
+<button id="fsExit" onclick="toggleFS()" title="Keluar fokus">✕</button>
+
+<div id="confirmModal" class="modal"><div class="box">
+  <h3 id="cmTitle">Tandai Bacaan</h3>
+  <p id="cmMsg"></p>
+  <div class="ar" id="cmAr"></div>
+  <div class="tr" id="cmTr"></div>
+  <div class="btns">
+    <button class="no" onclick="cmResolve(false)">Batal</button>
+    <button class="ok" onclick="cmResolve(true)">Catat</button>
+  </div>
+</div></div>
 
 <div id="sheet" class="sheet">
   <div class="row"><span class="tag" id="s-ayat">QS</span>
@@ -296,18 +328,72 @@ function toast(msg){
   const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show");
   clearTimeout(window._tt); window._tt=setTimeout(()=>t.classList.remove("show"),3200);
 }
+// layar penuh / mode fokus (sembunyikan chrome)
+function toggleFS(){
+  const imm = document.body.classList.toggle("immersive");
+  try{
+    if(imm && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(()=>{});
+    else if(!imm && document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(()=>{});
+  }catch(_){}
+}
+
+// modal konfirmasi (promise) + tampilan doa
+let _cmResolve=null;
+function askConfirm(msg, ar, tr){
+  document.getElementById("cmTitle").textContent="Tandai Bacaan";
+  document.querySelector("#confirmModal .no").style.display="";
+  const ok=document.querySelector("#confirmModal .ok"); ok.textContent="Catat"; ok.onclick=()=>cmResolve(true);
+  document.getElementById("cmMsg").textContent=msg;
+  document.getElementById("cmAr").textContent=ar||"";
+  document.getElementById("cmTr").textContent=tr||"";
+  document.getElementById("confirmModal").classList.add("show");
+  return new Promise(res=>{ _cmResolve=res; });
+}
+function cmResolve(v){ document.getElementById("confirmModal").classList.remove("show"); if(_cmResolve){ _cmResolve(v); _cmResolve=null; } }
+function showDua(title, ar, tr){
+  document.getElementById("cmTitle").textContent=title;
+  document.getElementById("cmMsg").textContent="";
+  document.getElementById("cmAr").textContent=ar;
+  document.getElementById("cmTr").textContent=tr;
+  document.querySelector("#confirmModal .no").style.display="none";
+  const ok=document.querySelector("#confirmModal .ok"); ok.textContent="Aamiin"; ok.onclick=()=>cmResolve(true);
+  document.getElementById("confirmModal").classList.add("show");
+}
+
+// cek udzur → nonaktifkan tombol tandai-dibaca
+let udzurActive=false;
+async function checkUdzur(){
+  if(!(window.gscript && await hasSession())) return;
+  try{
+    const d = await gscript.getInitialData();
+    const u = d && d.profile && d.profile.udzurStatus;
+    if(u){ udzurActive=true;
+      const b=document.getElementById("markBtn");
+      b.disabled=true; b.textContent="🌙 Sedang Udzur ("+u+") — pencatatan dinonaktifkan";
+    }
+  }catch(_){}
+}
+
 async function markRead(){
   if(!(window.gscript && await hasSession())){ toast("Login dulu (lewat halaman utama) untuk mencatat progres."); return; }
-  if(!confirm("Catat bahwa Anda sudah membaca sampai halaman "+page+"?")) return;
+  if(udzurActive){ toast("🌙 Sedang udzur — pencatatan bacaan dinonaktifkan."); return; }
+  const ok = await askConfirm(
+    "Engkau akan mencatat telah membaca hingga halaman "+page+". Semoga Allah menjadikan Al-Qur'an penerang hati dan pemberat timbanganmu.",
+    "اللَّهُمَّ ارْحَمْنِي بِالْقُرْآنِ",
+    "Ya Allah, rahmatilah aku dengan Al-Qur'an.");
+  if(!ok) return;
   const btn=document.getElementById("markBtn"); btn.disabled=true;
   try{
     const r = await gscript.saveProgressUpdate(null, {lastPageInput: page});
-    if(r.isKhatamNow) toast("🎉 Alhamdulillah, khatam! Total khatam: "+r.profile.totalKhatam);
-    else toast("✓ Tercatat s/d halaman "+page+" · streak "+r.profile.streakDays+" hari");
+    if(r.isKhatamNow){
+      showDua("🎉 Alhamdulillah, Khatam!",
+        "اللَّهُمَّ ارْحَمْنِي بِالْقُرْآنِ وَاجْعَلْهُ لِي إِمَامًا وَنُورًا وَهُدًى وَرَحْمَةً",
+        "Ya Allah, rahmatilah aku dengan Al-Qur'an, jadikanlah ia imam, cahaya, petunjuk, dan rahmat bagiku. (Khatam ke-"+r.profile.totalKhatam+")");
+    } else toast("✓ Tercatat s/d halaman "+page+" · streak "+r.profile.streakDays+" hari · Baarakallahu fiik");
   }catch(e){
     const m=(e.message||e).toString();
     toast(m.includes("lebih kecil")? "Halaman ini sudah terlewati dari progresmu." : ("Gagal: "+m));
-  }finally{ btn.disabled=false; }
+  }finally{ if(!udzurActive) btn.disabled=false; }
 }
 
 // ── Daftar surat & pencarian ──
@@ -362,6 +448,7 @@ document.getElementById("jump").addEventListener("change",e=>{ const p=parseInt(
 go(page);
 initBookmarks();
 loadIndex();
+checkUdzur();
 </script>
 </body>
 </html>
