@@ -2626,6 +2626,11 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
             btnLanjut.className = 'w-full py-3.5 rounded-2xl bg-pink-400/30 border border-pink-300/50 font-extrabold text-white/80 text-sm tracking-widest cursor-not-allowed';
             btnLanjut.onclick = (e) => { e.preventDefault(); customAlert('Mode Udzur Aktif 🌸', `Mode Udzur (${appProfile.udzurStatus}) sedang aktif sampai ${formatDateID(appProfile.udzurEnd)}.\nTargetmu sedang dijeda sementara.`, 'info'); };
           }
+          const btnCatatU = document.getElementById('btnCatatManual');
+          if (btnCatatU) {
+            btnCatatU.className = 'w-full mt-2.5 py-3 rounded-2xl bg-pink-400/20 border border-pink-300/40 font-extrabold text-white/70 text-sm tracking-widest flex items-center justify-center gap-2 cursor-not-allowed';
+            btnCatatU.onclick = (e) => { e.preventDefault(); customAlert('Mode Udzur Aktif 🌸', `Mode Udzur (${appProfile.udzurStatus}) sedang aktif. Pencatatan bacaan dijeda sementara.`, 'info'); };
+          }
         } else {
           // Card Udzur: tampil biru normal
           btnUdzur.innerHTML = `<div class="absolute -right-2 -bottom-2 opacity-10 text-6xl"><i class="fa-solid fa-bed"></i></div><div class="text-sky-200 mb-2 text-xl"><i class="fa-solid fa-bed"></i></div><div class="text-lg font-black text-white mb-1 tracking-tight">Udzur</div><div class="text-[11px] font-semibold text-sky-100 uppercase tracking-wider">Syar'i</div>`;
@@ -2637,6 +2642,11 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
             btnLanjut.textContent = '📖 LANJUTKAN BACAAN';
             btnLanjut.className = 'w-full py-3.5 rounded-2xl bg-red-500 hover:bg-red-600 border border-red-400/60 font-extrabold text-white text-sm tracking-widest transition-all shadow-sm';
             btnLanjut.onclick = () => handleLanjutkanBacaan();
+          }
+          const btnCatatN = document.getElementById('btnCatatManual');
+          if (btnCatatN) {
+            btnCatatN.className = 'w-full mt-2.5 py-3 rounded-2xl bg-white/15 hover:bg-white/25 border border-white/40 font-extrabold text-white text-sm tracking-widest transition-all flex items-center justify-center gap-2';
+            btnCatatN.onclick = () => handleCatatManual();
           }
         }
       }
@@ -3786,6 +3796,10 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
 
     // Catat manual — untuk murid yang membaca dari MUSHAF FISIK (input nomor halaman)
     function handleCatatManual() {
+      if (appProfile && appProfile.udzurStatus) {   // udzur aktif → pencatatan dijeda
+        customAlert('Mode Udzur Aktif 🌸', `Mode Udzur (${appProfile.udzurStatus}) sedang aktif. Pencatatan bacaan dijeda sementara.`, 'info');
+        return;
+      }
       if (!appProfile || !appProfile.dailyTargetPages || appProfile.dailyTargetPages <= 0) {
         customConfirm(
           '📋 Target Belum Ditentukan',
