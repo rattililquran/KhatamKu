@@ -44,12 +44,17 @@ body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:v
 /* ── halaman mushaf ── */
 .stage{flex:1;display:flex;align-items:flex-start;justify-content:center;padding:14px 12px;
   overflow-y:auto;-webkit-overflow-scrolling:touch;}
-/* immersive / layar penuh */
-body.immersive .bar,body.immersive .markbar,body.immersive .nav{display:none;}
-body.immersive .stage{padding-top:10px;}
+/* immersive default: chrome tersembunyi; muncul sebagai overlay saat .controls (ketuk sekali) */
+.bar,#bottombar{transition:transform .25s ease;}
 .fsbtn{background:#2b313a;border:0;color:var(--gold);width:36px;height:36px;border-radius:10px;font-size:15px;cursor:pointer;}
-#fsExit{position:fixed;top:10px;left:10px;z-index:40;display:none;background:rgba(0,0,0,.55);color:#fff;border:0;width:42px;height:42px;border-radius:50%;font-size:16px;cursor:pointer;}
-body.immersive #fsExit{display:block;}
+body.immersive .bar{position:fixed;top:0;left:0;right:0;z-index:30;transform:translateY(-105%);box-shadow:0 4px 16px rgba(0,0,0,.4);}
+body.immersive #bottombar{position:fixed;left:0;right:0;bottom:0;z-index:30;transform:translateY(105%);box-shadow:0 -4px 16px rgba(0,0,0,.4);}
+body.immersive.controls .bar{transform:translateY(0);}
+body.immersive.controls #bottombar{transform:translateY(0);}
+body.immersive .stage{padding:16px 12px;}
+.taphint{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:25;pointer-events:none;
+  background:rgba(0,0,0,.6);color:#fff;padding:10px 16px;border-radius:20px;font-size:12px;opacity:0;transition:opacity .4s;}
+.taphint.show{opacity:1;}
 /* modal konfirmasi + doa */
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:70;display:none;align-items:center;justify-content:center;padding:20px;}
 .modal.show{display:flex;}
@@ -120,13 +125,15 @@ body.immersive #fsExit{display:block;}
 
 <div class="stage"><div id="mushaf" class="mushaf"><div class="loading">Memuat mushaf…</div></div></div>
 
-<div class="markbar"><button id="markBtn" onclick="markRead()">✓ Tandai sudah dibaca sampai halaman ini</button></div>
-<div class="nav">
-  <button id="next" class="g" onclick="go(page+1)">← Selanjutnya</button>
-  <button id="prev" onclick="go(page-1)">Sebelumnya →</button>
+<div id="bottombar">
+  <div class="markbar"><button id="markBtn" onclick="markRead()">✓ Tandai sudah dibaca sampai halaman ini</button></div>
+  <div class="nav">
+    <button id="next" class="g" onclick="go(page+1)">← Selanjutnya</button>
+    <button id="prev" onclick="go(page-1)">Sebelumnya →</button>
+  </div>
 </div>
 <div id="toast" class="toast"></div>
-<button id="fsExit" onclick="toggleFS()" title="Keluar fokus">✕</button>
+<div id="tapHint" class="taphint">Ketuk sekali untuk menu · tekan lama ayat untuk terjemah · geser ganti halaman</div>
 
 <div id="confirmModal" class="modal"><div class="box">
   <h3 id="cmTitle">Tandai Bacaan</h3>
@@ -226,7 +233,6 @@ async function go(p){
     l.words.forEach(w=>{
       const s = document.createElement("span");
       s.className = "w" + (w.e?" end":""); s.textContent = w.g; s.dataset.v = w.v;
-      s.onclick = ()=>openAyat(w.v);
       row.appendChild(s);
     });
     box.appendChild(row);
@@ -330,13 +336,40 @@ function toast(msg){
   const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show");
   clearTimeout(window._tt); window._tt=setTimeout(()=>t.classList.remove("show"),3200);
 }
-// layar penuh / mode fokus (sembunyikan chrome)
+// layar penuh browser (chrome browser). Mode immersive (chrome kita) selalu aktif.
 function toggleFS(){
-  const imm = document.body.classList.toggle("immersive");
   try{
-    if(imm && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(()=>{});
-    else if(!imm && document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(()=>{});
+    if(!document.fullscreenElement && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(()=>{});
+    else if(document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(()=>{});
   }catch(_){}
+}
+function toggleControls(){ document.body.classList.toggle("controls"); }
+
+// Gestur: ketuk sekali → menu · tekan lama (~1,5s) ayat → terjemah · geser → ganti halaman
+function setupGestures(){
+  const stage=document.querySelector(".stage");
+  let sx=0,sy=0,st=0,moved=false,longFired=false,lpTimer=null,lpWord=null,suppress=false;
+  const LP=1500, MOVE=12, SWIPE=55;
+  stage.addEventListener("touchstart",e=>{
+    if(e.touches.length>1) return;
+    const t=e.touches[0]; sx=t.clientX; sy=t.clientY; st=Date.now(); moved=false; longFired=false;
+    lpWord=e.target.closest(".w"); clearTimeout(lpTimer);
+    lpTimer=setTimeout(()=>{ if(!moved && lpWord){ longFired=true; if(navigator.vibrate) navigator.vibrate(25); openAyat(lpWord.dataset.v); } }, LP);
+  },{passive:true});
+  stage.addEventListener("touchmove",e=>{
+    const t=e.touches[0]; if(Math.abs(t.clientX-sx)>MOVE||Math.abs(t.clientY-sy)>MOVE){ moved=true; clearTimeout(lpTimer); }
+  },{passive:true});
+  stage.addEventListener("touchend",e=>{
+    clearTimeout(lpTimer); suppress=true; setTimeout(()=>suppress=false,450);
+    if(longFired) return;
+    const t=e.changedTouches[0], dx=t.clientX-sx, dy=t.clientY-sy, dt=Date.now()-st;
+    if(Math.abs(dx)>SWIPE && Math.abs(dx)>Math.abs(dy)*1.4){ if(dx<0) go(page+1); else go(page-1); return; }   // RTL: geser kiri = maju
+    if(Math.abs(dx)<MOVE && Math.abs(dy)<MOVE && dt<500){ toggleControls(); }
+  },{passive:true});
+  stage.addEventListener("click",e=>{                 // desktop
+    if(suppress) return;
+    const w=e.target.closest(".w"); if(w) openAyat(w.dataset.v); else toggleControls();
+  });
 }
 
 // modal konfirmasi (promise) + tampilan doa
@@ -465,6 +498,13 @@ go(page);
 initBookmarks();
 loadIndex();
 checkUdzur();
+// immersive (fullscreen fokus) sebagai default; kontrol tampil sebentar lalu sembunyi
+document.body.classList.add("immersive","controls");
+setupGestures();
+setTimeout(()=>{
+  document.body.classList.remove("controls");
+  const h=document.getElementById("tapHint"); if(h){ h.classList.add("show"); setTimeout(()=>h.classList.remove("show"),2800); }
+}, 2000);
 </script>
 </body>
 </html>
