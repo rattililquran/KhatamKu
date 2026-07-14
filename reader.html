@@ -52,9 +52,11 @@ body.immersive #bottombar{position:fixed;left:0;right:0;bottom:0;z-index:30;tran
 body.immersive.controls .bar{transform:translateY(0);}
 body.immersive.controls #bottombar{transform:translateY(0);}
 body.immersive .stage{padding:16px 12px;}
-.taphint{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:25;pointer-events:none;
-  background:rgba(0,0,0,.6);color:#fff;padding:10px 16px;border-radius:20px;font-size:12px;opacity:0;transition:opacity .4s;}
-.taphint.show{opacity:1;}
+.taphint{position:fixed;left:50%;bottom:78px;transform:translateX(-50%) translateY(12px);z-index:45;pointer-events:none;
+  background:rgba(20,24,30,.96);color:#fff;padding:12px 18px;border-radius:14px;font-size:13px;line-height:1.7;
+  max-width:90%;text-align:center;border:1px solid var(--gold);box-shadow:0 8px 26px rgba(0,0,0,.55);
+  opacity:0;transition:opacity .35s ease,transform .35s ease;}
+.taphint.show{opacity:1;transform:translateX(-50%) translateY(0);}
 /* modal konfirmasi + doa */
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:70;display:none;align-items:center;justify-content:center;padding:20px;}
 .modal.show{display:flex;}
@@ -134,7 +136,7 @@ body.immersive .stage{padding:16px 12px;}
   </div>
 </div>
 <div id="toast" class="toast"></div>
-<div id="tapHint" class="taphint">Ketuk sekali untuk menu · tekan lama ayat untuk terjemah · geser ganti halaman</div>
+<div id="tapHint" class="taphint">👆 Ketuk: menu &nbsp;·&nbsp; ✋ Tekan lama: terjemah &nbsp;·&nbsp; 👉 Geser: ganti halaman</div>
 
 <div id="confirmModal" class="modal"><div class="box">
   <h3 id="cmTitle">Tandai Bacaan</h3>
@@ -363,10 +365,11 @@ function toggleControls(){ document.body.classList.toggle("controls"); }
 function setupGestures(){
   const stage=document.querySelector(".stage");
   stage.addEventListener("contextmenu", e=>e.preventDefault());   // cegah popup copy saat tekan lama
-  let sx=0,sy=0,st=0,moved=false,longFired=false,lpTimer=null,lpWord=null,suppress=false;
+  let sx=0,sy=0,st=0,moved=false,longFired=false,lpTimer=null,lpWord=null,suppress=false,fsAsked=false;
   const LP=500, MOVE=12, SWIPE=55;
   stage.addEventListener("touchstart",e=>{
     if(e.touches.length>1) return;
+    if(!fsAsked){ fsAsked=true; try{ if(!document.fullscreenElement && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(()=>{}); }catch(_){} }
     const t=e.touches[0]; sx=t.clientX; sy=t.clientY; st=Date.now(); moved=false; longFired=false;
     lpWord=e.target.closest(".w"); clearTimeout(lpTimer);
     lpTimer=setTimeout(()=>{ if(!moved && lpWord){ longFired=true; if(navigator.vibrate) navigator.vibrate(25); openAyat(lpWord.dataset.v); } }, LP);
@@ -518,8 +521,8 @@ document.body.classList.add("immersive","controls");
 setupGestures();
 setTimeout(()=>{
   document.body.classList.remove("controls");
-  const h=document.getElementById("tapHint"); if(h){ h.classList.add("show"); setTimeout(()=>h.classList.remove("show"),2800); }
-}, 2000);
+  const h=document.getElementById("tapHint"); if(h){ h.classList.add("show"); setTimeout(()=>h.classList.remove("show"),4200); }
+}, 1600);
 </script>
 </body>
 </html>
