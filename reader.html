@@ -69,7 +69,8 @@ body.immersive .stage{padding:16px 12px;}
 .modal .box .btns .no{background:#2b313a;color:#cfd3d8;}
 .mushaf{width:100%;max-width:520px;background:var(--cream);color:var(--ink);border-radius:8px;
   padding:20px 16px;box-shadow:0 10px 30px rgba(0,0,0,.45);
-  border:1px solid var(--frame);outline:3px double var(--frame);outline-offset:4px;}
+  border:1px solid var(--frame);outline:3px double var(--frame);outline-offset:4px;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
 @font-face{font-family:'surahname';src:url(fonts/surah-name/surah-name-v2.woff2) format('woff2');font-display:block;}
 .surah-head{text-align:center;margin:10px 0 4px;padding:5px 10px;
   border-top:2px solid var(--frame);border-bottom:2px solid var(--frame);background:rgba(176,141,79,.12);
@@ -348,6 +349,7 @@ function toggleControls(){ document.body.classList.toggle("controls"); }
 // Gestur: ketuk sekali → menu · tekan lama (~1,5s) ayat → terjemah · geser → ganti halaman
 function setupGestures(){
   const stage=document.querySelector(".stage");
+  stage.addEventListener("contextmenu", e=>e.preventDefault());   // cegah popup copy saat tekan lama
   let sx=0,sy=0,st=0,moved=false,longFired=false,lpTimer=null,lpWord=null,suppress=false;
   const LP=1500, MOVE=12, SWIPE=55;
   stage.addEventListener("touchstart",e=>{
