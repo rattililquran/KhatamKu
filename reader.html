@@ -199,6 +199,7 @@ async function loadSurah(s){
 async function go(p){
   if(p<1||p>604) return;
   page = p; hideSheet();
+  try{ history.replaceState(null,"","?p="+p); }catch(_){}   // simpan posisi → refresh tetap di halaman ini
   const box = document.getElementById("mushaf");
   box.innerHTML = '<div class="loading">Memuat halaman '+p+'…</div>';
   document.getElementById("jump").value = p;
@@ -369,7 +370,6 @@ function setupGestures(){
   const LP=500, MOVE=12, SWIPE=55;
   stage.addEventListener("touchstart",e=>{
     if(e.touches.length>1) return;
-    if(!fsAsked){ fsAsked=true; try{ if(!document.fullscreenElement && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(()=>{}); }catch(_){} }
     const t=e.touches[0]; sx=t.clientX; sy=t.clientY; st=Date.now(); moved=false; longFired=false;
     lpWord=e.target.closest(".w"); clearTimeout(lpTimer);
     lpTimer=setTimeout(()=>{ if(!moved && lpWord){ longFired=true; if(navigator.vibrate) navigator.vibrate(25); openAyat(lpWord.dataset.v); } }, LP);
@@ -379,6 +379,7 @@ function setupGestures(){
   },{passive:true});
   stage.addEventListener("touchend",e=>{
     clearTimeout(lpTimer); suppress=true; setTimeout(()=>suppress=false,450);
+    if(!fsAsked){ fsAsked=true; try{ if(!document.fullscreenElement && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(()=>{}); }catch(_){} }
     if(longFired) return;
     const t=e.changedTouches[0], dx=t.clientX-sx, dy=t.clientY-sy, dt=Date.now()-st;
     if(Math.abs(dx)>SWIPE && Math.abs(dx)>Math.abs(dy)*1.4){ if(dx>0) go(page+1); else go(page-1); return; }   // RTL: geser kanan = maju
