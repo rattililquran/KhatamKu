@@ -109,6 +109,37 @@ const gscript = {
 
   // ── GURU ──────────────────────────────────────────────────
   getTeacherDashboardData: (_userId) => rpc("app_teacher_dashboard"),
+  teacherSetTarget: (username, dailyTarget) => rpc("app_teacher_set_target", { p_username: username, p_daily: parseInt(dailyTarget) || 0 }),
+  teacherSetUdzur: (username, status, endDate) => rpc("app_teacher_set_udzur", { p_username: username, p_status: status || "", p_end: endDate || null }),
+
+  // ── ADMIN ─────────────────────────────────────────────────
+  adminDashboard: () => rpc("app_admin_dashboard"),
+  adminListUsers: (opts = {}) => rpc("app_admin_list_users", {
+    p_role: opts.role || null,
+    p_halaqah_id: opts.halaqahId || null,
+    p_search: opts.search || null,
+    p_limit: opts.limit || 50,
+    p_offset: opts.offset || 0,
+  }),
+  adminAction: async (action, payload = {}) => {
+    const { data: sessionData } = await sb.auth.getSession();
+    const token = sessionData?.session?.access_token;
+    const { data, error } = await sb.functions.invoke("admin-actions", {
+      body: { action, ...payload },
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (error) {
+      let msg = error.message;
+      try { msg = (await error.context.json()).error || msg; } catch (_) {}
+      throw new Error(msg);
+    }
+    if (data && data.error) throw new Error(data.error);
+    return data;
+  },
+  adminUpdateProfile: (userId, nama, role, halaqahId, noWa) => rpc("app_admin_update_profile", {
+    p_user_id: userId, p_nama: nama, p_role: role, p_halaqah_id: halaqahId || "", p_no_wa: noWa || ""
+  }),
+  adminStudentDetail: (username) => rpc("app_admin_student_detail", { p_username: username }),
 };
 
 // biar kompatibel jika ada kode lama memanggil window.gscript

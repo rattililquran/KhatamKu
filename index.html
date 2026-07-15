@@ -26,6 +26,8 @@
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5/papaparse.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script>
@@ -48,6 +50,33 @@
       background-color: #f8fafc;
       color: #1e293b; 
       position: relative;
+    }
+    .scrollbar-hide {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .admin-tab {
+      flex-shrink: 0;
+      padding: 0.5rem 1rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #64748b;
+      background: white;
+      border: 1px solid #e2e8f0;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .admin-tab.active-tab {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: white;
+      border-color: transparent;
+      box-shadow: 0 4px 12px rgba(245,158,11,0.3);
     }
     
     /* Animated Background Glows for Light Glassmorphism */
@@ -454,9 +483,14 @@
           <span class="text-[10px] text-slate-500 font-medium leading-tight mt-0.5">Mari berjuang membaca pesan cinta Pencipta kita</span>
         </div>
       </div>
-      <button onclick="doLogout()" class="text-slate-500 bg-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-red-50 hover:text-red-500 shadow-sm transition-all border border-slate-100" title="Keluar">
-        <i class="fa-solid fa-right-from-bracket text-sm"></i>
-      </button>
+      <div class="flex items-center gap-2">
+        <button onclick="openModal('modalPassword')" class="text-slate-500 bg-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-sky-50 hover:text-sky-500 shadow-sm transition-all border border-slate-100" title="Ganti Password">
+          <i class="fa-solid fa-key text-sm"></i>
+        </button>
+        <button onclick="doLogout()" class="text-slate-500 bg-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-red-50 hover:text-red-500 shadow-sm transition-all border border-slate-100" title="Keluar">
+          <i class="fa-solid fa-right-from-bracket text-sm"></i>
+        </button>
+      </div>
     </nav>
 
     <!-- CONTENT: STUDENT VIEW -->
@@ -773,24 +807,254 @@
         </div>
       </div>
 
-      <div class="grid grid-cols-2 gap-4 mb-4">
-        <div class="glass-card p-5 rounded-[1.5rem] shadow-sm">
-          <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Murid</p>
-          <p class="text-4xl font-black text-slate-800" id="tcTotalStudents">0</p>
+      <div class="grid grid-cols-3 gap-3 mb-4">
+        <div class="glass-card p-4 rounded-[1.5rem] shadow-sm text-center">
+          <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Total Murid</p>
+          <p class="text-2xl font-black text-slate-800" id="tcTotalStudents">0</p>
         </div>
-        <div class="glass-card p-5 rounded-[1.5rem] shadow-sm">
-          <p class="text-[11px] font-bold text-emerald-500 uppercase tracking-widest mb-1">Setor Hari Ini</p>
-          <p class="text-4xl font-black text-emerald-600" id="tcStudentsDone">0</p>
+        <div class="glass-card p-4 rounded-[1.5rem] shadow-sm text-center">
+          <p class="text-[9px] font-bold text-emerald-500 uppercase tracking-wider mb-1">Setor Hari Ini</p>
+          <p class="text-2xl font-black text-emerald-600" id="tcStudentsDone">0</p>
+        </div>
+        <div class="glass-card p-4 rounded-[1.5rem] shadow-sm text-center">
+          <p class="text-[9px] font-bold text-red-500 uppercase tracking-wider mb-1">Perlu Perhatian</p>
+          <p class="text-2xl font-black text-red-600" id="tcStudentsAtRisk">0</p>
         </div>
       </div>
 
-      <button onclick="generateGroupReport()" class="w-full mb-8 bg-sky-50 hover:bg-sky-100 text-sky-600 border border-sky-200 font-extrabold py-4 rounded-[1.5rem] flex justify-center items-center gap-3 transition-colors shadow-sm">
+      <div class="glass-card p-4 rounded-[1.5rem] shadow-sm mb-4 flex justify-around text-center text-xs font-semibold text-slate-600">
+        <div>
+          <span class="text-slate-400 block text-[9px] font-bold uppercase tracking-wider mb-0.5">Rata-rata Setor</span>
+          <span class="text-slate-700 font-bold" id="tcAvgRead">0.0 hal</span>
+        </div>
+        <div class="border-r border-slate-100 my-1"></div>
+        <div>
+          <span class="text-slate-400 block text-[9px] font-bold uppercase tracking-wider mb-0.5">% Setor</span>
+          <span class="text-slate-700 font-bold" id="tcDonePct">0%</span>
+        </div>
+        <div class="border-r border-slate-100 my-1"></div>
+        <div>
+          <span class="text-slate-400 block text-[9px] font-bold uppercase tracking-wider mb-0.5">Total Khatam</span>
+          <span class="text-slate-700 font-bold text-amber-500" id="tcTotalKhatam">🏆 0</span>
+        </div>
+      </div>
+
+      <!-- Search & Sorting Controls -->
+      <div class="mb-4 flex gap-2">
+        <div class="relative flex-1">
+          <input type="text" id="tcSearchInput" oninput="filterTeacherView()" placeholder="Cari nama murid..." class="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-100 bg-white/80 focus:bg-white text-xs font-medium outline-none focus:ring-2 focus:ring-sky-200 transition-all text-slate-700 shadow-sm" />
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-3.5 text-slate-400 text-xs"></i>
+        </div>
+        <select id="tcSortSelect" onchange="filterTeacherView()" class="px-3 py-2.5 rounded-xl border border-slate-100 bg-white/80 text-xs font-bold text-slate-600 outline-none cursor-pointer shadow-sm focus:ring-2 focus:ring-sky-200 transition-all">
+          <option value="perhatian">Urut: Perlu Perhatian</option>
+          <option value="nama">Urut: Nama (A-Z)</option>
+          <option value="halaman">Urut: Halaman</option>
+          <option value="belumSetor">Urut: Belum Setor</option>
+        </select>
+      </div>
+
+      <!-- Quick Filter Chips -->
+      <div class="flex gap-2 overflow-x-auto pb-3 mb-4 scrollbar-hide text-xs" id="tcFilterChips">
+        <button onclick="changeTeacherFilter('Semua')" id="chip-Semua" class="shrink-0 px-3 py-1.5 rounded-full font-bold bg-sky-500 text-white shadow-sm transition-all">Semua</button>
+        <button onclick="changeTeacherFilter('Sudah')" id="chip-Sudah" class="shrink-0 px-3 py-1.5 rounded-full font-bold bg-white text-slate-500 border border-slate-100 hover:bg-slate-50 transition-all">Sudah Setor</button>
+        <button onclick="changeTeacherFilter('Belum')" id="chip-Belum" class="shrink-0 px-3 py-1.5 rounded-full font-bold bg-white text-slate-500 border border-slate-100 hover:bg-slate-50 transition-all">Belum Setor</button>
+        <button onclick="changeTeacherFilter('AtRisk')" id="chip-AtRisk" class="shrink-0 px-3 py-1.5 rounded-full font-bold bg-white text-slate-500 border border-slate-100 hover:bg-slate-50 transition-all">At-Risk ⚠️</button>
+        <button onclick="changeTeacherFilter('Udzur')" id="chip-Udzur" class="shrink-0 px-3 py-1.5 rounded-full font-bold bg-white text-slate-500 border border-slate-100 hover:bg-slate-50 transition-all">Udzur 🌸</button>
+      </div>
+
+      <button onclick="generateGroupReport()" class="w-full mb-6 bg-sky-50 hover:bg-sky-100 text-sky-600 border border-sky-200 font-extrabold py-4 rounded-[1.5rem] flex justify-center items-center gap-3 transition-colors shadow-sm">
         <i class="fa-solid fa-copy text-lg"></i> SALIN REKAP HARI INI
       </button>
 
-      <h3 class="font-bold text-[12px] text-slate-500 mb-4 tracking-widest uppercase">Daftar Murid</h3>
       <div class="space-y-4 mb-8" id="tcStudentList">
         <!-- Injected via JS -->
+      </div>
+    </main>
+
+    <!-- CONTENT: ADMIN VIEW -->
+    <main id="adminView" class="max-w-2xl mx-auto px-4 hidden pt-4 pb-10 relative z-10">
+      <!-- Tab Bar Admin -->
+      <div class="flex gap-1 overflow-x-auto pb-2 mb-5 scrollbar-hide" id="adminTabBar">
+        <button onclick="adminSwitchTab('dashboard')" class="admin-tab active-tab" data-tab="dashboard">
+          <i class="fa-solid fa-chart-pie mr-1"></i> Dashboard
+        </button>
+        <button onclick="adminSwitchTab('akun')" class="admin-tab" data-tab="akun">
+          <i class="fa-solid fa-users mr-1"></i> Akun
+        </button>
+        <button onclick="adminSwitchTab('halaqah')" class="admin-tab" data-tab="halaqah">
+          <i class="fa-solid fa-school mr-1"></i> Halaqah
+        </button>
+        <button onclick="adminSwitchTab('analytics')" class="admin-tab" data-tab="analytics">
+          <i class="fa-solid fa-chart-line mr-1"></i> Analitik
+        </button>
+        <button onclick="adminSwitchTab('notif')" class="admin-tab" data-tab="notif">
+          <i class="fa-solid fa-bullhorn mr-1"></i> Notifikasi
+        </button>
+        <button onclick="adminSwitchTab('settings')" class="admin-tab" data-tab="settings">
+          <i class="fa-solid fa-gear mr-1"></i> Pengaturan
+        </button>
+      </div>
+
+      <!-- Panel: Dashboard -->
+      <div id="adminPanelDashboard" class="admin-panel">
+        <!-- KPI Cards 2x2 -->
+        <div class="grid grid-cols-2 gap-3 mb-5">
+          <div class="rounded-2xl p-4 text-white shadow-lg" style="background:linear-gradient(135deg,#f59e0b,#d97706)">
+            <p class="text-xs font-bold opacity-75 uppercase tracking-wider">Total Murid</p>
+            <p class="text-3xl font-black mt-1" id="adTotalMurid">—</p>
+          </div>
+          <div class="rounded-2xl p-4 text-white shadow-lg" style="background:linear-gradient(135deg,#10b981,#059669)">
+            <p class="text-xs font-bold opacity-75 uppercase tracking-wider">Setor Hari Ini</p>
+            <p class="text-3xl font-black mt-1" id="adSetorHariIni">—</p>
+            <p class="text-[10px] opacity-75 font-semibold" id="adPctSetor"></p>
+          </div>
+          <div class="rounded-2xl p-4 text-white shadow-lg" style="background:linear-gradient(135deg,#ef4444,#dc2626)">
+            <p class="text-xs font-bold opacity-75 uppercase tracking-wider">Perlu Perhatian</p>
+            <p class="text-3xl font-black mt-1" id="adAtRisk">—</p>
+          </div>
+          <div class="rounded-2xl p-4 text-white shadow-lg" style="background:linear-gradient(135deg,#8b5cf6,#7c3aed)">
+            <p class="text-xs font-bold opacity-75 uppercase tracking-wider">Khatam Bulan Ini</p>
+            <p class="text-3xl font-black mt-1" id="adKhatamBulan">—</p>
+          </div>
+        </div>
+
+        <!-- Grafik 30 hari -->
+        <div class="bg-white rounded-2xl p-4 shadow-sm mb-4 border border-slate-100">
+          <p class="text-xs font-black text-slate-500 uppercase tracking-widest mb-3">📈 Aktivitas 30 Hari Terakhir</p>
+          <canvas id="adChartActivity" height="120"></canvas>
+        </div>
+
+        <!-- At-Risk List -->
+        <div class="bg-white rounded-2xl p-4 shadow-sm mb-4 border border-red-50">
+          <p class="text-xs font-black text-red-500 uppercase tracking-widest mb-3">❤️ Butuh Perhatian</p>
+          <div id="adAtRiskList" class="space-y-2"></div>
+        </div>
+
+        <!-- Leaderboard -->
+        <div class="bg-white rounded-2xl p-4 shadow-sm mb-4 border border-amber-50">
+          <p class="text-xs font-black text-amber-500 uppercase tracking-widest mb-3">🏆 Leaderboard Khatam</p>
+          <div id="adLeaderboard" class="space-y-2"></div>
+        </div>
+
+        <!-- Feed Terbaru -->
+        <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+          <p class="text-xs font-black text-slate-500 uppercase tracking-widest mb-3">🕐 Aktivitas Terbaru</p>
+          <div id="adFeedList" class="space-y-2 text-sm text-slate-600"></div>
+        </div>
+      </div>
+
+      <!-- Panel: Akun -->
+      <div id="adminPanelAkun" class="admin-panel hidden">
+        <!-- Controls -->
+        <div class="flex flex-col gap-3 mb-5">
+          <div class="flex gap-2">
+            <div class="relative flex-1">
+              <input
+                type="text"
+                id="adUserSearch"
+                placeholder="Cari nama atau username..."
+                oninput="adminSearchUsersDebounced()"
+                class="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200 bg-slate-50 focus:bg-white text-xs font-bold outline-none text-slate-700 focus:ring-2 focus:ring-amber-200 transition-all shadow-inner"
+              />
+              <i class="fa-solid fa-magnifying-glass absolute left-4 top-4 text-slate-400 text-xs"></i>
+            </div>
+            <select
+              id="adUserRoleFilter"
+              onchange="adminLoadUsers()"
+              class="text-xs font-black text-amber-600 bg-amber-50 border border-amber-100 rounded-2xl px-4 py-3 outline-none cursor-pointer shadow-sm uppercase tracking-wider"
+            >
+              <option value="">Semua Role</option>
+              <option value="murid">Murid</option>
+              <option value="guru">Guru</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <div class="flex gap-2">
+            <button
+              onclick="adminOpenUserModal()"
+              class="flex-1 py-3 bg-amber-500 hover:bg-amber-600 text-white font-extrabold rounded-2xl text-[11px] tracking-wider uppercase shadow-md flex items-center justify-center gap-2 transition-all"
+            >
+              <i class="fa-solid fa-user-plus"></i> Tambah Akun
+            </button>
+            <button
+              onclick="adminOpenImportModal()"
+              class="flex-1 py-3 bg-slate-800 hover:bg-slate-900 text-white font-extrabold rounded-2xl text-[11px] tracking-wider uppercase shadow-md flex items-center justify-center gap-2 transition-all"
+            >
+              <i class="fa-solid fa-file-import"></i> Import CSV
+            </button>
+          </div>
+        </div>
+
+        <!-- Table Container -->
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden mb-4">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-50 border-b border-slate-100 font-extrabold text-slate-500 uppercase tracking-wider">
+                  <th class="p-4">Nama / Username</th>
+                  <th class="p-4">Role</th>
+                  <th class="p-4">Halaqah</th>
+                  <th class="p-4">No. WA</th>
+                  <th class="p-4 text-center">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="adUserTableBody" class="divide-y divide-slate-100 font-semibold text-slate-700">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Pagination Footer -->
+        <div class="flex justify-between items-center px-2 text-xs">
+          <button
+            id="adUserPrevBtn"
+            onclick="adminUsersPrevPage()"
+            class="px-4 py-2 border border-slate-200 hover:bg-slate-50 rounded-xl font-extrabold transition-all"
+          >Prev</button>
+          <span id="adUserInfoText" class="text-slate-400 font-bold">Menampilkan 0-0 dari 0</span>
+          <button
+            id="adUserNextBtn"
+            onclick="adminUsersNextPage()"
+            class="px-4 py-2 border border-slate-200 hover:bg-slate-50 rounded-xl font-extrabold transition-all"
+          >Next</button>
+        </div>
+      </div>
+
+      <!-- Panel: Halaqah -->
+      <div id="adminPanelHalaqah" class="admin-panel hidden">
+        <div class="text-center py-20 text-slate-400">
+          <i class="fa-solid fa-school text-4xl mb-3"></i>
+          <p class="font-bold">Manajemen Halaqah</p>
+          <p class="text-sm">Segera hadir di Tahap 3</p>
+        </div>
+      </div>
+
+      <!-- Panel: Analitik -->
+      <div id="adminPanelAnalytics" class="admin-panel hidden">
+        <div class="text-center py-20 text-slate-400">
+          <i class="fa-solid fa-chart-line text-4xl mb-3"></i>
+          <p class="font-bold">Analitik Program</p>
+          <p class="text-sm">Segera hadir di Tahap 4</p>
+        </div>
+      </div>
+
+      <!-- Panel: Notifikasi -->
+      <div id="adminPanelNotif" class="admin-panel hidden">
+        <div class="text-center py-20 text-slate-400">
+          <i class="fa-solid fa-bullhorn text-4xl mb-3"></i>
+          <p class="font-bold">Notifikasi & WA Blast</p>
+          <p class="text-sm">Segera hadir di Tahap 4</p>
+        </div>
+      </div>
+
+      <!-- Panel: Pengaturan -->
+      <div id="adminPanelSettings" class="admin-panel hidden">
+        <div class="text-center py-20 text-slate-400">
+          <i class="fa-solid fa-gear text-4xl mb-3"></i>
+          <p class="font-bold">Pengaturan & Audit Log</p>
+          <p class="text-sm">Segera hadir di Tahap 5</p>
+        </div>
       </div>
     </main>
 
@@ -1091,6 +1355,296 @@
       </div>
       <div class="flex-1 overflow-y-auto pr-2 space-y-3" id="histList">
         <!-- Injected via JS -->
+      </div>
+
+      <!-- Teacher actions panel inside Student History Modal -->
+      <div class="mt-4 pt-4 border-t border-slate-100 shrink-0">
+        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3">Pengaturan Murid (Guru)</p>
+        <div class="space-y-3">
+          <div class="flex gap-2">
+            <div class="flex-1">
+              <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Target (Hal/Hari)</label>
+              <input type="number" id="tcStudentTargetInput" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white text-xs font-bold outline-none text-slate-700 focus:ring-2 focus:ring-sky-200 transition-all" min="0" max="604" />
+            </div>
+            <div class="flex-1">
+              <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Status Udzur</label>
+              <select id="tcStudentUdzurSelect" onchange="toggleUdzurDateInput()" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white text-xs font-bold outline-none text-slate-700 focus:ring-2 focus:ring-sky-200 transition-all">
+                <option value="">- Aktif (Tidak Udzur) -</option>
+                <option value="Haid">Haid 🌸</option>
+                <option value="Sakit">Sakit 🤒</option>
+                <option value="Safar">Safar ✈️</option>
+                <option value="Lainnya">Lainnya ⏳</option>
+              </select>
+            </div>
+          </div>
+          <div id="tcStudentUdzurEndDateDiv" class="hidden">
+            <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Tanggal Berakhir Udzur</label>
+            <input type="date" id="tcStudentUdzurEndInput" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white text-xs font-semibold outline-none text-slate-700 focus:ring-2 focus:ring-sky-200 transition-all" />
+          </div>
+          <button id="tcSaveStudentSettingsBtn" onclick="saveStudentSettings()" class="w-full py-3 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-600 border border-sky-100 font-extrabold text-xs tracking-wider transition-colors shadow-sm flex items-center justify-center gap-2">
+            <i class="fa-solid fa-floppy-disk"></i> SIMPAN PERUBAHAN
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Ganti Password -->
+  <div id="modalPassword" class="fixed inset-0 z-50 modal-overlay hidden flex items-end justify-center sm:items-center">
+    <div class="modal-content w-full max-w-md rounded-t-[2.5rem] sm:rounded-3xl p-8 transform transition-transform translate-y-full text-slate-800" id="modalPasswordContent">
+      <div class="flex justify-between items-center mb-5 border-b border-slate-100 pb-5">
+        <h3 class="text-2xl font-black tracking-tight">Ganti Password</h3>
+        <button onclick="closeModal('modalPassword')" class="text-slate-400 bg-slate-100 hover:bg-slate-200 w-10 h-10 rounded-full flex items-center justify-center transition-colors shadow-inner"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <form id="passwordForm" onsubmit="handlePasswordChange(event)" class="space-y-5">
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Password Baru</label>
+          <input
+            type="password"
+            id="newPasswordInput"
+            placeholder="Minimal 6 karakter"
+            minlength="6"
+            required
+            class="w-full px-4 py-3.5 rounded-2xl border border-slate-200 bg-slate-50 focus:bg-white text-sm font-bold outline-none text-slate-700 focus:ring-2 focus:ring-sky-200 transition-all shadow-inner"
+          />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Konfirmasi Password Baru</label>
+          <input
+            type="password"
+            id="confirmPasswordInput"
+            placeholder="Ulangi password baru"
+            minlength="6"
+            required
+            class="w-full px-4 py-3.5 rounded-2xl border border-slate-200 bg-slate-50 focus:bg-white text-sm font-bold outline-none text-slate-700 focus:ring-2 focus:ring-sky-200 transition-all shadow-inner"
+          />
+        </div>
+        
+        <button
+          type="submit"
+          class="w-full py-4 bg-sky-500 hover:bg-sky-600 text-white font-extrabold rounded-2xl tracking-widest text-[13px] shadow-lg hover:shadow-sky-200 transition-all"
+        >
+          <i class="fa-solid fa-check mr-2"></i>SIMPAN PASSWORD
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Admin - Tambah/Edit Akun -->
+  <div id="adminModalUser" class="fixed inset-0 z-50 modal-overlay hidden flex items-end justify-center sm:items-center">
+    <div class="modal-content w-full max-w-md rounded-t-[2.5rem] sm:rounded-3xl p-8 transform transition-transform translate-y-full text-slate-800" id="adminModalUserContent">
+      <div class="flex justify-between items-center mb-5 border-b border-slate-100 pb-5">
+        <h3 class="text-xl font-black tracking-tight" id="adUserModalTitle">Tambah Akun Baru</h3>
+        <button onclick="closeModal('adminModalUser')" class="text-slate-400 bg-slate-100 hover:bg-slate-200 w-10 h-10 rounded-full flex items-center justify-center transition-colors shadow-inner"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <form id="adUserForm" onsubmit="adminSaveUser(event)" class="space-y-4 max-h-[60vh] overflow-y-auto pr-1 scrollbar-hide">
+        <input type="hidden" id="adUserIdInput" />
+        
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Nama Lengkap</label>
+          <input
+            type="text"
+            id="adNameInput"
+            required
+            placeholder="Masukkan nama lengkap"
+            class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white text-xs font-bold outline-none text-slate-700 focus:ring-2 focus:ring-amber-200 transition-all shadow-inner"
+          />
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Username / NIS</label>
+          <input
+            type="text"
+            id="adUsernameInput"
+            required
+            pattern="^[a-zA-Z0-9_]+$"
+            placeholder="Huruf, angka, atau underscore"
+            class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white text-xs font-bold outline-none text-slate-700 focus:ring-2 focus:ring-amber-200 transition-all shadow-inner"
+          />
+        </div>
+
+        <div id="adPasswordContainer">
+          <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Password</label>
+          <input
+            type="password"
+            id="adPasswordInput"
+            minlength="4"
+            placeholder="Minimal 4 karakter"
+            class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white text-xs font-bold outline-none text-slate-700 focus:ring-2 focus:ring-amber-200 transition-all shadow-inner"
+          />
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Role / Peran</label>
+          <select
+            id="adRoleInput"
+            required
+            onchange="adminOnUserModalRoleChange()"
+            class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white text-xs font-bold outline-none text-slate-700 focus:ring-2 focus:ring-amber-200 transition-all cursor-pointer"
+          >
+            <option value="murid">Murid</option>
+            <option value="guru">Guru</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+
+        <div id="adHalaqahContainer">
+          <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Halaqah (Opsional)</label>
+          <select
+            id="adHalaqahInput"
+            class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white text-xs font-bold outline-none text-slate-700 focus:ring-2 focus:ring-amber-200 transition-all cursor-pointer"
+          >
+            <option value="">Tanpa Halaqah (Publik)</option>
+            <!-- Diisi dinamis -->
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">No. WhatsApp (Opsional)</label>
+          <input
+            type="tel"
+            id="adWaInput"
+            placeholder="Contoh: 628123456789"
+            class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white text-xs font-bold outline-none text-slate-700 focus:ring-2 focus:ring-amber-200 transition-all shadow-inner"
+          />
+        </div>
+
+        <button
+          type="submit"
+          class="w-full py-3.5 bg-amber-500 hover:bg-amber-600 text-white font-extrabold rounded-2xl tracking-wider text-xs uppercase shadow-md flex justify-center items-center gap-2 transition-all mt-4"
+        >
+          <i class="fa-solid fa-floppy-disk"></i> Simpan Akun
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Admin - Reset Password -->
+  <div id="adminModalResetPW" class="fixed inset-0 z-50 modal-overlay hidden flex items-end justify-center sm:items-center">
+    <div class="modal-content w-full max-w-sm rounded-t-[2.5rem] sm:rounded-3xl p-8 transform transition-transform translate-y-full text-slate-800" id="adminModalResetPWContent">
+      <div class="flex justify-between items-center mb-5 border-b border-slate-100 pb-5">
+        <h3 class="text-lg font-black tracking-tight text-slate-800">Reset Password User</h3>
+        <button onclick="closeModal('adminModalResetPW')" class="text-slate-400 bg-slate-100 hover:bg-slate-200 w-10 h-10 rounded-full flex items-center justify-center transition-colors shadow-inner"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <p class="text-xs text-slate-500 font-medium mb-4" id="adResetPWInfo">Masukkan password baru untuk user terkait.</p>
+
+      <form id="adResetPWForm" onsubmit="adminSubmitResetPassword(event)" class="space-y-4">
+        <input type="hidden" id="adResetUserIdInput" />
+        
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Password Baru</label>
+          <input
+            type="password"
+            id="adResetPasswordInput"
+            required
+            minlength="4"
+            placeholder="Minimal 4 karakter"
+            class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white text-xs font-bold outline-none text-slate-700 focus:ring-2 focus:ring-amber-200 transition-all shadow-inner"
+          />
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Konfirmasi Password Baru</label>
+          <input
+            type="password"
+            id="adResetPasswordConfirmInput"
+            required
+            minlength="4"
+            placeholder="Ulangi password baru"
+            class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white text-xs font-bold outline-none text-slate-700 focus:ring-2 focus:ring-amber-200 transition-all shadow-inner"
+          />
+        </div>
+
+        <button
+          type="submit"
+          class="w-full py-3.5 bg-amber-500 hover:bg-amber-600 text-white font-extrabold rounded-2xl tracking-wider text-xs uppercase shadow-md flex justify-center items-center gap-2 transition-all mt-4"
+        >
+          <i class="fa-solid fa-key"></i> Simpan Password
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Admin - Import CSV -->
+  <div id="adminModalImport" class="fixed inset-0 z-50 modal-overlay hidden flex items-end justify-center sm:items-center">
+    <div class="modal-content w-full max-w-md rounded-t-[2.5rem] sm:rounded-3xl p-8 transform transition-transform translate-y-full text-slate-800" id="adminModalImportContent">
+      <div class="flex justify-between items-center mb-5 border-b border-slate-100 pb-5">
+        <h3 class="text-lg font-black tracking-tight text-slate-800">Import Akun Massal (CSV)</h3>
+        <button onclick="closeModal('adminModalImport')" class="text-slate-400 bg-slate-100 hover:bg-slate-200 w-10 h-10 rounded-full flex items-center justify-center transition-colors shadow-inner"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="space-y-4">
+        <!-- Drag Drop Zone -->
+        <div
+          id="adCsvDragDropZone"
+          onclick="document.getElementById('adCsvFileInput').click()"
+          class="border-2 border-dashed border-slate-200 hover:border-amber-400 bg-slate-50 hover:bg-amber-50/20 rounded-2xl p-6 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-2"
+        >
+          <i class="fa-solid fa-cloud-arrow-up text-3xl text-slate-400"></i>
+          <span class="text-xs font-extrabold text-slate-700">Pilih File CSV atau Drop di sini</span>
+          <span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Format: ID_pengguna, Password, Nama_Lengkap, Role, ID_Halaqah, No_WhatsApp</span>
+          <input type="file" id="adCsvFileInput" accept=".csv" onchange="adminOnCsvFileSelected(event)" class="hidden" />
+        </div>
+
+        <!-- Preview Area -->
+        <div id="adCsvPreviewContainer" class="hidden space-y-3">
+          <p class="text-xs font-black text-slate-500 uppercase tracking-widest" id="adCsvStatusText">Preview Data (5 Baris Pertama):</p>
+          <div class="overflow-x-auto border border-slate-100 rounded-xl">
+            <table class="w-full text-left border-collapse text-[10px]">
+              <thead>
+                <tr class="bg-slate-50 border-b border-slate-100 font-extrabold text-slate-400 uppercase tracking-wider">
+                  <th class="p-2">ID_pengguna</th>
+                  <th class="p-2">Nama_Lengkap</th>
+                  <th class="p-2">Role</th>
+                  <th class="p-2">Halaqah</th>
+                </tr>
+              </thead>
+              <tbody id="adCsvPreviewTableBody" class="divide-y divide-slate-100 font-bold text-slate-600">
+                <!-- Preview injected via JS -->
+              </tbody>
+            </table>
+          </div>
+          <button
+            id="adCsvImportSubmitBtn"
+            onclick="adminSubmitCsvImport()"
+            class="w-full py-3.5 bg-amber-500 hover:bg-amber-600 text-white font-extrabold rounded-2xl tracking-wider text-xs uppercase shadow-md flex justify-center items-center gap-2 transition-all"
+          >
+            <i class="fa-solid fa-play"></i> Mulai Import Sekarang
+          </button>
+        </div>
+
+        <!-- Progress Container -->
+        <div id="adCsvProgressContainer" class="hidden space-y-2">
+          <div class="flex justify-between items-center text-xs font-bold">
+            <span class="text-slate-600 animate-pulse">Sedang mengimpor akun...</span>
+            <span class="text-amber-600" id="adCsvProgressText">0%</span>
+          </div>
+          <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden border border-slate-200/50">
+            <div class="h-full bg-gradient-to-r from-amber-400 to-amber-600 transition-all duration-300" id="adCsvProgressBar" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <!-- Report Container -->
+        <div id="adCsvReportContainer" class="hidden p-4 rounded-2xl bg-slate-50 border border-slate-100 text-xs space-y-2">
+          <p class="font-black text-slate-700 uppercase tracking-widest text-[10px]">Ringkasan Hasil Import:</p>
+          <div class="grid grid-cols-3 gap-2 text-center font-bold">
+            <div class="p-2 rounded-xl bg-emerald-50 text-emerald-600">
+              <span class="block text-lg font-black" id="adCsvReportSuccess">0</span> Sukses
+            </div>
+            <div class="p-2 rounded-xl bg-amber-50 text-amber-600">
+              <span class="block text-lg font-black" id="adCsvReportSkipped">0</span> Skip
+            </div>
+            <div class="p-2 rounded-xl bg-red-50 text-red-600">
+              <span class="block text-lg font-black" id="adCsvReportFailed">0</span> Gagal
+            </div>
+          </div>
+          <div id="adCsvReportErrors" class="max-h-24 overflow-y-auto text-[10px] text-red-500 font-semibold divide-y divide-slate-100/50 border-t border-slate-200/50 pt-2">
+            <!-- Errors list -->
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -1979,6 +2533,31 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       setTimeout(() => { document.getElementById(id).classList.add('hidden'); }, 300);
     }
 
+    async function handlePasswordChange(e) {
+      e.preventDefault();
+      const newPwd = document.getElementById('newPasswordInput').value;
+      const confPwd = document.getElementById('confirmPasswordInput').value;
+      
+      if (newPwd !== confPwd) {
+        showToast("⚠️ Konfirmasi password tidak cocok!", "error");
+        return;
+      }
+      
+      showLoading("MEMPERBARUI PASSWORD...");
+      try {
+        const { error } = await sb.auth.updateUser({ password: newPwd });
+        if (error) throw error;
+        
+        showToast("✅ Password berhasil diperbarui!", "success");
+        document.getElementById('passwordForm').reset();
+        closeModal('modalPassword');
+      } catch (err) {
+        customAlert('Gagal', err.message || err, 'error');
+      } finally {
+        hideLoading();
+      }
+    }
+
     function showLoading(msg) {
       document.getElementById('loadingText').textContent = msg || "Memuat...";
       document.getElementById('loadingOverlay').style.display = 'flex';
@@ -2141,6 +2720,7 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       if (currentUser.role === 'murid') {
         document.getElementById('studentView').classList.remove('hidden');
         document.getElementById('teacherView').classList.add('hidden');
+        document.getElementById('adminView').classList.add('hidden');
         document.getElementById('bottomNav').classList.remove('hidden');
         initPullToRefresh();
         loadTentangData(); // Muat konten halaman Tentang di background
@@ -2160,9 +2740,21 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
           showSkeleton();
           loadStudentData();
         }
+      } else if (currentUser.role === 'admin') {
+        document.getElementById('studentView').classList.add('hidden');
+        document.getElementById('teacherView').classList.add('hidden');
+        document.getElementById('adminView').classList.remove('hidden');
+        document.getElementById('bottomNav').classList.add('hidden');
+        
+        document.querySelector('nav').style.background = 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(245,158,11,0.08))';
+        document.querySelector('nav').style.borderBottom = '1px solid rgba(245,158,11,0.2)';
+        document.getElementById('navUserName').textContent = `⚙️ Admin: ${currentUser.name.split(' ')[0]}`;
+        
+        loadAdminDashboard();
       } else {
         document.getElementById('studentView').classList.add('hidden');
         document.getElementById('teacherView').classList.remove('hidden');
+        document.getElementById('adminView').classList.add('hidden');
         document.getElementById('bottomNav').classList.add('hidden');
         loadTeacherData();
       }
@@ -2193,6 +2785,7 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       if (currentUser.role === 'murid') {
         document.getElementById('studentView').classList.remove('hidden');
         document.getElementById('teacherView').classList.add('hidden');
+        document.getElementById('adminView').classList.add('hidden');
         document.getElementById('bottomNav').classList.remove('hidden');
         initPullToRefresh();
         loadTentangData(); // Muat konten halaman Tentang di background
@@ -2214,9 +2807,22 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
           // Fallback: muat data secara terpisah
           loadStudentData();
         }
+      } else if (currentUser.role === 'admin') {
+        document.getElementById('studentView').classList.add('hidden');
+        document.getElementById('teacherView').classList.add('hidden');
+        document.getElementById('adminView').classList.remove('hidden');
+        document.getElementById('bottomNav').classList.add('hidden');
+        
+        document.querySelector('nav').style.background = 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(245,158,11,0.08))';
+        document.querySelector('nav').style.borderBottom = '1px solid rgba(245,158,11,0.2)';
+        document.getElementById('navUserName').textContent = `⚙️ Admin: ${currentUser.name.split(' ')[0]}`;
+        
+        adminDataCache = data;
+        loadAdminDashboard(data);
       } else {
         document.getElementById('studentView').classList.add('hidden');
         document.getElementById('teacherView').classList.remove('hidden');
+        document.getElementById('adminView').classList.add('hidden');
         document.getElementById('bottomNav').classList.add('hidden');
         
         teacherDataCache = data;
@@ -2269,6 +2875,390 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
         .catch(() => {});
     }
 
+    let adminDataCache = null;
+    let adActivityChart = null;
+
+    function adminSwitchTab(tab) {
+      document.querySelectorAll('.admin-tab').forEach(btn => {
+        btn.classList.toggle('active-tab', btn.dataset.tab === tab);
+      });
+      document.querySelectorAll('.admin-panel').forEach(panel => panel.classList.add('hidden'));
+      document.getElementById('adminPanel' + tab.charAt(0).toUpperCase() + tab.slice(1))
+        ?.classList.remove('hidden');
+    }
+
+    function loadAdminDashboard(data) {
+      if (!data) {
+        showLoading("MEMUAT DASHBOARD ADMIN...");
+        gscript.adminDashboard()
+          .then(d => {
+            renderAdminDashboard(d);
+            hideLoading();
+          })
+          .catch(onError);
+        return;
+      }
+      renderAdminDashboard(data);
+    }
+
+    function renderAdminDashboard(d) {
+      document.getElementById('adTotalMurid').textContent = d.total_murid ?? '—';
+      document.getElementById('adSetorHariIni').textContent = d.setor_hari_ini ?? '—';
+      document.getElementById('adPctSetor').textContent =
+        d.total_murid ? Math.round((d.setor_hari_ini / d.total_murid) * 100) + '% dari total murid' : '';
+      document.getElementById('adAtRisk').textContent = d.at_risk_count ?? '—';
+      document.getElementById('adKhatamBulan').textContent = d.khatam_bulan_ini ?? '—';
+
+      // At-Risk List
+      const atRiskEl = document.getElementById('adAtRiskList');
+      atRiskEl.innerHTML = (d.at_risk_list || []).map(u => `
+        <div class="flex items-center justify-between p-2 rounded-xl bg-red-50">
+          <div>
+            <p class="text-sm font-bold text-slate-700">${u.nama}</p>
+            <p class="text-[11px] text-slate-400">${u.halaqah || '—'} · ${u.hari_absen === 999 ? 'Belum pernah setor' : u.hari_absen + ' hari absen'}</p>
+          </div>
+          ${u.no_wa ? `<a href="https://wa.me/${u.no_wa}?text=Assalamualaikum+${encodeURIComponent(u.nama)}" target="_blank"
+             class="text-emerald-500 bg-emerald-50 rounded-full w-8 h-8 flex items-center justify-center text-sm">
+            <i class="fa-brands fa-whatsapp"></i></a>` : ''}
+        </div>
+      `).join('') || '<p class="text-sm text-slate-400 text-center py-4">Semua murid aktif 🎉</p>';
+
+      // Leaderboard
+      const lbEl = document.getElementById('adLeaderboard');
+      lbEl.innerHTML = (d.leaderboard_khatam || []).map((u, i) => `
+        <div class="flex items-center gap-3 p-2 rounded-xl ${i < 3 ? 'bg-amber-50' : 'bg-slate-50'}">
+          <span class="text-lg font-black ${i === 0 ? 'text-amber-400' : i === 1 ? 'text-slate-400' : i === 2 ? 'text-amber-600' : 'text-slate-300'}">${i + 1}</span>
+          <div class="flex-1">
+            <p class="text-sm font-bold text-slate-700">${u.nama}</p>
+            <p class="text-[11px] text-slate-400">${u.halaqah || '—'}</p>
+          </div>
+          <span class="text-sm font-black text-amber-500">🏆 ×${u.total_khatam}</span>
+        </div>
+      `).join('') || '<p class="text-sm text-slate-400 text-center py-4">Belum ada khatam tercatat.</p>';
+
+      // Feed
+      const feedEl = document.getElementById('adFeedList');
+      feedEl.innerHTML = (d.feed_terbaru || []).map(f => {
+        const t = new Date(f.waktu);
+        const jam = t.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+        return `<div class="flex gap-2 text-xs py-1 border-b border-slate-50 last:border-0">
+          <span class="text-slate-300 font-mono">${jam}</span>
+          <span class="text-slate-600"><b>${f.nama}</b> setor <b>${f.halaman} hal</b></span>
+          <span class="text-slate-400 ml-auto">${f.halaqah || ''}</span>
+        </div>`;
+      }).join('') || '<p class="text-sm text-slate-400 text-center py-4">Belum ada aktivitas hari ini.</p>';
+
+      // Chart (lazy init)
+      if (typeof Chart !== 'undefined') {
+        const ctx = document.getElementById('adChartActivity').getContext('2d');
+        if (adActivityChart) adActivityChart.destroy();
+        adActivityChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: ['30hr lalu', '', '', '', '25', '', '', '', '', '20', '', '', '', '', '15', '', '', '', '', '10', '', '', '', '', '5', '', '', '', '', 'Hari Ini'],
+            datasets: [{ label: 'Halaman Dibaca', data: Array(30).fill(0), borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.1)', fill: true, tension: 0.4, pointRadius: 0 }]
+          },
+          options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true }, x: { ticks: { maxTicksLimit: 5 } } } }
+        });
+      }
+    }
+
+    // ── ADMIN: Tab Akun — JS ────────────────────────────────
+    let adUserPage = 0;
+    const AD_PAGE_SIZE = 50;
+    let adUserTotal = 0;
+    let adSearchTimer = null;
+    let adCsvParsedData = null;
+    let adHalaqahCache = [];
+
+    function adminSearchUsersDebounced() {
+      clearTimeout(adSearchTimer);
+      adSearchTimer = setTimeout(() => { adUserPage = 0; adminLoadUsers(); }, 300);
+    }
+
+    function adminLoadUsers() {
+      const role = document.getElementById('adUserRoleFilter').value || null;
+      const search = document.getElementById('adUserSearch').value.trim() || null;
+      gscript.adminListUsers({ role, search, limit: AD_PAGE_SIZE, offset: adUserPage * AD_PAGE_SIZE })
+        .then(d => {
+          adUserTotal = d.total;
+          renderAdminUserTable(d.users || []);
+          updateAdminUserPagination();
+        })
+        .catch(onError);
+    }
+
+    function renderAdminUserTable(users) {
+      const tbody = document.getElementById('adUserTableBody');
+      if (!users.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-400 font-bold">Tidak ada data ditemukan.</td></tr>';
+        return;
+      }
+      const roleBadge = r => {
+        if (r === 'guru') return '<span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase">Guru</span>';
+        if (r === 'admin') return '<span class="px-2 py-0.5 rounded-full bg-red-50 text-red-600 text-[9px] font-black uppercase">Admin</span>';
+        return '<span class="px-2 py-0.5 rounded-full bg-sky-50 text-sky-600 text-[9px] font-black uppercase">Murid</span>';
+      };
+      tbody.innerHTML = users.map(u => `
+        <tr class="hover:bg-slate-50/50 transition-colors">
+          <td class="p-3">
+            <p class="font-bold text-slate-800">${u.nama_lengkap}</p>
+            <p class="text-[10px] text-slate-400 font-semibold">${u.username}</p>
+          </td>
+          <td class="p-3">${roleBadge(u.role)}</td>
+          <td class="p-3 text-slate-500">${u.id_halaqah || '—'}</td>
+          <td class="p-3 text-slate-500">${u.no_wa || '—'}</td>
+          <td class="p-3 text-center">
+            <div class="flex gap-1 justify-center">
+              <button onclick='adminEditUser(${JSON.stringify(u).replace(/'/g,"&#39;")})' title="Edit" class="w-8 h-8 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-500 flex items-center justify-center transition-colors"><i class="fa-solid fa-pen-to-square text-[11px]"></i></button>
+              <button onclick="adminOpenResetPW('${u.user_id}','${u.nama_lengkap}')" title="Reset Password" class="w-8 h-8 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-500 flex items-center justify-center transition-colors"><i class="fa-solid fa-key text-[11px]"></i></button>
+              <button onclick="adminDeleteUser('${u.user_id}','${u.nama_lengkap}')" title="Hapus" class="w-8 h-8 rounded-lg bg-red-50 hover:bg-red-100 text-red-500 flex items-center justify-center transition-colors"><i class="fa-solid fa-trash text-[11px]"></i></button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function updateAdminUserPagination() {
+      const start = adUserPage * AD_PAGE_SIZE + 1;
+      const end = Math.min((adUserPage + 1) * AD_PAGE_SIZE, adUserTotal);
+      document.getElementById('adUserInfoText').textContent = adUserTotal > 0 ? `Menampilkan ${start}-${end} dari ${adUserTotal}` : 'Tidak ada data';
+      document.getElementById('adUserPrevBtn').disabled = adUserPage === 0;
+      document.getElementById('adUserNextBtn').disabled = end >= adUserTotal;
+      document.getElementById('adUserPrevBtn').style.opacity = adUserPage === 0 ? '0.4' : '1';
+      document.getElementById('adUserNextBtn').style.opacity = end >= adUserTotal ? '0.4' : '1';
+    }
+
+    function adminUsersPrevPage() { if (adUserPage > 0) { adUserPage--; adminLoadUsers(); } }
+    function adminUsersNextPage() { if ((adUserPage + 1) * AD_PAGE_SIZE < adUserTotal) { adUserPage++; adminLoadUsers(); } }
+
+    // Populate halaqah dropdown cache
+    async function adminEnsureHalaqahCache() {
+      if (adHalaqahCache.length) return;
+      try {
+        const { data } = await sb.from('halaqah').select('id, nama').order('id');
+        adHalaqahCache = data || [];
+      } catch (_) {}
+    }
+
+    function adminPopulateHalaqahDropdown(selectId, selected) {
+      const sel = document.getElementById(selectId);
+      sel.innerHTML = '<option value="">Tanpa Halaqah (Publik)</option>';
+      adHalaqahCache.forEach(h => {
+        sel.innerHTML += `<option value="${h.id}" ${h.id === selected ? 'selected' : ''}>${h.nama || h.id}</option>`;
+      });
+    }
+
+    // Modal: Tambah Akun
+    async function adminOpenUserModal(editData) {
+      await adminEnsureHalaqahCache();
+      adminPopulateHalaqahDropdown('adHalaqahInput', editData?.id_halaqah || '');
+      document.getElementById('adUserModalTitle').textContent = editData ? 'Edit Akun' : 'Tambah Akun Baru';
+      document.getElementById('adUserIdInput').value = editData?.user_id || '';
+      document.getElementById('adNameInput').value = editData?.nama_lengkap || '';
+      document.getElementById('adUsernameInput').value = editData?.username || '';
+      document.getElementById('adUsernameInput').readOnly = !!editData;
+      document.getElementById('adPasswordInput').value = '';
+      document.getElementById('adPasswordContainer').style.display = editData ? 'none' : '';
+      document.getElementById('adPasswordInput').required = !editData;
+      document.getElementById('adRoleInput').value = editData?.role || 'murid';
+      document.getElementById('adWaInput').value = editData?.no_wa || '';
+      adminOnUserModalRoleChange();
+      openModal('adminModalUser');
+    }
+
+    function adminOnUserModalRoleChange() {
+      const role = document.getElementById('adRoleInput').value;
+      document.getElementById('adHalaqahContainer').style.display = (role === 'admin') ? 'none' : '';
+    }
+
+    function adminEditUser(u) {
+      adminOpenUserModal(u);
+    }
+
+    async function adminSaveUser(e) {
+      e.preventDefault();
+      const userId = document.getElementById('adUserIdInput').value;
+      const nama = document.getElementById('adNameInput').value.trim();
+      const username = document.getElementById('adUsernameInput').value.trim();
+      const password = document.getElementById('adPasswordInput').value;
+      const role = document.getElementById('adRoleInput').value;
+      const halaqahId = document.getElementById('adHalaqahInput').value;
+      const noWa = document.getElementById('adWaInput').value.trim();
+
+      try {
+        showLoading(userId ? 'MENYIMPAN PERUBAHAN...' : 'MEMBUAT AKUN BARU...');
+        if (userId) {
+          // Edit mode
+          await gscript.adminUpdateProfile(userId, nama, role, halaqahId, noWa);
+        } else {
+          // Create mode
+          if (!password || password.length < 4) { hideLoading(); return alert('Password minimal 4 karakter.'); }
+          await gscript.adminAction('create_user', { username, nama, password, role, halaqah_id: halaqahId, no_wa: noWa });
+        }
+        closeModal('adminModalUser');
+        hideLoading();
+        adminLoadUsers();
+      } catch (err) {
+        hideLoading();
+        onError(err);
+      }
+    }
+
+    // Modal: Reset Password
+    function adminOpenResetPW(userId, nama) {
+      document.getElementById('adResetUserIdInput').value = userId;
+      document.getElementById('adResetPWInfo').textContent = `Masukkan password baru untuk: ${nama}`;
+      document.getElementById('adResetPasswordInput').value = '';
+      document.getElementById('adResetPasswordConfirmInput').value = '';
+      openModal('adminModalResetPW');
+    }
+
+    async function adminSubmitResetPassword(e) {
+      e.preventDefault();
+      const userId = document.getElementById('adResetUserIdInput').value;
+      const pw = document.getElementById('adResetPasswordInput').value;
+      const pw2 = document.getElementById('adResetPasswordConfirmInput').value;
+      if (pw !== pw2) return alert('Password dan konfirmasi tidak cocok.');
+      if (pw.length < 4) return alert('Password minimal 4 karakter.');
+      try {
+        showLoading('MENYIMPAN PASSWORD...');
+        await gscript.adminAction('reset_password', { user_id: userId, new_password: pw });
+        closeModal('adminModalResetPW');
+        hideLoading();
+        alert('Password berhasil direset!');
+      } catch (err) {
+        hideLoading();
+        onError(err);
+      }
+    }
+
+    // Delete user
+    async function adminDeleteUser(userId, nama) {
+      if (!confirm(`Yakin ingin menghapus akun "${nama}"?\n\nSemua data (profil, progres, log bacaan) akan dihapus permanen.`)) return;
+      if (!confirm(`KONFIRMASI KEDUA:\nBenar-benar hapus akun "${nama}"?`)) return;
+      try {
+        showLoading('MENGHAPUS AKUN...');
+        await gscript.adminAction('delete_user', { user_id: userId });
+        hideLoading();
+        adminLoadUsers();
+      } catch (err) {
+        hideLoading();
+        onError(err);
+      }
+    }
+
+    // Modal: Import CSV
+    function adminOpenImportModal() {
+      document.getElementById('adCsvPreviewContainer').classList.add('hidden');
+      document.getElementById('adCsvProgressContainer').classList.add('hidden');
+      document.getElementById('adCsvReportContainer').classList.add('hidden');
+      document.getElementById('adCsvDragDropZone').classList.remove('hidden');
+      document.getElementById('adCsvFileInput').value = '';
+      adCsvParsedData = null;
+      openModal('adminModalImport');
+    }
+
+    function adminOnCsvFileSelected(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+          // Normalize headers
+          const rows = results.data.map(row => {
+            const norm = {};
+            Object.keys(row).forEach(k => {
+              const nk = k.trim().toLowerCase().replace(/\s+/g, '_');
+              norm[nk] = (row[k] || '').trim();
+            });
+            return norm;
+          });
+
+          // Map to standard fields
+          adCsvParsedData = rows.filter(r => r.id_pengguna && r.password).map(r => ({
+            username: r.id_pengguna,
+            nama: r.nama_lengkap || r.id_pengguna,
+            password: String(r.password),
+            role: (r.role || 'murid').toLowerCase(),
+            halaqah_id: r.id_halaqah || '',
+            no_wa: r.no_whatsapp || r.no_wa || '',
+          }));
+
+          if (!adCsvParsedData.length) {
+            alert('Tidak ada baris valid ditemukan. Pastikan kolom ID_pengguna dan Password terisi.');
+            return;
+          }
+
+          // Show preview
+          const previewBody = document.getElementById('adCsvPreviewTableBody');
+          previewBody.innerHTML = adCsvParsedData.slice(0, 5).map(r => `
+            <tr>
+              <td class="p-2">${r.username}</td>
+              <td class="p-2">${r.nama}</td>
+              <td class="p-2">${r.role}</td>
+              <td class="p-2">${r.halaqah_id || '—'}</td>
+            </tr>
+          `).join('');
+          document.getElementById('adCsvStatusText').textContent = `Preview (${Math.min(5, adCsvParsedData.length)} dari ${adCsvParsedData.length} baris):`;
+          document.getElementById('adCsvDragDropZone').classList.add('hidden');
+          document.getElementById('adCsvPreviewContainer').classList.remove('hidden');
+        },
+        error: function(err) {
+          alert('Gagal parse CSV: ' + err.message);
+        }
+      });
+    }
+
+    async function adminSubmitCsvImport() {
+      if (!adCsvParsedData || !adCsvParsedData.length) return;
+      document.getElementById('adCsvPreviewContainer').classList.add('hidden');
+      document.getElementById('adCsvProgressContainer').classList.remove('hidden');
+
+      // Send in batches of 20
+      const BATCH = 20;
+      let totalSuccess = 0, totalSkipped = 0, totalFailed = 0, allErrors = [];
+
+      for (let i = 0; i < adCsvParsedData.length; i += BATCH) {
+        const batch = adCsvParsedData.slice(i, i + BATCH);
+        const pct = Math.round(((i + batch.length) / adCsvParsedData.length) * 100);
+        document.getElementById('adCsvProgressText').textContent = `${pct}% (${i + batch.length}/${adCsvParsedData.length})`;
+        document.getElementById('adCsvProgressBar').style.width = pct + '%';
+
+        try {
+          const res = await gscript.adminAction('import_csv_batch', { users: batch });
+          if (res.results) {
+            totalSuccess += res.results.success;
+            totalSkipped += res.results.skipped;
+            totalFailed += res.results.failed;
+            if (res.results.errors) allErrors = allErrors.concat(res.results.errors);
+          }
+        } catch (err) {
+          totalFailed += batch.length;
+          allErrors.push('Batch error: ' + err.message);
+        }
+      }
+
+      // Show report
+      document.getElementById('adCsvProgressContainer').classList.add('hidden');
+      document.getElementById('adCsvReportContainer').classList.remove('hidden');
+      document.getElementById('adCsvReportSuccess').textContent = totalSuccess;
+      document.getElementById('adCsvReportSkipped').textContent = totalSkipped;
+      document.getElementById('adCsvReportFailed').textContent = totalFailed;
+      document.getElementById('adCsvReportErrors').innerHTML = allErrors.map(e => `<p class="py-1">${e}</p>`).join('');
+
+      // Refresh user table
+      adminLoadUsers();
+    }
+
+    // Auto-load users when switching to Akun tab
+    const origAdminSwitchTab = adminSwitchTab;
+    adminSwitchTab = function(tab) {
+      origAdminSwitchTab(tab);
+      if (tab === 'akun') adminLoadUsers();
+    };
+
     let teacherDataCache = null;
     let filteredStudents = [];
 
@@ -2288,57 +3278,201 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
         .catch(onError);
     }
     
+    let currentTeacherStudent = null;
+    let currentTeacherFilter = 'Semua';
+
+    function changeTeacherFilter(filterName) {
+      currentTeacherFilter = filterName;
+      const chips = ['Semua', 'Sudah', 'Belum', 'AtRisk', 'Udzur'];
+      chips.forEach(c => {
+        const btn = document.getElementById('chip-' + c);
+        if (!btn) return;
+        if (c === filterName) {
+          btn.className = 'shrink-0 px-3 py-1.5 rounded-full font-bold bg-sky-500 text-white shadow-sm transition-all';
+        } else {
+          btn.className = 'shrink-0 px-3 py-1.5 rounded-full font-bold bg-white text-slate-500 border border-slate-100 hover:bg-slate-50 transition-all';
+        }
+      });
+      filterTeacherView();
+    }
+
+    function toggleUdzurDateInput() {
+      const select = document.getElementById('tcStudentUdzurSelect');
+      const dateDiv = document.getElementById('tcStudentUdzurEndDateDiv');
+      if (!select || !dateDiv) return;
+      if (select.value) {
+        dateDiv.classList.remove('hidden');
+        const endInput = document.getElementById('tcStudentUdzurEndInput');
+        if (endInput && !endInput.value) {
+          const future = new Date();
+          future.setDate(future.getDate() + 7);
+          endInput.value = future.toISOString().split('T')[0];
+        }
+      } else {
+        dateDiv.classList.add('hidden');
+      }
+    }
+
+    async function saveStudentSettings() {
+      if (!currentTeacherStudent) return;
+      
+      const targetInput = document.getElementById('tcStudentTargetInput');
+      const udzurSelect = document.getElementById('tcStudentUdzurSelect');
+      const udzurEndInput = document.getElementById('tcStudentUdzurEndInput');
+      
+      const newTarget = parseInt(targetInput.value) || 0;
+      const newUdzurStatus = udzurSelect.value;
+      const newUdzurEnd = newUdzurStatus ? udzurEndInput.value : null;
+      
+      showLoading("MENYIMPAN PERUBAHAN...");
+      try {
+        if (newTarget !== currentTeacherStudent.target) {
+          await gscript.teacherSetTarget(currentTeacherStudent.id, newTarget);
+        }
+        if (newUdzurStatus !== currentTeacherStudent.udzurStatus || (newUdzurStatus && newUdzurEnd !== currentTeacherStudent.udzurEnd)) {
+          await gscript.teacherSetUdzur(currentTeacherStudent.id, newUdzurStatus, newUdzurEnd);
+        }
+        
+        showToast("✅ Pengaturan murid berhasil diperbarui!", "success");
+        closeModal('modalHistory');
+        loadTeacherData();
+      } catch (err) {
+        customAlert('Gagal', err.message || err, 'error');
+        hideLoading();
+      }
+    }
+
     function filterTeacherView() {
       if (!teacherDataCache) return;
       const selectedHalaqah = document.getElementById('tcHalaqahSelect').value;
+      const searchQuery = (document.getElementById('tcSearchInput')?.value || '').toLowerCase().trim();
+      const sortOption = document.getElementById('tcSortSelect')?.value || 'perhatian';
       
+      // 1. Filter by Halaqah for rekap & stats
       if (selectedHalaqah === 'Semua') {
         filteredStudents = teacherDataCache.students;
       } else {
         filteredStudents = teacherDataCache.students.filter(s => s.halaqah === selectedHalaqah);
       }
       
-      let doneCount = 0;
-      let html = '';
+      // 2. Filter for view display
+      let list = [...filteredStudents];
+      if (searchQuery) {
+        list = list.filter(s => s.name.toLowerCase().includes(searchQuery));
+      }
       
-      if (filteredStudents.length === 0) {
-        html = '<div class="text-sm text-slate-400 text-center py-10 font-medium"><p>Belum ada murid di kelas ini.</p></div>';
+      if (currentTeacherFilter === 'Sudah') {
+        list = list.filter(s => s.hasReadToday);
+      } else if (currentTeacherFilter === 'Belum') {
+        list = list.filter(s => !s.hasReadToday && s.udzurStatus === '');
+      } else if (currentTeacherFilter === 'AtRisk') {
+        list = list.filter(s => s.isAtRisk);
+      } else if (currentTeacherFilter === 'Udzur') {
+        list = list.filter(s => s.udzurStatus !== '');
+      }
+      
+      // 3. Sort
+      if (sortOption === 'nama') {
+        list.sort((a, b) => a.name.localeCompare(b.name));
+      } else if (sortOption === 'halaman') {
+        list.sort((a, b) => b.lastPage - a.lastPage);
+      } else if (sortOption === 'belumSetor') {
+        list.sort((a, b) => {
+          if (a.hasReadToday !== b.hasReadToday) {
+            return a.hasReadToday ? 1 : -1;
+          }
+          return a.name.localeCompare(b.name);
+        });
+      } else { // perhatian
+        list.sort((a, b) => {
+          if (a.isAtRisk !== b.isAtRisk) {
+            return a.isAtRisk ? -1 : 1;
+          }
+          if (a.hasReadToday !== b.hasReadToday) {
+            return a.hasReadToday ? 1 : -1;
+          }
+          return a.name.localeCompare(b.name);
+        });
+      }
+      
+      // 4. Calculate stats based on halaqah selection
+      const totalCount = filteredStudents.length;
+      const doneCount = filteredStudents.filter(s => s.hasReadToday).length;
+      const atRiskCount = filteredStudents.filter(s => s.isAtRisk).length;
+      const totalPagesReadToday = filteredStudents.reduce((sum, s) => sum + (s.todayRead || 0), 0);
+      const avgRead = totalCount > 0 ? (totalPagesReadToday / totalCount).toFixed(1) : '0.0';
+      const donePct = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
+      const totalKhatam = filteredStudents.reduce((sum, s) => sum + (s.totalKhatam || 0), 0);
+      
+      // 5. Update stats UI
+      document.getElementById('tcTotalStudents').textContent = totalCount;
+      document.getElementById('tcStudentsDone').textContent = doneCount;
+      const atRiskEl = document.getElementById('tcStudentsAtRisk');
+      if (atRiskEl) atRiskEl.textContent = atRiskCount;
+      
+      const avgReadEl = document.getElementById('tcAvgRead');
+      if (avgReadEl) avgReadEl.textContent = avgRead + ' hal';
+      
+      const donePctEl = document.getElementById('tcDonePct');
+      if (donePctEl) donePctEl.textContent = donePct + '%';
+      
+      const totalKhatamEl = document.getElementById('tcTotalKhatam');
+      if (totalKhatamEl) totalKhatamEl.textContent = '🏆 ' + totalKhatam;
+
+      // 6. Render Student List
+      let html = '';
+      if (list.length === 0) {
+        html = '<div class="text-sm text-slate-400 text-center py-10 font-medium"><p>Belum ada murid yang cocok.</p></div>';
       } else {
-        filteredStudents.forEach(st => {
-          if (st.hasReadToday) doneCount++;
-          
+        const atRiskGroup = list.filter(s => s.isAtRisk);
+        const otherGroup = list.filter(s => !s.isAtRisk);
+        
+        const renderStudentCard = (st) => {
           const isUdzur = st.udzurStatus !== '';
           const bgClass = isUdzur ? 'bg-pink-50' : (st.isAtRisk ? 'bg-red-50' : 'bg-white hover:bg-slate-50');
           const borderClass = isUdzur ? 'border-l-4 border-l-pink-400' : (st.isAtRisk ? 'border-l-4 border-l-red-500' : '');
           const badgeClass = isUdzur ? 'text-[10px] bg-pink-100 text-pink-600 px-2 py-0.5 rounded-md ml-2 align-middle' : '';
-          const iconUdzur = st.udzurStatus === 'Haid' ? '🌸' : (st.udzurStatus === 'Sakit' ? '🤒' : '✈️');
+          const iconUdzur = st.udzurStatus === 'Haid' ? '🌸' : (st.udzurStatus === 'Sakit' ? '🤒' : (st.udzurStatus === 'Safar' ? '✈️' : '⏳'));
           const udzurBadge = isUdzur ? `<span class="${badgeClass}" title="Selesai otomatis pd ${formatDateID(st.udzurEnd)}">${st.udzurStatus} ${iconUdzur}</span>` : '';
           
           const warningBadge = st.isAtRisk ? `<i class="fa-solid fa-triangle-exclamation text-amber-500 ml-2" title="Belum setor ≥ 3 hari"></i>` : '';
+          const khatamBadge = st.totalKhatam > 0 ? `<span class="text-[10px] bg-amber-50 text-amber-600 px-2 py-0.5 rounded-md ml-2 align-middle border border-amber-100 font-bold">🏆 x${st.totalKhatam}</span>` : '';
           
           let waBtn = '';
           if (st.wa) {
             let phone = String(st.wa).replace(/\D/g, '');
             if (phone.startsWith('0')) phone = '62' + phone.substring(1);
-            let msg = encodeURIComponent(`Assalamu'alaikum ${st.name}, jangan lupa tilawah harian dan catat progres bacaan Al-Quran kamu hari ini ya. Semangat! 🌟`);
+            
+            let waMsg = `Assalamu'alaikum ${st.name}, `;
+            if (st.isAtRisk) {
+              waMsg += `sudah ${st.daysSinceLastRead} hari tidak mencatat tilawah harian di Khatamku. `;
+            }
+            waMsg += `Terakhir kamu berada di halaman ${st.lastPage}. Yuk setor target harianmu (${st.target || 0} hal) hari ini. Semangat! 🌟`;
+            
+            let msg = encodeURIComponent(waMsg);
             waBtn = `<a href="https://wa.me/${phone}?text=${msg}" target="_blank" onclick="event.stopPropagation()" class="w-10 h-10 rounded-xl bg-emerald-50 hover:bg-emerald-100 flex items-center justify-center text-emerald-500 transition-colors shadow-sm"><i class="fa-brands fa-whatsapp text-lg"></i></a>`;
           } else {
-            waBtn = `<button onclick="event.stopPropagation(); customAlert('Data Tidak Lengkap', 'Nomor WA belum terdaftar di database (Sheet Akun).', 'warning')" class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-300 shadow-sm"><i class="fa-brands fa-whatsapp text-lg"></i></button>`;
+            waBtn = `<button onclick="event.stopPropagation(); customAlert('Data Tidak Lengkap', 'Nomor WA belum terdaftar di database.', 'warning')" class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-300 shadow-sm"><i class="fa-brands fa-whatsapp text-lg"></i></button>`;
           }
 
           let alertStatus = '';
+          let progressPct = 0;
+          if (st.target > 0) {
+            progressPct = Math.min(100, Math.round(((st.todayRead || 0) / st.target) * 100));
+          }
+          
           if (isUdzur) {
-            alertStatus = `<span class="text-pink-500 flex items-center gap-1"><i class="fa-solid fa-bed"></i> Sedang Udzur Syar'i</span>`;
+            alertStatus = `<span class="text-pink-500 flex items-center gap-1"><i class="fa-solid fa-bed"></i> Udzur (${st.udzurStatus})</span>`;
           } else if (st.hasReadToday) {
-            alertStatus = `<span class="text-emerald-500 flex items-center gap-1"><i class="fa-solid fa-circle-check"></i> Selesai (${st.todayRead} hal)</span>`;
+            alertStatus = `<span class="text-emerald-500 flex items-center gap-1"><i class="fa-solid fa-circle-check"></i> ${st.todayRead}/${st.target || 0} hal (${progressPct}%)</span>`;
           } else {
-            alertStatus = `<span class="text-slate-400 flex items-center gap-1"><i class="fa-solid fa-circle-xmark"></i> Belum Setor</span>`;
+            alertStatus = `<span class="text-slate-400 flex items-center gap-1"><i class="fa-solid fa-circle-xmark"></i> Belum Setor (0/${st.target || 0} hal)</span>`;
           }
 
-          html += `
+          return `
           <div class="glass-card p-4 rounded-[1.5rem] flex items-center justify-between shadow-sm cursor-pointer ${bgClass} ${borderClass} transition-colors" onclick="openHistoryModal('${st.id}')">
             <div class="flex-1">
-              <p class="font-bold text-slate-800 text-sm mb-1">${st.name}${warningBadge}${udzurBadge}</p>
+              <p class="font-bold text-slate-800 text-sm mb-1">${st.name}${warningBadge}${udzurBadge}${khatamBadge}</p>
               <div class="flex items-center gap-3 text-[11px] font-semibold">
                 <span class="text-sky-600 bg-sky-50 px-2 py-0.5 rounded-md">Hal ${st.lastPage}</span>
                 ${alertStatus}
@@ -2348,11 +3482,33 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
               ${waBtn}
             </div>
           </div>`;
-        });
+        };
+        
+        if (atRiskGroup.length > 0 && (sortOption === 'perhatian' || currentTeacherFilter === 'Semua')) {
+          html += `<h4 class="text-[10px] font-bold text-red-500 tracking-wider uppercase mb-2 mt-4 px-1"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Perlu Perhatian (${atRiskGroup.length})</h4>`;
+          html += `<div class="space-y-3">`;
+          atRiskGroup.forEach(st => {
+            html += renderStudentCard(st);
+          });
+          html += `</div>`;
+          
+          if (otherGroup.length > 0) {
+            html += `<h4 class="text-[10px] font-bold text-slate-400 tracking-wider uppercase mb-2 mt-6 px-1">Murid Lainnya (${otherGroup.length})</h4>`;
+            html += `<div class="space-y-3">`;
+            otherGroup.forEach(st => {
+              html += renderStudentCard(st);
+            });
+            html += `</div>`;
+          }
+        } else {
+          html += `<div class="space-y-3">`;
+          list.forEach(st => {
+            html += renderStudentCard(st);
+          });
+          html += `</div>`;
+        }
       }
       
-      document.getElementById('tcTotalStudents').textContent = filteredStudents.length;
-      document.getElementById('tcStudentsDone').textContent = doneCount;
       document.getElementById('tcStudentList').innerHTML = html;
     }
 
@@ -2402,7 +3558,19 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       const student = teacherDataCache.students.find(s => s.id === studentId);
       if (!student) return;
       
+      currentTeacherStudent = student;
       document.getElementById('histStudentName').textContent = student.name;
+      
+      const targetInput = document.getElementById('tcStudentTargetInput');
+      const udzurSelect = document.getElementById('tcStudentUdzurSelect');
+      const udzurEndInput = document.getElementById('tcStudentUdzurEndInput');
+      
+      if (targetInput) targetInput.value = student.target || 0;
+      if (udzurSelect) udzurSelect.value = student.udzurStatus || "";
+      if (udzurEndInput) {
+        udzurEndInput.value = student.udzurEnd ? student.udzurEnd.substring(0, 10) : "";
+      }
+      toggleUdzurDateInput();
       
       let html = '';
       if (!student.history7Days || student.history7Days.length === 0) {
