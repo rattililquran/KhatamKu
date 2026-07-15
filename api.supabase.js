@@ -149,6 +149,10 @@ const gscript = {
   adminSetHalaqahGuru: (halaqahId, guruIds) => rpc("app_admin_set_halaqah_guru", { p_halaqah_id: halaqahId, p_guru_ids: guruIds || [] }),
   adminMoveStudent: (username, newHalaqahId) => rpc("app_admin_move_student", { p_username: username, p_new_halaqah_id: newHalaqahId || "" }),
   adminListGuru: () => rpc("app_admin_list_guru"),
+
+  // ── ADMIN: Analytics & Notifikasi (Tahap 4) ───────────────
+  adminAnalytics: (from, to) => rpc("app_admin_analytics", { p_from: from, p_to: to }),
+  adminNotifTargets: (scope, halaqahId) => rpc("app_admin_notif_targets", { p_scope: scope || "all", p_halaqah_id: halaqahId || null }),
 };
 
 // biar kompatibel jika ada kode lama memanggil window.gscript

@@ -78,6 +78,22 @@
       border-color: transparent;
       box-shadow: 0 4px 12px rgba(245,158,11,0.3);
     }
+    .an-period-btn {
+      padding: 0.4rem 0.9rem; border-radius: 9999px; font-size: 0.7rem;
+      font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;
+      color: #64748b; background: white; border: 1px solid #e2e8f0;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .an-period-btn.active {
+      background: #f59e0b; color: white; border-color: transparent;
+      box-shadow: 0 3px 10px rgba(245,158,11,0.3);
+    }
+    @media print {
+      body * { visibility: hidden; }
+      #adminPanelAnalytics, #adminPanelAnalytics * { visibility: visible; }
+      #adminPanelAnalytics { position: absolute; left: 0; top: 0; width: 100%; }
+      #adAnPeriodBtns, #adminPanelAnalytics button { display: none !important; }
+    }
     
     /* Animated Background Glows for Light Glassmorphism */
     .bg-blobs {
@@ -1042,19 +1058,115 @@
 
       <!-- Panel: Analitik -->
       <div id="adminPanelAnalytics" class="admin-panel hidden">
-        <div class="text-center py-20 text-slate-400">
-          <i class="fa-solid fa-chart-line text-4xl mb-3"></i>
-          <p class="font-bold">Analitik Program</p>
-          <p class="text-sm">Segera hadir di Tahap 4</p>
+        <!-- Filter periode -->
+        <div class="flex flex-wrap gap-2 mb-4" id="adAnPeriodBtns">
+          <button data-p="7" onclick="adminAnalyticsPeriod(7)" class="an-period-btn">7 Hari</button>
+          <button data-p="30" onclick="adminAnalyticsPeriod(30)" class="an-period-btn">30 Hari</button>
+          <button data-p="90" onclick="adminAnalyticsPeriod(90)" class="an-period-btn">3 Bulan</button>
+        </div>
+        <div class="flex flex-wrap items-end gap-2 mb-5">
+          <div>
+            <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Dari</label>
+            <input type="date" id="adAnFrom" class="glass-input rounded-xl px-3 py-2 text-xs font-bold outline-none">
+          </div>
+          <div>
+            <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Sampai</label>
+            <input type="date" id="adAnTo" class="glass-input rounded-xl px-3 py-2 text-xs font-bold outline-none">
+          </div>
+          <button onclick="adminAnalyticsCustom()" class="py-2 px-4 bg-amber-500 hover:bg-amber-600 text-white font-extrabold rounded-xl text-[11px] tracking-wider uppercase shadow-md transition-all">Terapkan</button>
+        </div>
+
+        <!-- KPI ringkas -->
+        <div class="grid grid-cols-2 gap-3 mb-4">
+          <div class="bg-white rounded-2xl p-3 shadow-sm border border-slate-100 text-center">
+            <p class="text-2xl font-black text-amber-600" id="adAnTotalHal">—</p>
+            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Total Halaman</p>
+          </div>
+          <div class="bg-white rounded-2xl p-3 shadow-sm border border-slate-100 text-center">
+            <p class="text-2xl font-black text-sky-600" id="adAnAvg">—</p>
+            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Rata-rata / Murid</p>
+          </div>
+          <div class="bg-white rounded-2xl p-3 shadow-sm border border-slate-100 text-center">
+            <p class="text-2xl font-black text-emerald-600" id="adAnKonsisten">—</p>
+            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Murid Konsisten</p>
+          </div>
+          <div class="bg-white rounded-2xl p-3 shadow-sm border border-slate-100 text-center">
+            <p class="text-2xl font-black text-purple-600" id="adAnKhatam">—</p>
+            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Khatam Periode</p>
+          </div>
+        </div>
+
+        <!-- Heatmap -->
+        <div class="bg-white rounded-2xl p-4 shadow-sm mb-4 border border-slate-100">
+          <p class="text-xs font-black text-slate-500 uppercase tracking-widest mb-3">🔥 Heatmap Aktivitas Harian</p>
+          <div id="adAnHeatmap" class="flex flex-wrap gap-1"></div>
+          <div class="flex items-center gap-1 mt-3 text-[9px] font-bold text-slate-400">
+            <span>Sedikit</span>
+            <span class="w-3 h-3 rounded-sm bg-emerald-100"></span>
+            <span class="w-3 h-3 rounded-sm bg-emerald-300"></span>
+            <span class="w-3 h-3 rounded-sm bg-emerald-500"></span>
+            <span class="w-3 h-3 rounded-sm bg-emerald-700"></span>
+            <span>Banyak</span>
+          </div>
+        </div>
+
+        <!-- Konsisten & Absen -->
+        <div class="grid grid-cols-1 gap-4 mb-4">
+          <div class="bg-white rounded-2xl p-4 shadow-sm border border-emerald-50">
+            <p class="text-xs font-black text-emerald-500 uppercase tracking-widest mb-3">✅ Murid Konsisten (≥80% hari)</p>
+            <div id="adAnKonsistenList" class="space-y-2 max-h-56 overflow-y-auto"></div>
+          </div>
+          <div class="bg-white rounded-2xl p-4 shadow-sm border border-red-50">
+            <p class="text-xs font-black text-red-500 uppercase tracking-widest mb-3">🚫 Tidak Setor Sama Sekali</p>
+            <div id="adAnAbsenList" class="space-y-2 max-h-56 overflow-y-auto"></div>
+          </div>
+        </div>
+
+        <!-- Export -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <button onclick="adminExportCSV()" class="py-3 bg-slate-800 hover:bg-slate-900 text-white font-extrabold rounded-2xl text-[11px] tracking-wider uppercase shadow-md flex items-center justify-center gap-2 transition-all"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
+          <button onclick="adminExportRekapWA()" class="py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-2xl text-[11px] tracking-wider uppercase shadow-md flex items-center justify-center gap-2 transition-all"><i class="fa-brands fa-whatsapp"></i> Rekap WA</button>
+          <button onclick="window.print()" class="py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-extrabold rounded-2xl text-[11px] tracking-wider uppercase shadow-sm flex items-center justify-center gap-2 transition-all"><i class="fa-solid fa-print"></i> Cetak</button>
         </div>
       </div>
 
       <!-- Panel: Notifikasi -->
       <div id="adminPanelNotif" class="admin-panel hidden">
-        <div class="text-center py-20 text-slate-400">
-          <i class="fa-solid fa-bullhorn text-4xl mb-3"></i>
-          <p class="font-bold">Notifikasi & WA Blast</p>
-          <p class="text-sm">Segera hadir di Tahap 4</p>
+        <!-- Target -->
+        <div class="bg-white rounded-2xl p-4 shadow-sm mb-4 border border-slate-100">
+          <p class="text-xs font-black text-slate-500 uppercase tracking-widest mb-3">1. Pilih Target</p>
+          <div class="space-y-2">
+            <label class="flex items-center gap-3 cursor-pointer"><input type="radio" name="adNotifScope" value="all" checked onchange="adminNotifScopeChange()" class="w-4 h-4 accent-amber-500"><span class="text-sm font-bold text-slate-700">Semua Murid</span></label>
+            <label class="flex items-center gap-3 cursor-pointer"><input type="radio" name="adNotifScope" value="at_risk" onchange="adminNotifScopeChange()" class="w-4 h-4 accent-amber-500"><span class="text-sm font-bold text-slate-700">Murid At-Risk (≥3 hari absen)</span></label>
+            <label class="flex items-center gap-3 cursor-pointer"><input type="radio" name="adNotifScope" value="halaqah" onchange="adminNotifScopeChange()" class="w-4 h-4 accent-amber-500"><span class="text-sm font-bold text-slate-700">Per Halaqah</span></label>
+            <select id="adNotifHalaqahSel" onchange="adminNotifLoadTargets()" class="hidden ml-7 text-xs font-bold text-amber-600 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2 outline-none"></select>
+          </div>
+          <p class="text-[11px] font-bold text-slate-400 mt-3" id="adNotifCount">Memuat target...</p>
+        </div>
+
+        <!-- Template -->
+        <div class="bg-white rounded-2xl p-4 shadow-sm mb-4 border border-slate-100">
+          <p class="text-xs font-black text-slate-500 uppercase tracking-widest mb-3">2. Template Pesan</p>
+          <div class="grid grid-cols-2 gap-2 mb-3">
+            <button onclick="adminNotifTemplate('setor')" class="py-2 px-3 bg-sky-50 hover:bg-sky-100 text-sky-600 font-black rounded-xl text-[11px] uppercase tracking-wider transition-all">📢 Pengingat Setor</button>
+            <button onclick="adminNotifTemplate('rekap')" class="py-2 px-3 bg-purple-50 hover:bg-purple-100 text-purple-600 font-black rounded-xl text-[11px] uppercase tracking-wider transition-all">📊 Rekap Personal</button>
+            <button onclick="adminNotifTemplate('semangat')" class="py-2 px-3 bg-amber-50 hover:bg-amber-100 text-amber-600 font-black rounded-xl text-[11px] uppercase tracking-wider transition-all">🔥 Semangat</button>
+            <button onclick="adminNotifTemplate('kosong')" class="py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-black rounded-xl text-[11px] uppercase tracking-wider transition-all">✍️ Custom</button>
+          </div>
+          <textarea id="adNotifText" rows="5" oninput="adminNotifPreview()" class="w-full glass-input rounded-xl p-3 text-sm font-medium outline-none resize-none" placeholder="Tulis pesan... Gunakan {nama}, {halaman}, {streak}, {hari_absen} sebagai placeholder."></textarea>
+          <p class="text-[10px] text-slate-400 font-semibold mt-1">Placeholder: <code>{nama}</code> <code>{halaman}</code> <code>{streak}</code> <code>{hari_absen}</code></p>
+        </div>
+
+        <!-- Preview -->
+        <div class="bg-white rounded-2xl p-4 shadow-sm mb-4 border border-slate-100">
+          <p class="text-xs font-black text-slate-500 uppercase tracking-widest mb-2">3. Preview (murid pertama)</p>
+          <div id="adNotifPreview" class="bg-emerald-50 rounded-xl p-3 text-sm text-slate-700 whitespace-pre-wrap min-h-[3rem]">—</div>
+        </div>
+
+        <!-- Aksi -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <button onclick="adminNotifCopyLinks()" class="py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-2xl text-[11px] tracking-wider uppercase shadow-md flex items-center justify-center gap-2 transition-all"><i class="fa-solid fa-link"></i> Salin Semua Link WA</button>
+          <button onclick="adminNotifOpenSequential()" class="py-3 bg-slate-800 hover:bg-slate-900 text-white font-extrabold rounded-2xl text-[11px] tracking-wider uppercase shadow-md flex items-center justify-center gap-2 transition-all"><i class="fa-solid fa-paper-plane"></i> Buka WA Satu-per-satu</button>
         </div>
       </div>
 
@@ -3378,6 +3490,8 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       origAdminSwitchTab(tab);
       if (tab === 'akun') adminLoadUsers();
       if (tab === 'halaqah') adminLoadHalaqah();
+      if (tab === 'analytics') adminInitAnalytics();
+      if (tab === 'notif') adminInitNotif();
     };
 
     // ── ADMIN: Tab Halaqah — JS ─────────────────────────────
@@ -3602,6 +3716,206 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
     }
 
     let adHdChart = null;
+
+    // ── ADMIN: util WA ──────────────────────────────────────
+    function adWaNum(no) {
+      let n = (no || '').replace(/\D/g, '');
+      if (n.startsWith('0')) n = '62' + n.slice(1);
+      return n;
+    }
+
+    // ── ADMIN: Tab Analytics — JS ───────────────────────────
+    let adAnCache = null;
+    let adAnLoaded = false;
+
+    function adminInitAnalytics() {
+      if (adAnLoaded) return;
+      adAnLoaded = true;
+      adminAnalyticsPeriod(7);
+    }
+
+    function adminAnalyticsPeriod(days) {
+      const to = getLocalDateString();
+      const fromD = new Date();
+      fromD.setDate(fromD.getDate() - (days - 1));
+      const from = fromD.toISOString().split('T')[0];
+      document.getElementById('adAnFrom').value = from;
+      document.getElementById('adAnTo').value = to;
+      document.querySelectorAll('.an-period-btn').forEach(b => b.classList.toggle('active', +b.dataset.p === days));
+      adminLoadAnalytics(from, to);
+    }
+
+    function adminAnalyticsCustom() {
+      const from = document.getElementById('adAnFrom').value;
+      const to = document.getElementById('adAnTo').value;
+      if (!from || !to) return alert('Isi tanggal Dari dan Sampai.');
+      if (to < from) return alert('Tanggal "Sampai" harus setelah "Dari".');
+      document.querySelectorAll('.an-period-btn').forEach(b => b.classList.remove('active'));
+      adminLoadAnalytics(from, to);
+    }
+
+    function adminLoadAnalytics(from, to) {
+      showLoading('MENGANALISIS DATA...');
+      gscript.adminAnalytics(from, to)
+        .then(d => { adAnCache = d; renderAnalytics(d); hideLoading(); })
+        .catch(onError);
+    }
+
+    function renderAnalytics(d) {
+      document.getElementById('adAnTotalHal').textContent = (d.total_halaman || 0).toLocaleString('id-ID');
+      document.getElementById('adAnAvg').textContent = d.avg_per_murid ?? 0;
+      document.getElementById('adAnKonsisten').textContent = (d.murid_konsisten || []).length;
+      document.getElementById('adAnKhatam').textContent = d.khatam_count || 0;
+
+      // Heatmap
+      const heat = d.daily_heatmap || [];
+      const max = Math.max(1, ...heat.map(h => h.halaman || 0));
+      const bucket = v => v === 0 ? 'bg-slate-100' : v < max * 0.25 ? 'bg-emerald-100' : v < max * 0.5 ? 'bg-emerald-300' : v < max * 0.75 ? 'bg-emerald-500' : 'bg-emerald-700';
+      document.getElementById('adAnHeatmap').innerHTML = heat.map(h => {
+        const p = h.tanggal.split('-');
+        return `<div class="w-3.5 h-3.5 rounded-sm ${bucket(h.halaman)}" title="${p[2]}/${p[1]}: ${h.halaman} hal · ${h.murid} murid"></div>`;
+      }).join('');
+
+      // Konsisten
+      document.getElementById('adAnKonsistenList').innerHTML = (d.murid_konsisten || []).length
+        ? d.murid_konsisten.map(m => `
+          <div class="flex items-center justify-between p-2 rounded-xl bg-emerald-50/60">
+            <div><p class="text-sm font-bold text-slate-700">${m.nama}</p><p class="text-[10px] text-slate-400">${m.halaqah || '—'}</p></div>
+            <span class="text-xs font-black text-emerald-600">${m.hari_setor} hari (${m.pct}%)</span>
+          </div>`).join('')
+        : '<p class="text-sm text-slate-400 text-center py-4">Belum ada yang mencapai 80%.</p>';
+
+      // Absen
+      document.getElementById('adAnAbsenList').innerHTML = (d.murid_absen || []).length
+        ? d.murid_absen.map(m => `
+          <div class="flex items-center justify-between p-2 rounded-xl bg-red-50">
+            <div><p class="text-sm font-bold text-slate-700">${m.nama}</p><p class="text-[10px] text-slate-400">${m.halaqah || '—'}</p></div>
+            ${m.no_wa ? `<a href="https://wa.me/${adWaNum(m.no_wa)}?text=${encodeURIComponent('Assalamualaikum ' + m.nama + ', kami menunggu setoran bacaanmu 🤲')}" target="_blank" class="text-emerald-500 bg-emerald-50 rounded-full w-8 h-8 flex items-center justify-center"><i class="fa-brands fa-whatsapp"></i></a>` : ''}
+          </div>`).join('')
+        : '<p class="text-sm text-slate-400 text-center py-4">Semua murid pernah setor 🎉</p>';
+    }
+
+    async function adminExportCSV() {
+      try {
+        showLoading('MENYUSUN CSV...');
+        const res = await gscript.adminListUsers({ role: 'murid', limit: 100000, offset: 0 });
+        const rows = res.users || [];
+        const head = ['Nama', 'Username', 'Halaqah', 'No_WA', 'Halaman_Terakhir', 'Total_Khatam', 'Streak', 'Terakhir_Setor'];
+        const esc = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+        const csv = [head.join(',')].concat(rows.map(u => [
+          u.nama_lengkap, u.username, u.id_halaqah || '', u.no_wa || '',
+          u.halaman_terakhir ?? 0, u.total_khatam ?? 0, u.streak ?? 0, u.terakhir_setor || ''
+        ].map(esc).join(','))).join('\n');
+        hideLoading();
+        const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `khatamku_murid_${getLocalDateString()}.csv`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+      } catch (err) { hideLoading(); onError(err); }
+    }
+
+    function adminExportRekapWA() {
+      if (!adAnCache) return alert('Muat data analitik dulu.');
+      const d = adAnCache;
+      let teks = `📊 *Rekap khatamku*\nPeriode: ${d.from} s/d ${d.to} (${d.days} hari)\n\n`;
+      teks += `• Total halaman dibaca: ${(d.total_halaman || 0).toLocaleString('id-ID')}\n`;
+      teks += `• Rata-rata / murid: ${d.avg_per_murid}\n`;
+      teks += `• Murid konsisten (≥80%): ${(d.murid_konsisten || []).length}\n`;
+      teks += `• Tidak setor sama sekali: ${(d.murid_absen || []).length}\n`;
+      teks += `• Khatam periode ini: ${d.khatam_count}\n\n`;
+      teks += `*Per Halaqah:*\n`;
+      (d.per_halaqah_stat || []).forEach(h => { teks += `• ${h.nama || h.id}: ${h.total_halaman} hal\n`; });
+      navigator.clipboard?.writeText(teks).then(
+        () => showToast('✅ Rekap WA disalin!', 'success'),
+        () => window.prompt('Salin rekap:', teks)
+      );
+    }
+
+    // ── ADMIN: Tab Notifikasi — JS ──────────────────────────
+    let adNotifTargets = [];
+    let adNotifInit = false;
+    const AD_NOTIF_TEMPLATES = {
+      setor: "Assalamualaikum {nama} 🌿\nJangan lupa setor bacaan Al-Qur'an hari ini ya. Halaman terakhirmu: {halaman}. Semangat! 📖",
+      rekap: "Assalamualaikum {nama} 📊\nRekap bacaanmu:\n• Halaman terakhir: {halaman}\n• Streak: {streak} hari 🔥\nTerus istiqomah ya! 🤲",
+      semangat: "Assalamualaikum {nama} 🔥\nSudah {hari_absen} hari belum setor. Yuk lanjutkan bacaan Qur'anmu, kami menunggu kabar baikmu 🤲",
+      kosong: ""
+    };
+
+    async function adminInitNotif() {
+      if (adNotifInit) return;
+      adNotifInit = true;
+      await adminEnsureHalaqahCache();
+      const sel = document.getElementById('adNotifHalaqahSel');
+      sel.innerHTML = adHalaqahCache.map(h => `<option value="${h.id}">${h.nama || h.id}</option>`).join('');
+      adminNotifTemplate('setor');
+      adminNotifLoadTargets();
+    }
+
+    function adminNotifScopeChange() {
+      const scope = document.querySelector('input[name="adNotifScope"]:checked').value;
+      document.getElementById('adNotifHalaqahSel').classList.toggle('hidden', scope !== 'halaqah');
+      adminNotifLoadTargets();
+    }
+
+    function adminNotifLoadTargets() {
+      const scope = document.querySelector('input[name="adNotifScope"]:checked').value;
+      const halaqahId = scope === 'halaqah' ? document.getElementById('adNotifHalaqahSel').value : null;
+      document.getElementById('adNotifCount').textContent = 'Memuat target...';
+      gscript.adminNotifTargets(scope, halaqahId)
+        .then(list => {
+          adNotifTargets = list || [];
+          const withWa = adNotifTargets.filter(t => t.no_wa).length;
+          document.getElementById('adNotifCount').textContent = `${adNotifTargets.length} murid terpilih · ${withWa} punya No. WA`;
+          adminNotifPreview();
+        })
+        .catch(onError);
+    }
+
+    function adminNotifTemplate(type) {
+      document.getElementById('adNotifText').value = AD_NOTIF_TEMPLATES[type] || '';
+      adminNotifPreview();
+    }
+
+    function adminNotifFill(tpl, m) {
+      return (tpl || '')
+        .replace(/\{nama\}/g, m.nama || '')
+        .replace(/\{halaman\}/g, m.halaman_terakhir ?? 0)
+        .replace(/\{streak\}/g, m.streak ?? 0)
+        .replace(/\{hari_absen\}/g, m.hari_absen === 999 ? 'beberapa' : (m.hari_absen ?? 0));
+    }
+
+    function adminNotifPreview() {
+      const tpl = document.getElementById('adNotifText').value;
+      const first = adNotifTargets[0];
+      document.getElementById('adNotifPreview').textContent = first ? adminNotifFill(tpl, first) : '(belum ada target)';
+    }
+
+    function adminNotifBuildLinks() {
+      const tpl = document.getElementById('adNotifText').value;
+      if (!tpl.trim()) { alert('Tulis pesan dulu.'); return null; }
+      const targets = adNotifTargets.filter(t => t.no_wa);
+      if (!targets.length) { alert('Tidak ada murid dengan No. WA pada target ini.'); return null; }
+      return targets.map(m => `https://wa.me/${adWaNum(m.no_wa)}?text=${encodeURIComponent(adminNotifFill(tpl, m))}`);
+    }
+
+    function adminNotifCopyLinks() {
+      const links = adminNotifBuildLinks();
+      if (!links) return;
+      const teks = links.join('\n');
+      navigator.clipboard?.writeText(teks).then(
+        () => showToast(`✅ ${links.length} link WA disalin!`, 'success'),
+        () => window.prompt('Salin link WA:', teks)
+      );
+    }
+
+    function adminNotifOpenSequential() {
+      const links = adminNotifBuildLinks();
+      if (!links) return;
+      if (!confirm(`Akan membuka ${links.length} tab WhatsApp berurutan.\nPastikan popup diizinkan untuk situs ini. Lanjut?`)) return;
+      links.forEach((url, i) => setTimeout(() => window.open(url, '_blank'), i * 600));
+    }
 
     let teacherDataCache = null;
     let filteredStudents = [];
