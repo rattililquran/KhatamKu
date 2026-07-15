@@ -140,6 +140,15 @@ const gscript = {
     p_user_id: userId, p_nama: nama, p_role: role, p_halaqah_id: halaqahId || "", p_no_wa: noWa || ""
   }),
   adminStudentDetail: (username) => rpc("app_admin_student_detail", { p_username: username }),
+
+  // ── ADMIN: Halaqah (Tahap 3) ──────────────────────────────
+  adminListHalaqah: () => rpc("app_admin_list_halaqah"),
+  adminHalaqahDetail: (id) => rpc("app_admin_halaqah_detail", { p_id: id }),
+  adminUpsertHalaqah: (id, nama) => rpc("app_admin_upsert_halaqah", { p_id: id, p_nama: nama || "" }),
+  adminDeleteHalaqah: (id) => rpc("app_admin_delete_halaqah", { p_id: id }),
+  adminSetHalaqahGuru: (halaqahId, guruIds) => rpc("app_admin_set_halaqah_guru", { p_halaqah_id: halaqahId, p_guru_ids: guruIds || [] }),
+  adminMoveStudent: (username, newHalaqahId) => rpc("app_admin_move_student", { p_username: username, p_new_halaqah_id: newHalaqahId || "" }),
+  adminListGuru: () => rpc("app_admin_list_guru"),
 };
 
 // biar kompatibel jika ada kode lama memanggil window.gscript

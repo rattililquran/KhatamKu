@@ -924,6 +924,12 @@
           <canvas id="adChartActivity" height="120"></canvas>
         </div>
 
+        <!-- Grafik per-halaqah -->
+        <div class="bg-white rounded-2xl p-4 shadow-sm mb-4 border border-slate-100">
+          <p class="text-xs font-black text-slate-500 uppercase tracking-widest mb-3">📊 Setor Hari Ini per Halaqah</p>
+          <canvas id="adChartHalaqah" height="140"></canvas>
+        </div>
+
         <!-- At-Risk List -->
         <div class="bg-white rounded-2xl p-4 shadow-sm mb-4 border border-red-50">
           <p class="text-xs font-black text-red-500 uppercase tracking-widest mb-3">❤️ Butuh Perhatian</p>
@@ -1023,10 +1029,14 @@
 
       <!-- Panel: Halaqah -->
       <div id="adminPanelHalaqah" class="admin-panel hidden">
-        <div class="text-center py-20 text-slate-400">
-          <i class="fa-solid fa-school text-4xl mb-3"></i>
-          <p class="font-bold">Manajemen Halaqah</p>
-          <p class="text-sm">Segera hadir di Tahap 3</p>
+        <div class="flex items-center justify-between mb-4">
+          <p class="text-xs font-black text-slate-500 uppercase tracking-widest">🏫 Daftar Halaqah</p>
+          <button onclick="adminOpenHalaqahModal()" class="py-2 px-4 bg-amber-500 hover:bg-amber-600 text-white font-extrabold rounded-2xl text-[11px] tracking-wider uppercase shadow-md flex items-center gap-2 transition-all">
+            <i class="fa-solid fa-plus"></i> Tambah
+          </button>
+        </div>
+        <div id="adHalaqahGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <!-- Injected via JS -->
         </div>
       </div>
 
@@ -1644,6 +1654,92 @@
           <div id="adCsvReportErrors" class="max-h-24 overflow-y-auto text-[10px] text-red-500 font-semibold divide-y divide-slate-100/50 border-t border-slate-200/50 pt-2">
             <!-- Errors list -->
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Tambah / Edit Halaqah -->
+  <div id="adminModalHalaqah" class="fixed inset-0 z-50 modal-overlay hidden flex items-end justify-center sm:items-center">
+    <div class="modal-content w-full max-w-sm rounded-t-[2.5rem] sm:rounded-3xl p-8 transform transition-transform translate-y-full text-slate-800" id="adminModalHalaqahContent">
+      <div class="flex justify-between items-center mb-5 border-b border-slate-100 pb-5">
+        <h3 class="text-lg font-black tracking-tight text-slate-800" id="adHalaqahModalTitle">Tambah Halaqah</h3>
+        <button onclick="closeModal('adminModalHalaqah')" class="text-slate-400 bg-slate-100 hover:bg-slate-200 w-10 h-10 rounded-full flex items-center justify-center transition-colors shadow-inner"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form onsubmit="adminSaveHalaqah(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">ID Halaqah</label>
+          <input type="text" id="adHalaqahIdInput" placeholder="cth: Daurah_008" required
+            class="w-full px-4 py-3 glass-input rounded-2xl outline-none font-bold text-sm">
+          <p class="text-[10px] text-slate-400 font-semibold mt-1">ID unik, tak bisa diubah setelah dibuat.</p>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Nama Halaqah</label>
+          <input type="text" id="adHalaqahNamaInput" placeholder="cth: Daurah Al-Fatihah 008"
+            class="w-full px-4 py-3 glass-input rounded-2xl outline-none font-bold text-sm">
+        </div>
+        <button type="submit" class="w-full py-3.5 bg-amber-500 hover:bg-amber-600 text-white font-extrabold rounded-2xl tracking-wider text-xs uppercase shadow-md transition-all">
+          <i class="fa-solid fa-floppy-disk mr-1"></i> Simpan
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Detail Halaqah (drill-down) -->
+  <div id="adminModalHalaqahDetail" class="fixed inset-0 z-50 modal-overlay hidden flex items-end justify-center sm:items-center">
+    <div class="modal-content w-full max-w-md rounded-t-[2.5rem] sm:rounded-3xl p-6 transform transition-transform translate-y-full text-slate-800 max-h-[90vh] overflow-y-auto" id="adminModalHalaqahDetailContent">
+      <div class="flex justify-between items-start mb-4 border-b border-slate-100 pb-4">
+        <div class="min-w-0">
+          <h3 class="text-lg font-black tracking-tight text-slate-800 truncate" id="adHdName">Halaqah</h3>
+          <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider" id="adHdId"></p>
+        </div>
+        <div class="flex items-center gap-1 shrink-0">
+          <button onclick="adminOpenHalaqahModal({id:adCurrentHalaqah.id,nama:adCurrentHalaqah.nama})" title="Edit nama" class="w-9 h-9 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-500 flex items-center justify-center"><i class="fa-solid fa-pen text-xs"></i></button>
+          <button onclick="adminDeleteHalaqahConfirm(adCurrentHalaqah.id, adCurrentHalaqah.nama)" title="Hapus" class="w-9 h-9 rounded-xl bg-red-50 hover:bg-red-100 text-red-500 flex items-center justify-center"><i class="fa-solid fa-trash text-xs"></i></button>
+          <button onclick="closeModal('adminModalHalaqahDetail')" class="text-slate-400 bg-slate-100 hover:bg-slate-200 w-9 h-9 rounded-full flex items-center justify-center transition-colors shadow-inner"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+      </div>
+
+      <!-- Ringkasan angka -->
+      <div class="grid grid-cols-3 gap-2 mb-4 text-center">
+        <div class="p-2 rounded-xl bg-slate-50"><span class="block text-xl font-black text-slate-700" id="adHdStatMurid">0</span><span class="text-[9px] font-bold text-slate-400 uppercase">Murid</span></div>
+        <div class="p-2 rounded-xl bg-emerald-50"><span class="block text-xl font-black text-emerald-600" id="adHdStatSetor">0</span><span class="text-[9px] font-bold text-emerald-400 uppercase">Setor Hari Ini</span></div>
+        <div class="p-2 rounded-xl bg-amber-50"><span class="block text-xl font-black text-amber-600" id="adHdStatKhatam">0</span><span class="text-[9px] font-bold text-amber-400 uppercase">Total Khatam</span></div>
+      </div>
+
+      <!-- WA Blast -->
+      <button onclick="adminHalaqahWaBlast()" class="w-full py-2.5 mb-4 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold rounded-2xl text-[11px] tracking-wider uppercase shadow-sm flex items-center justify-center gap-2 transition-all">
+        <i class="fa-brands fa-whatsapp"></i> Salin Link WA Blast Halaqah
+      </button>
+
+      <!-- Sub-tabs -->
+      <div class="flex gap-1 mb-4">
+        <button id="adHdSubBtn-murid" onclick="adminHalaqahSubTab('murid')" class="flex-1 py-2 text-[11px] font-black uppercase tracking-wider rounded-xl bg-amber-500 text-white shadow-sm">Murid</button>
+        <button id="adHdSubBtn-guru" onclick="adminHalaqahSubTab('guru')" class="flex-1 py-2 text-[11px] font-black uppercase tracking-wider rounded-xl bg-slate-100 text-slate-500 hover:bg-slate-200">Guru</button>
+        <button id="adHdSubBtn-statistik" onclick="adminHalaqahSubTab('statistik')" class="flex-1 py-2 text-[11px] font-black uppercase tracking-wider rounded-xl bg-slate-100 text-slate-500 hover:bg-slate-200">Statistik</button>
+      </div>
+
+      <!-- Sub: Murid -->
+      <div id="adHdSub-murid" class="space-y-2"><div id="adHdMuridList" class="space-y-2"></div></div>
+
+      <!-- Sub: Guru -->
+      <div id="adHdSub-guru" class="hidden space-y-3">
+        <p class="text-[11px] text-slate-400 font-bold">Centang guru yang mengampu halaqah ini:</p>
+        <div id="adHdGuruList" class="space-y-2 max-h-60 overflow-y-auto"></div>
+        <button onclick="adminSaveHalaqahGuru()" class="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white font-extrabold rounded-2xl text-[11px] tracking-wider uppercase shadow-md transition-all">
+          <i class="fa-solid fa-floppy-disk mr-1"></i> Simpan Penugasan
+        </button>
+      </div>
+
+      <!-- Sub: Statistik -->
+      <div id="adHdSub-statistik" class="hidden space-y-3">
+        <div class="grid grid-cols-2 gap-2 text-center">
+          <div class="p-3 rounded-xl bg-slate-50"><span class="block text-lg font-black text-slate-700" id="adHdStat7Total">0</span><span class="text-[9px] font-bold text-slate-400 uppercase">Halaman 7 Hari</span></div>
+          <div class="p-3 rounded-xl bg-slate-50"><span class="block text-lg font-black text-slate-700" id="adHdStat7Avg">0</span><span class="text-[9px] font-bold text-slate-400 uppercase">Rata-rata / Hari</span></div>
+        </div>
+        <div class="bg-white rounded-2xl p-3 border border-slate-100">
+          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Aktivitas 7 Hari</p>
+          <canvas id="adHdChart7" height="120"></canvas>
         </div>
       </div>
     </div>
@@ -2877,6 +2973,7 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
 
     let adminDataCache = null;
     let adActivityChart = null;
+    let adHalaqahChart = null;
 
     function adminSwitchTab(tab) {
       document.querySelectorAll('.admin-tab').forEach(btn => {
@@ -2948,17 +3045,40 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
         </div>`;
       }).join('') || '<p class="text-sm text-slate-400 text-center py-4">Belum ada aktivitas hari ini.</p>';
 
-      // Chart (lazy init)
+      // Chart 30 hari (data nyata dari RPC)
       if (typeof Chart !== 'undefined') {
+        const act = d.activity_30d || [];
+        const fmtTgl = s => { const p = (s || '').split('-'); return p.length === 3 ? `${+p[2]}/${+p[1]}` : ''; };
         const ctx = document.getElementById('adChartActivity').getContext('2d');
         if (adActivityChart) adActivityChart.destroy();
         adActivityChart = new Chart(ctx, {
           type: 'line',
           data: {
-            labels: ['30hr lalu', '', '', '', '25', '', '', '', '', '20', '', '', '', '', '15', '', '', '', '', '10', '', '', '', '', '5', '', '', '', '', 'Hari Ini'],
-            datasets: [{ label: 'Halaman Dibaca', data: Array(30).fill(0), borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.1)', fill: true, tension: 0.4, pointRadius: 0 }]
+            labels: act.map(a => fmtTgl(a.tanggal)),
+            datasets: [{ label: 'Halaman Dibaca', data: act.map(a => a.halaman || 0), borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.1)', fill: true, tension: 0.4, pointRadius: 0 }]
           },
-          options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true }, x: { ticks: { maxTicksLimit: 5 } } } }
+          options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true }, x: { ticks: { maxTicksLimit: 6 } } } }
+        });
+
+        // Bar chart per-halaqah — % setor hari ini
+        const ph = d.per_halaqah || [];
+        const ctx2 = document.getElementById('adChartHalaqah').getContext('2d');
+        if (adHalaqahChart) adHalaqahChart.destroy();
+        adHalaqahChart = new Chart(ctx2, {
+          type: 'bar',
+          data: {
+            labels: ph.map(h => h.nama || h.id),
+            datasets: [{
+              label: '% Setor',
+              data: ph.map(h => h.jumlah_murid ? Math.round((h.setor_hari_ini / h.jumlah_murid) * 100) : 0),
+              backgroundColor: '#10b981', borderRadius: 6, maxBarThickness: 32
+            }]
+          },
+          options: {
+            plugins: { legend: { display: false },
+              tooltip: { callbacks: { afterLabel: c => { const h = ph[c.dataIndex]; return `${h.setor_hari_ini}/${h.jumlah_murid} murid`; } } } },
+            scales: { y: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%' } } }
+          }
         });
       }
     }
@@ -3252,12 +3372,236 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       adminLoadUsers();
     }
 
-    // Auto-load users when switching to Akun tab
+    // Auto-load data when switching tab
     const origAdminSwitchTab = adminSwitchTab;
     adminSwitchTab = function(tab) {
       origAdminSwitchTab(tab);
       if (tab === 'akun') adminLoadUsers();
+      if (tab === 'halaqah') adminLoadHalaqah();
     };
+
+    // ── ADMIN: Tab Halaqah — JS ─────────────────────────────
+    let adHalaqahList = [];
+    let adGuruCache = [];
+    let adCurrentHalaqah = null;   // detail sedang dibuka
+
+    function adminLoadHalaqah() {
+      const grid = document.getElementById('adHalaqahGrid');
+      grid.innerHTML = '<div class="col-span-full text-center py-10 text-slate-400 text-sm font-bold">Memuat halaqah...</div>';
+      gscript.adminListHalaqah()
+        .then(list => { adHalaqahList = list || []; renderAdminHalaqahGrid(); })
+        .catch(onError);
+    }
+
+    function renderAdminHalaqahGrid() {
+      const grid = document.getElementById('adHalaqahGrid');
+      if (!adHalaqahList.length) {
+        grid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-400"><i class="fa-solid fa-school text-3xl mb-2"></i><p class="font-bold text-sm">Belum ada halaqah. Klik Tambah.</p></div>';
+        return;
+      }
+      grid.innerHTML = adHalaqahList.map(h => {
+        const pct = h.jumlah_murid ? Math.round((h.setor_hari_ini / h.jumlah_murid) * 100) : 0;
+        let badge, badgeCls;
+        if (h.jumlah_murid === 0) { badge = 'Kosong'; badgeCls = 'bg-slate-100 text-slate-500'; }
+        else if (h.at_risk_count > h.jumlah_murid * 0.2) { badge = 'Perlu Perhatian'; badgeCls = 'bg-red-50 text-red-600'; }
+        else { badge = 'Aktif'; badgeCls = 'bg-emerald-50 text-emerald-600'; }
+        const guruTxt = (h.guru && h.guru.length) ? h.guru.join(', ') : 'Belum ada guru';
+        return `
+        <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 hover:border-amber-200 transition-all cursor-pointer" onclick="adminOpenHalaqahDetail('${h.id.replace(/'/g,"\\'")}')">
+          <div class="flex items-start justify-between mb-2">
+            <div class="min-w-0">
+              <p class="font-black text-slate-800 truncate">${h.nama || h.id}</p>
+              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">${h.id}</p>
+            </div>
+            <span class="shrink-0 px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${badgeCls}">${badge}</span>
+          </div>
+          <div class="flex gap-4 text-xs mb-2">
+            <span class="text-slate-600"><b>${h.jumlah_murid}</b> murid</span>
+            <span class="text-slate-600"><b>${h.jumlah_guru}</b> guru</span>
+            ${h.at_risk_count ? `<span class="text-red-500"><b>${h.at_risk_count}</b> at-risk</span>` : ''}
+          </div>
+          <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden mb-1">
+            <div class="h-full bg-gradient-to-r from-emerald-400 to-emerald-600" style="width:${pct}%"></div>
+          </div>
+          <p class="text-[10px] text-slate-400 font-bold">${pct}% setor hari ini · <span class="text-slate-500">👨‍🏫 ${guruTxt}</span></p>
+        </div>`;
+      }).join('');
+    }
+
+    async function adminEnsureGuruCache() {
+      if (adGuruCache.length) return;
+      try { adGuruCache = await gscript.adminListGuru() || []; } catch (_) {}
+    }
+
+    // Modal: tambah / edit halaqah
+    function adminOpenHalaqahModal(editData) {
+      document.getElementById('adHalaqahModalTitle').textContent = editData ? 'Edit Halaqah' : 'Tambah Halaqah';
+      document.getElementById('adHalaqahIdInput').value = editData?.id || '';
+      document.getElementById('adHalaqahIdInput').readOnly = !!editData;
+      document.getElementById('adHalaqahIdInput').classList.toggle('bg-slate-100', !!editData);
+      document.getElementById('adHalaqahNamaInput').value = editData?.nama || '';
+      openModal('adminModalHalaqah');
+    }
+
+    async function adminSaveHalaqah(e) {
+      e.preventDefault();
+      const id = document.getElementById('adHalaqahIdInput').value.trim();
+      const nama = document.getElementById('adHalaqahNamaInput').value.trim();
+      if (!id) return alert('ID halaqah wajib diisi.');
+      try {
+        showLoading('MENYIMPAN HALAQAH...');
+        await gscript.adminUpsertHalaqah(id, nama);
+        adHalaqahCache = [];  // invalidate dropdown cache di tab Akun
+        closeModal('adminModalHalaqah');
+        hideLoading();
+        adminLoadHalaqah();
+      } catch (err) { hideLoading(); onError(err); }
+    }
+
+    async function adminDeleteHalaqahConfirm(id, nama) {
+      if (!confirm(`Hapus halaqah "${nama || id}"?\n\nHanya bisa jika tidak ada murid di dalamnya.`)) return;
+      try {
+        showLoading('MENGHAPUS HALAQAH...');
+        await gscript.adminDeleteHalaqah(id);
+        adHalaqahCache = [];
+        closeModal('adminModalHalaqahDetail');
+        hideLoading();
+        adminLoadHalaqah();
+      } catch (err) { hideLoading(); onError(err); }
+    }
+
+    // Modal: detail halaqah (drill-down)
+    async function adminOpenHalaqahDetail(id) {
+      try {
+        showLoading('MEMUAT DETAIL HALAQAH...');
+        await adminEnsureGuruCache();
+        const d = await gscript.adminHalaqahDetail(id);
+        adCurrentHalaqah = d;
+        hideLoading();
+        renderHalaqahDetail(d);
+        adminHalaqahSubTab('murid');
+        openModal('adminModalHalaqahDetail');
+      } catch (err) { hideLoading(); onError(err); }
+    }
+
+    function renderHalaqahDetail(d) {
+      document.getElementById('adHdName').textContent = d.nama || d.id;
+      document.getElementById('adHdId').textContent = d.id;
+      const murid = d.murid || [];
+      document.getElementById('adHdStatMurid').textContent = murid.length;
+      document.getElementById('adHdStatSetor').textContent = murid.filter(m => m.setor_hari_ini).length;
+      document.getElementById('adHdStatKhatam').textContent = d.total_khatam_kelas || 0;
+
+      // Sub-tab Murid
+      const mBody = document.getElementById('adHdMuridList');
+      mBody.innerHTML = murid.length ? murid.map(m => `
+        <div class="flex items-center justify-between p-2 rounded-xl ${m.setor_hari_ini ? 'bg-emerald-50/60' : 'bg-slate-50'}">
+          <div class="min-w-0">
+            <p class="text-sm font-bold text-slate-700 truncate">${m.nama} ${m.udzur ? `<span class="text-[9px] text-amber-500 font-black">(${m.udzur})</span>` : ''}</p>
+            <p class="text-[10px] text-slate-400">Hal ${m.halaman_terakhir || 0} · 🔥${m.streak || 0} · 🏆${m.total_khatam || 0}</p>
+          </div>
+          <div class="flex items-center gap-1 shrink-0">
+            ${m.setor_hari_ini ? '<span class="text-[9px] font-black text-emerald-600 uppercase">✓ Setor</span>' : ''}
+            <button onclick="adminOpenMoveStudent('${m.username}','${(m.nama||'').replace(/'/g,"\\'")}')" title="Pindah halaqah" class="w-7 h-7 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-500 flex items-center justify-center"><i class="fa-solid fa-right-left text-[10px]"></i></button>
+          </div>
+        </div>`).join('') : '<p class="text-sm text-slate-400 text-center py-6">Belum ada murid di halaqah ini.</p>';
+
+      // Sub-tab Guru
+      renderHalaqahGuruTab(d);
+
+      // Sub-tab Statistik — grafik 7 hari
+      const s7 = d.stat_7d || [];
+      const total = s7.reduce((a, b) => a + (b.halaman || 0), 0);
+      document.getElementById('adHdStat7Total').textContent = total;
+      document.getElementById('adHdStat7Avg').textContent = s7.length ? Math.round(total / s7.length) : 0;
+      if (typeof Chart !== 'undefined') {
+        const ctx = document.getElementById('adHdChart7').getContext('2d');
+        if (adHdChart) adHdChart.destroy();
+        const fmt = str => { const p = (str || '').split('-'); return p.length === 3 ? `${+p[2]}/${+p[1]}` : ''; };
+        adHdChart = new Chart(ctx, {
+          type: 'bar',
+          data: { labels: s7.map(x => fmt(x.tanggal)), datasets: [{ data: s7.map(x => x.halaman || 0), backgroundColor: '#f59e0b', borderRadius: 5, maxBarThickness: 26 }] },
+          options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+        });
+      }
+    }
+
+    function renderHalaqahGuruTab(d) {
+      const assigned = new Set((d.guru || []).map(g => g.user_id));
+      const box = document.getElementById('adHdGuruList');
+      if (!adGuruCache.length) {
+        box.innerHTML = '<p class="text-sm text-slate-400 text-center py-6">Belum ada akun guru terdaftar.</p>';
+        return;
+      }
+      box.innerHTML = adGuruCache.map(g => `
+        <label class="flex items-center gap-3 p-2 rounded-xl bg-slate-50 hover:bg-slate-100 cursor-pointer transition-colors">
+          <input type="checkbox" class="ad-hd-guru-cb w-4 h-4 accent-amber-500" value="${g.user_id}" ${assigned.has(g.user_id) ? 'checked' : ''}>
+          <span class="text-sm font-bold text-slate-700">${g.nama}</span>
+        </label>`).join('');
+    }
+
+    async function adminSaveHalaqahGuru() {
+      if (!adCurrentHalaqah) return;
+      const ids = Array.from(document.querySelectorAll('.ad-hd-guru-cb:checked')).map(cb => cb.value);
+      try {
+        showLoading('MENYIMPAN PENUGASAN GURU...');
+        await gscript.adminSetHalaqahGuru(adCurrentHalaqah.id, ids);
+        hideLoading();
+        showToast('✅ Penugasan guru diperbarui!', 'success');
+        // refresh detail + grid
+        const d = await gscript.adminHalaqahDetail(adCurrentHalaqah.id);
+        adCurrentHalaqah = d;
+        renderHalaqahDetail(d);
+        adminLoadHalaqah();
+      } catch (err) { hideLoading(); onError(err); }
+    }
+
+    function adminHalaqahSubTab(sub) {
+      ['murid', 'guru', 'statistik'].forEach(s => {
+        document.getElementById('adHdSub-' + s).classList.toggle('hidden', s !== sub);
+        const btn = document.getElementById('adHdSubBtn-' + s);
+        if (btn) btn.className = 'flex-1 py-2 text-[11px] font-black uppercase tracking-wider rounded-xl transition-all ' +
+          (s === sub ? 'bg-amber-500 text-white shadow-sm' : 'bg-slate-100 text-slate-500 hover:bg-slate-200');
+      });
+    }
+
+    // Pindah murid ke halaqah lain
+    async function adminOpenMoveStudent(username, nama) {
+      await adminEnsureHalaqahCache();
+      const target = prompt(`Pindahkan "${nama}" ke halaqah mana?\n\nKetik ID halaqah tujuan (kosongkan = tanpa halaqah):\n\n` +
+        adHalaqahCache.map(h => `• ${h.id} — ${h.nama || ''}`).join('\n'), adCurrentHalaqah?.id || '');
+      if (target === null) return;  // batal
+      try {
+        showLoading('MEMINDAHKAN MURID...');
+        await gscript.adminMoveStudent(username, target.trim());
+        hideLoading();
+        showToast('✅ Murid dipindahkan!', 'success');
+        const d = await gscript.adminHalaqahDetail(adCurrentHalaqah.id);
+        adCurrentHalaqah = d;
+        renderHalaqahDetail(d);
+        adminLoadHalaqah();
+      } catch (err) { hideLoading(); onError(err); }
+    }
+
+    // WA Blast ke seluruh murid halaqah — salin teks massal
+    function adminHalaqahWaBlast() {
+      if (!adCurrentHalaqah) return;
+      const murid = (adCurrentHalaqah.murid || []).filter(m => m.no_wa);
+      if (!murid.length) return alert('Tidak ada nomor WA murid di halaqah ini.');
+      const belum = murid.filter(m => !m.setor_hari_ini);
+      const links = murid.map(m => {
+        const pesan = `Assalamualaikum ${m.nama}, semoga sehat selalu 🌿\nJangan lupa setor bacaan Al-Qur'an hari ini ya. Halaman terakhirmu: ${m.halaman_terakhir || 0}. Semangat! 📖`;
+        return `https://wa.me/${m.no_wa.replace(/^0/, '62').replace(/\D/g, '')}?text=${encodeURIComponent(pesan)}`;
+      });
+      const teks = `Rekap Halaqah ${adCurrentHalaqah.nama || adCurrentHalaqah.id}:\n` +
+        `• ${murid.length} murid (nomor WA)\n• ${belum.length} belum setor hari ini\n\nLink WA per murid:\n` + links.join('\n');
+      navigator.clipboard?.writeText(teks).then(
+        () => showToast(`✅ ${links.length} link WA disalin ke clipboard!`, 'success'),
+        () => { window.prompt('Salin teks berikut:', teks); }
+      );
+    }
+
+    let adHdChart = null;
 
     let teacherDataCache = null;
     let filteredStudents = [];
