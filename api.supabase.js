@@ -153,6 +153,11 @@ const gscript = {
   // ── ADMIN: Analytics & Notifikasi (Tahap 4) ───────────────
   adminAnalytics: (from, to) => rpc("app_admin_analytics", { p_from: from, p_to: to }),
   adminNotifTargets: (scope, halaqahId) => rpc("app_admin_notif_targets", { p_scope: scope || "all", p_halaqah_id: halaqahId || null }),
+
+  // ── ADMIN: Pengaturan (Tahap 5) ───────────────────────────
+  adminListKonten: () => rpc("app_admin_list_konten"),
+  adminSetKonten: (kunci, nilai) => rpc("app_admin_set_konten", { p_kunci: kunci, p_nilai: nilai || "" }),
+  adminGetLog: (limit = 50, offset = 0) => rpc("app_admin_get_log", { p_limit: limit, p_offset: offset }),
 };
 
 // biar kompatibel jika ada kode lama memanggil window.gscript

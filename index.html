@@ -1172,10 +1172,41 @@
 
       <!-- Panel: Pengaturan -->
       <div id="adminPanelSettings" class="admin-panel hidden">
-        <div class="text-center py-20 text-slate-400">
-          <i class="fa-solid fa-gear text-4xl mb-3"></i>
-          <p class="font-bold">Pengaturan & Audit Log</p>
-          <p class="text-sm">Segera hadir di Tahap 5</p>
+        <!-- Sub-tabs -->
+        <div class="flex gap-1 mb-4">
+          <button id="adSetSubBtn-konten" onclick="adminSettingsSubTab('konten')" class="flex-1 py-2 text-[11px] font-black uppercase tracking-wider rounded-xl bg-amber-500 text-white shadow-sm">Konten</button>
+          <button id="adSetSubBtn-log" onclick="adminSettingsSubTab('log')" class="flex-1 py-2 text-[11px] font-black uppercase tracking-wider rounded-xl bg-slate-100 text-slate-500 hover:bg-slate-200">Audit Log</button>
+        </div>
+
+        <!-- Sub: Konten -->
+        <div id="adSetSub-konten">
+          <div class="flex items-center justify-between mb-3">
+            <p class="text-xs font-black text-slate-500 uppercase tracking-widest">📝 Editor Konten</p>
+            <button onclick="adminOpenKontenModal()" class="py-2 px-3 bg-amber-500 hover:bg-amber-600 text-white font-extrabold rounded-xl text-[11px] tracking-wider uppercase shadow-md flex items-center gap-1 transition-all"><i class="fa-solid fa-plus"></i> Kunci</button>
+          </div>
+          <div id="adKontenList" class="space-y-3"></div>
+        </div>
+
+        <!-- Sub: Audit Log -->
+        <div id="adSetSub-log" class="hidden">
+          <p class="text-xs font-black text-slate-500 uppercase tracking-widest mb-3">🛡️ Audit Log Aksi Admin</p>
+          <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden mb-3">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-slate-100 font-extrabold text-slate-500 uppercase tracking-wider">
+                    <th class="p-3">Waktu</th><th class="p-3">Admin</th><th class="p-3">Aksi</th><th class="p-3">Target / Detail</th>
+                  </tr>
+                </thead>
+                <tbody id="adLogTableBody" class="divide-y divide-slate-100 font-semibold text-slate-700"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="flex justify-between items-center px-2 text-xs">
+            <button id="adLogPrevBtn" onclick="adminLogPrevPage()" class="px-4 py-2 border border-slate-200 hover:bg-slate-50 rounded-xl font-extrabold transition-all">Prev</button>
+            <span id="adLogInfoText" class="text-slate-400 font-bold">—</span>
+            <button id="adLogNextBtn" onclick="adminLogNextPage()" class="px-4 py-2 border border-slate-200 hover:bg-slate-50 rounded-xl font-extrabold transition-all">Next</button>
+          </div>
         </div>
       </div>
     </main>
@@ -1854,6 +1885,31 @@
           <canvas id="adHdChart7" height="120"></canvas>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Modal: Tambah / Edit Konten -->
+  <div id="adminModalKonten" class="fixed inset-0 z-50 modal-overlay hidden flex items-end justify-center sm:items-center">
+    <div class="modal-content w-full max-w-md rounded-t-[2.5rem] sm:rounded-3xl p-8 transform transition-transform translate-y-full text-slate-800" id="adminModalKontenContent">
+      <div class="flex justify-between items-center mb-5 border-b border-slate-100 pb-5">
+        <h3 class="text-lg font-black tracking-tight text-slate-800" id="adKontenModalTitle">Tambah Konten</h3>
+        <button onclick="closeModal('adminModalKonten')" class="text-slate-400 bg-slate-100 hover:bg-slate-200 w-10 h-10 rounded-full flex items-center justify-center transition-colors shadow-inner"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form onsubmit="adminSaveKonten(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Kunci</label>
+          <input type="text" id="adKontenKunciInput" placeholder="cth: wa_link" required
+            class="w-full px-4 py-3 glass-input rounded-2xl outline-none font-bold text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Nilai</label>
+          <textarea id="adKontenNilaiInput" rows="4" placeholder="Isi konten..."
+            class="w-full px-4 py-3 glass-input rounded-2xl outline-none font-medium text-sm resize-none"></textarea>
+        </div>
+        <button type="submit" class="w-full py-3.5 bg-amber-500 hover:bg-amber-600 text-white font-extrabold rounded-2xl tracking-wider text-xs uppercase shadow-md transition-all">
+          <i class="fa-solid fa-floppy-disk mr-1"></i> Simpan
+        </button>
+      </form>
     </div>
   </div>
 
@@ -3492,6 +3548,7 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       if (tab === 'halaqah') adminLoadHalaqah();
       if (tab === 'analytics') adminInitAnalytics();
       if (tab === 'notif') adminInitNotif();
+      if (tab === 'settings') adminInitSettings();
     };
 
     // ── ADMIN: Tab Halaqah — JS ─────────────────────────────
@@ -3916,6 +3973,117 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       if (!confirm(`Akan membuka ${links.length} tab WhatsApp berurutan.\nPastikan popup diizinkan untuk situs ini. Lanjut?`)) return;
       links.forEach((url, i) => setTimeout(() => window.open(url, '_blank'), i * 600));
     }
+
+    // ── ADMIN: Tab Pengaturan — JS ──────────────────────────
+    let adSettingsInit = false;
+    let adKontenCache = [];
+    let adLogPage = 0;
+    let adLogTotal = 0;
+    const AD_LOG_SIZE = 50;
+
+    function adminInitSettings() {
+      if (adSettingsInit) return;
+      adSettingsInit = true;
+      adminSettingsSubTab('konten');
+      adminLoadKonten();
+    }
+
+    function adminSettingsSubTab(sub) {
+      ['konten', 'log'].forEach(s => {
+        document.getElementById('adSetSub-' + s).classList.toggle('hidden', s !== sub);
+        const btn = document.getElementById('adSetSubBtn-' + s);
+        if (btn) btn.className = 'flex-1 py-2 text-[11px] font-black uppercase tracking-wider rounded-xl transition-all ' +
+          (s === sub ? 'bg-amber-500 text-white shadow-sm' : 'bg-slate-100 text-slate-500 hover:bg-slate-200');
+      });
+      if (sub === 'log') { adLogPage = 0; adminLoadLog(); }
+    }
+
+    function adminLoadKonten() {
+      const box = document.getElementById('adKontenList');
+      box.innerHTML = '<p class="text-center py-8 text-slate-400 text-sm font-bold">Memuat konten...</p>';
+      gscript.adminListKonten()
+        .then(list => { adKontenCache = list || []; renderKontenList(); })
+        .catch(onError);
+    }
+
+    function renderKontenList() {
+      const box = document.getElementById('adKontenList');
+      if (!adKontenCache.length) {
+        box.innerHTML = '<p class="text-center py-8 text-slate-400 text-sm font-bold">Belum ada konten. Klik + Kunci.</p>';
+        return;
+      }
+      box.innerHTML = adKontenCache.map(k => `
+        <div class="bg-white rounded-2xl p-3 shadow-sm border border-slate-100 flex items-start justify-between gap-3">
+          <div class="min-w-0 flex-1">
+            <p class="text-[10px] font-black text-amber-600 uppercase tracking-wider mb-1">${k.kunci}</p>
+            <p class="text-sm text-slate-600 break-words line-clamp-3">${(k.nilai || '(kosong)').replace(/</g, '&lt;')}</p>
+          </div>
+          <button onclick='adminOpenKontenModal(${JSON.stringify(k).replace(/'/g, "&#39;")})' class="shrink-0 w-9 h-9 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-500 flex items-center justify-center"><i class="fa-solid fa-pen text-xs"></i></button>
+        </div>`).join('');
+    }
+
+    function adminOpenKontenModal(editData) {
+      document.getElementById('adKontenModalTitle').textContent = editData ? 'Edit Konten' : 'Tambah Konten';
+      document.getElementById('adKontenKunciInput').value = editData?.kunci || '';
+      document.getElementById('adKontenKunciInput').readOnly = !!editData;
+      document.getElementById('adKontenKunciInput').classList.toggle('bg-slate-100', !!editData);
+      document.getElementById('adKontenNilaiInput').value = editData?.nilai || '';
+      openModal('adminModalKonten');
+    }
+
+    async function adminSaveKonten(e) {
+      e.preventDefault();
+      const kunci = document.getElementById('adKontenKunciInput').value.trim();
+      const nilai = document.getElementById('adKontenNilaiInput').value;
+      if (!kunci) return alert('Kunci wajib diisi.');
+      try {
+        showLoading('MENYIMPAN KONTEN...');
+        await gscript.adminSetKonten(kunci, nilai);
+        closeModal('adminModalKonten');
+        hideLoading();
+        adminLoadKonten();
+      } catch (err) { hideLoading(); onError(err); }
+    }
+
+    function adminLoadLog() {
+      const tbody = document.getElementById('adLogTableBody');
+      tbody.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-slate-400 font-bold">Memuat...</td></tr>';
+      gscript.adminGetLog(AD_LOG_SIZE, adLogPage * AD_LOG_SIZE)
+        .then(d => { adLogTotal = d.total || 0; renderLogTable(d.logs || []); })
+        .catch(onError);
+    }
+
+    function renderLogTable(logs) {
+      const tbody = document.getElementById('adLogTableBody');
+      if (!logs.length) {
+        tbody.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-slate-400 font-bold">Belum ada aktivitas admin.</td></tr>';
+      } else {
+        const aksiBadge = a => {
+          const map = { create_user: 'bg-emerald-50 text-emerald-600', delete_user: 'bg-red-50 text-red-600', reset_password: 'bg-amber-50 text-amber-600', import_csv_batch: 'bg-sky-50 text-sky-600', set_konten: 'bg-purple-50 text-purple-600' };
+          return `<span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${map[a] || 'bg-slate-100 text-slate-500'}">${a}</span>`;
+        };
+        tbody.innerHTML = logs.map(l => {
+          const t = new Date(l.dibuat_pada);
+          const waktu = t.toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+          const detail = l.target_nama || (l.detail ? Object.entries(l.detail).map(([k, v]) => `${k}: ${v}`).join(', ') : '');
+          return `<tr class="hover:bg-slate-50/50">
+            <td class="p-3 text-slate-400 whitespace-nowrap">${waktu}</td>
+            <td class="p-3 font-bold text-slate-700">${l.admin_nama || '—'}</td>
+            <td class="p-3">${aksiBadge(l.aksi)}</td>
+            <td class="p-3 text-slate-500 text-[11px]">${(detail || '—').toString().replace(/</g, '&lt;')}</td>
+          </tr>`;
+        }).join('');
+      }
+      const start = adLogPage * AD_LOG_SIZE + 1;
+      const end = Math.min((adLogPage + 1) * AD_LOG_SIZE, adLogTotal);
+      document.getElementById('adLogInfoText').textContent = adLogTotal > 0 ? `${start}-${end} dari ${adLogTotal}` : 'Tidak ada data';
+      const prev = document.getElementById('adLogPrevBtn'), next = document.getElementById('adLogNextBtn');
+      prev.disabled = adLogPage === 0; prev.style.opacity = adLogPage === 0 ? '0.4' : '1';
+      next.disabled = end >= adLogTotal; next.style.opacity = end >= adLogTotal ? '0.4' : '1';
+    }
+
+    function adminLogPrevPage() { if (adLogPage > 0) { adLogPage--; adminLoadLog(); } }
+    function adminLogNextPage() { if ((adLogPage + 1) * AD_LOG_SIZE < adLogTotal) { adLogPage++; adminLoadLog(); } }
 
     let teacherDataCache = null;
     let filteredStudents = [];
