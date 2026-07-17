@@ -5789,7 +5789,7 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       wrap.innerHTML = DZIKIR_TABS.map(t => {
         const on = t.slug === _dzikirActive;
         const jenis = dzTabJenis(t.slug);
-        const check = jenis ? `<span onclick="event.stopPropagation();toggleDzikirStatus('${jenis}')" id="dzTabCheck-${jenis}" class="dz-tab-check inline-flex items-center justify-center w-5 h-5 -my-1.5 rounded-full ml-1 align-middle transition-all border-2 border-slate-300 bg-white"><i class="fa-solid fa-check text-[9px] text-white opacity-0 transition-opacity"></i></span>` : '';
+        const check = jenis ? `<span onclick="event.stopPropagation();toggleDzikirStatus('${jenis}')" id="dzTabCheck-${jenis}" class="dz-tab-check inline-flex items-center justify-center w-5 h-5 -my-1.5 rounded-full ml-1 align-middle transition-all border-2 border-slate-300 bg-white"><i class="fa-solid fa-check text-[9px] text-slate-300 transition-colors"></i></span>` : '';
         return `<button onclick="switchDzikirTab('${t.slug}')" class="flex-1 py-2.5 text-[11px] font-bold tracking-widest uppercase rounded-xl transition-all ${on ? 'bg-white shadow-sm text-sky-600' : 'text-slate-400 hover:text-slate-600'}"><i class="fa-solid ${t.icon} mr-1.5"></i>${t.label}${check}</button>`;
       }).join('');
       paintDzikirTabChecks();   // sinkronkan langsung dgn _dzToday saat ini (mis. saat ganti tab)
@@ -6030,7 +6030,7 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
         el.classList.toggle('bg-white', !done);
         el.classList.toggle('border-slate-300', !done);
         const ic = el.querySelector('i');
-        if (ic) ic.classList.toggle('opacity-0', !done);
+        if (ic) { ic.classList.toggle('text-white', done); ic.classList.toggle('text-slate-300', !done); }
       });
     }
 
