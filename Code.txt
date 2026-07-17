@@ -1,0 +1,886 @@
+function doGet(e) {
+  return HtmlService.createTemplateFromFile('Index')
+    .evaluate()
+    .setTitle('KhatamKu')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+}
+
+function include(filename) {
+  return HtmlService.createHtmlOutputFromFile(filename).getContent();
+}
+
+function generateDummyData() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (!ss) throw new Error("Harus dijalankan dari dalam Spreadsheet.");
+
+  // Hapus semua sheet lama
+  const sheets = ss.getSheets();
+  const keepName = 'TempSheet' + Date.now();
+  ss.insertSheet(keepName);
+  sheets.forEach(s => ss.deleteSheet(s));
+
+  // --- 1. Tab Akun ---
+  const sheetAkun = ss.insertSheet('Akun');
+  sheetAkun.appendRow(['ID_Pengguna', 'Password', 'Nama_Lengkap', 'Role', 'ID_Halaqah', 'No_WhatsApp']);
+  sheetAkun.appendRow(['admin', 'admin123', 'Administrator', 'admin', '', '']);
+  sheetAkun.appendRow(['guru1', 'guru123', 'Ust. Ahmad', 'guru', 'Halaqah_A', '']);
+  sheetAkun.appendRow(['guru2', 'guru123', 'Ustadzah Aisyah', 'guru', 'Halaqah_B', '']);
+  sheetAkun.appendRow(['gurumulti', 'guru123', 'Ust. Multi', 'guru', 'Halaqah_A, Halaqah_B', '081200000000']);
+  // Akun demo
+  sheetAkun.appendRow(['rattil', '1234', 'Demo Rattil', 'murid', 'Halaqah_A', '']);
+  sheetAkun.appendRow(['1001', '123456', 'Aisyah (Rajin & Stabil)', 'murid', 'Halaqah_A', '081234567890']);
+  sheetAkun.appendRow(['1002', '123456', 'Fatimah (Sedang Udzur Haid)', 'murid', 'Halaqah_A', '081234567891']);
+  sheetAkun.appendRow(['1003', '123456', 'Zaid (Sakit demam)', 'murid', 'Halaqah_A', '081234567892']);
+  sheetAkun.appendRow(['1004', '123456', 'Umar (Berisiko - Bolos >3 hr)', 'murid', 'Halaqah_A', '081234567893']);
+  sheetAkun.appendRow(['1005', '123456', 'Ali (Khatam Hari Ini)', 'murid', 'Halaqah_A', '081234567894']);
+  sheetAkun.appendRow(['2001', '123456', 'Khadijah (Safar Perjalanan)', 'murid', 'Halaqah_B', '081234567895']);
+  sheetAkun.appendRow(['2002', '123456', 'Hasan (Bolos 1 hari)', 'murid', 'Halaqah_B', '081234567896']);
+
+  // --- 2. Tab Pengguna ---
+  const sheetPengguna = ss.insertSheet('Pengguna');
+  sheetPengguna.appendRow([
+    'ID_Pengguna', 'Tanggal_Target', 'Target_Harian_Halaman', 'Halaman_Terakhir_Dibaca',
+    'Surah_Terakhir_Dibaca_ID', 'Ayat_Terakhir_Dibaca', 'Streak_Hari', 'Tanggal_Update_Terakhir',
+    'Total_Khatam', 'Status_Udzur', 'Udzur_Start_Date', 'Udzur_End_Date'
+  ]);
+
+  const today = new Date();
+  const todayStr = Utilities.formatDate(today, "Asia/Jakarta", "yyyy-MM-dd");
+  const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = Utilities.formatDate(yesterday, "Asia/Jakarta", "yyyy-MM-dd");
+  const fourDaysAgo = new Date(today); fourDaysAgo.setDate(fourDaysAgo.getDate() - 4);
+  const fourDaysAgoStr = Utilities.formatDate(fourDaysAgo, "Asia/Jakarta", "yyyy-MM-dd");
+  const udzurEnd = new Date(today); udzurEnd.setDate(udzurEnd.getDate() + 5);
+  const udzurEndStr = Utilities.formatDate(udzurEnd, "Asia/Jakarta", "yyyy-MM-dd");
+
+  sheetPengguna.appendRow(['1001', '', 5, 10, 2, 14, 5, todayStr, 0, '', '', '']);
+  sheetPengguna.appendRow(['1002', '', 5, 20, 2, 100, 0, yesterdayStr, 0, 'Haid', yesterdayStr, udzurEndStr]);
+  sheetPengguna.appendRow(['1003', '', 10, 45, 3, 20, 0, fourDaysAgoStr, 0, 'Sakit', yesterdayStr, udzurEndStr]);
+  sheetPengguna.appendRow(['1004', '', 2, 5, 2, 1, 0, fourDaysAgoStr, 0, '', '', '']);
+  sheetPengguna.appendRow(['1005', '', 10, 604, 114, 6, 30, todayStr, 1, '', '', '']);
+  sheetPengguna.appendRow(['2001', '', 5, 100, 5, 10, 0, yesterdayStr, 0, 'Safar', todayStr, udzurEndStr]);
+  sheetPengguna.appendRow(['2002', '', 15, 15, 2, 50, 10, yesterdayStr, 0, '', '', '']);
+
+  // --- 3. Tab Log_Bacaan ---
+  const sheetLog = ss.insertSheet('Log_Bacaan');
+  sheetLog.appendRow([
+    'ID_Log', 'ID_Pengguna', 'Tanggal_Baca', 'Surah_ID_Dibaca', 'Ayat_Dibaca',
+    'Halaman_Terkalkulasi', 'Persentase_Progres', 'Halaman_Dibaca_Hari_Ini', 'Halaman_Awal_Hari_Ini'
+  ]);
+  sheetLog.appendRow(['log1', '1001', todayStr, 2, 14, 10, 1.6, 5, 5]);
+  sheetLog.appendRow(['log2', '1005', todayStr, 114, 6, 604, 100, 10, 594]);
+  sheetLog.appendRow(['log3', '2002', yesterdayStr, 2, 50, 15, 2.5, 15, 0]);
+
+  // --- 4. Tab Jurnal_Refleksi ---
+  const sheetJurnal = ss.insertSheet('Jurnal_Refleksi');
+  sheetJurnal.appendRow(['ID_Jurnal', 'ID_Pengguna', 'Tanggal_Jurnal', 'Surah_Ref_ID', 'Ayat_Ref_Awal', 'Ayat_Ref_Akhir', 'Catatan_Refleksi']);
+  sheetJurnal.appendRow(['j1', '1001', todayStr, 2, 1, 5, 'Masya Allah, surat Al-Baqarah mengingatkan kita untuk selalu yakin kepada yang ghaib dan mendirikan shalat.']);
+
+  // Hapus sheet sementara
+  ss.deleteSheet(ss.getSheetByName(keepName));
+
+  return "Data dummy berhasil di-generate!";
+}
+
+// ===== FUNGSI BARU: Sheet Tentang =====
+
+/**
+ * Membuat sheet "Tentang" dengan konten default jika belum ada.
+ * Konten bisa diedit langsung di spreadsheet.
+ */
+function createTentangSheet(ss) {
+  const sheet = ss.insertSheet('Tentang');
+
+  // Atur lebar kolom
+  sheet.setColumnWidth(1, 220);
+  sheet.setColumnWidth(2, 400);
+  sheet.setColumnWidth(3, 250);
+
+  // Header
+  sheet.appendRow(['Kunci', 'Nilai', 'Keterangan (Jangan ubah kolom Kunci!)']);
+  sheet.getRange(1, 1, 1, 3).setFontWeight('bold').setBackground('#e8f4fd');
+
+  // Isi default
+  sheet.appendRow(['judul_app', 'KhatamKu', 'Nama aplikasi yang tampil di halaman Tentang']);
+  sheet.appendRow(['versi_app', '1.0.0', 'Versi aplikasi']);
+  sheet.appendRow(['deskripsi_app',
+    'KhatamKu adalah aplikasi pelacak bacaan Al-Quran berbasis Google Sheets yang membantu santri dan guru memantau progress tilawah secara mudah dan real-time. Dengan KhatamKu, setiap halaman yang kamu baca tercatat dengan rapi, dan gurumu dapat memantau perkembanganmu kapanpun.',
+    'Deskripsi singkat tentang aplikasi KhatamKu']);
+  sheet.appendRow(['tentang_rattil',
+    'Rattilil Quran adalah program tahsin dan tilawah Al-Quran yang berfokus pada kualitas bacaan dan konsistensi khatam. Program ini hadir untuk membimbing para santri agar mencintai Al-Quran dengan tartil, tadabbur, dan penuh keistiqomahan. "Rattil-il Qur\'ana tartila" - bacalah Al-Quran dengan tartil (QS. Al-Muzzammil: 4).',
+    'Deskripsi tentang program Rattilil Quran']);
+  sheet.appendRow(['wa_link', 'https://wa.me/6281234567890', 'Link WhatsApp Rattil (format: https://wa.me/62xxx tanpa spasi atau tanda hubung)']);
+  sheet.appendRow(['ig_link', 'https://instagram.com/rattililquran', 'Link Instagram Rattil (isi dengan URL lengkap)']);
+  sheet.appendRow(['yt_link', 'https://youtube.com/@rattililquran', 'Link YouTube Rattil (isi dengan URL lengkap)']);
+  sheet.appendRow(['footer_text', 'Dibuat dengan ❤️ untuk para pecinta Al-Quran oleh Rattilil Quran © 2026', 'Teks footer di halaman Tentang']);
+
+  return sheet;
+}
+
+/**
+ * Mengambil konten dari sheet Tentang dan mengembalikannya sebagai objek key-value.
+ * Dipanggil dari sisi klien (Index.html) saat halaman Tentang dibuka.
+ */
+function getTentangContent() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName('Tentang');
+
+  // Buat sheet default jika belum ada
+  if (!sheet) {
+    sheet = createTentangSheet(ss);
+  }
+
+  const data = sheet.getDataRange().getValues();
+  const result = {};
+
+  // Mulai dari baris ke-2 (skip header)
+  for (let i = 1; i < data.length; i++) {
+    const key = data[i][0] ? data[i][0].toString().trim() : '';
+    const value = data[i][1] ? data[i][1].toString().trim() : '';
+    if (key) {
+      result[key] = value;
+    }
+  }
+
+  return result;
+}
+
+// ===== AKHIR FUNGSI BARU =====
+
+function initData() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (!ss) throw new Error("Aplikasi harus dijalankan dari Spreadsheet (Bound Script).");
+
+  if (!ss.getSheetByName('Akun') || !ss.getSheetByName('Pengguna') || !ss.getSheetByName('Log_Bacaan') || !ss.getSheetByName('Jurnal_Refleksi')) {
+    generateDummyData();
+  }
+
+  // Buat sheet Tentang jika belum ada
+  if (!ss.getSheetByName('Tentang')) {
+    createTentangSheet(ss);
+  }
+
+  // Buat sheet Potret jika belum ada
+  if (!ss.getSheetByName('Potret')) {
+    createPotretSheet(ss);
+  }
+}
+
+function doLogin(username, password) {
+  initData();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('Akun');
+  const data = sheet.getDataRange().getValues();
+
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0].toString() === username.toString() && data[i][1].toString() === password.toString()) {
+      const userObj = { id: data[i][0].toString(), name: data[i][2], role: data[i][3].toString().toLowerCase(), halaqah: data[i][4] };
+
+      let dashboardData = null;
+      if (userObj.role === 'murid') {
+        dashboardData = getInitialData(userObj.id);
+      } else if (userObj.role === 'guru') {
+        dashboardData = getTeacherDashboardData(userObj.id);
+      }
+
+      return { user: userObj, dashboardData: dashboardData };
+    }
+  }
+  throw new Error("NIS/Username atau Password salah.");
+}
+
+/**
+ * Mendaftarkan akun murid baru.
+ * Dipanggil dari sisi klien (registerForm).
+ */
+function doRegister(namaLengkap, username, password) {
+  initData();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  // --- Validasi sisi server ---
+  if (!username || username.length < 3) throw new Error('Username minimal 3 karakter.');
+  if (!/^[a-zA-Z0-9_]+$/.test(username)) throw new Error('Username hanya boleh huruf, angka, dan underscore (_).');
+  if (!password || password.length < 4) throw new Error('Password minimal 4 karakter.');
+  if (!namaLengkap || namaLengkap.trim() === '') throw new Error('Nama lengkap tidak boleh kosong.');
+
+  const sheetAkun = ss.getSheetByName('Akun');
+  const akunData = sheetAkun.getDataRange().getValues();
+
+  // Cek duplikasi username (case-insensitive)
+  for (let i = 1; i < akunData.length; i++) {
+    if (akunData[i][0].toString().toLowerCase() === username.toLowerCase()) {
+      throw new Error('Username "' + username + '" sudah terdaftar. Silakan pilih username lain.');
+    }
+  }
+
+  // Simpan ke sheet Akun
+  sheetAkun.appendRow([username, password, namaLengkap.trim(), 'murid', 'Halaqah_Umum', '']);
+
+  // Buat baris profil kosong di sheet Pengguna
+  const sheetPengguna = ss.getSheetByName('Pengguna');
+  const todayStr = Utilities.formatDate(new Date(), 'Asia/Jakarta', 'yyyy-MM-dd');
+  sheetPengguna.appendRow([username, '', 0, 0, 1, 0, 0, '', 0, '', '', '']);
+
+  return { success: true, username: username };
+}
+
+function getInitialData(userId) {
+  if (!userId) throw new Error("Akses ditolak: Anda belum login.");
+  
+  // Rekomendasi #1: Batch Fetching
+  // Buka Spreadsheet satu kali saja
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  
+  // Tarik semua data ke memori sekaligus
+  const sheetPengguna = ss.getSheetByName('Pengguna');
+  const sheetJurnal = ss.getSheetByName('Jurnal_Refleksi');
+  const sheetLog = ss.getSheetByName('Log_Bacaan');
+  
+  const dataPengguna = sheetPengguna ? sheetPengguna.getDataRange().getValues() : null;
+  const dataJurnal = sheetJurnal ? sheetJurnal.getDataRange().getValues() : null;
+  const dataLog = sheetLog ? sheetLog.getDataRange().getValues() : null;
+
+  return {
+    profile: getUserProfile(userId, ss, sheetPengguna, dataPengguna),
+    journals: getJournals(userId, dataJurnal),
+    todayProgress: getTodayProgress(userId, dataLog)
+  };
+}
+
+function getTodayProgress(userId, preloadedData = null) {
+  let data = preloadedData;
+  if (!data) {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName('Log_Bacaan');
+    if (!sheet) return 0;
+    data = sheet.getDataRange().getValues();
+  }
+
+  const todayStr = Utilities.formatDate(new Date(), "Asia/Jakarta", "yyyy-MM-dd");
+  let todayRead = 0;
+
+  // Rekomendasi #2: Reverse Loop (cari dari bawah ke atas)
+  for (let i = data.length - 1; i >= 1; i--) {
+    if (data[i][1] && data[i][1].toString() === userId.toString()) {
+      let logDate;
+      if (data[i][2] instanceof Date) {
+        logDate = Utilities.formatDate(data[i][2], "Asia/Jakarta", "yyyy-MM-dd");
+      } else {
+        logDate = data[i][2] ? data[i][2].toString().substring(0, 10) : '';
+      }
+
+      if (logDate === todayStr) {
+        todayRead += parseInt(data[i][7] || 0);
+      } else if (logDate && logDate < todayStr) {
+        // Karena baris baru ditambahkan di bawah (waktu maju),
+        // jika kita ketemu tanggal kemaren, langsung hentikan loop!
+        break;
+      }
+    }
+  }
+  return todayRead;
+}
+
+function getUserProfile(userId, preloadedSS = null, preloadedSheet = null, preloadedData = null) {
+  const ss = preloadedSS || SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = preloadedSheet || ss.getSheetByName('Pengguna');
+  if (!sheet) return null;
+
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const totalKhatamIdx = headers.indexOf('Total_Khatam');
+  const statusUdzurIdx = headers.indexOf('Status_Udzur');
+  const udzurEndIdx = headers.indexOf('Udzur_End_Date');
+
+  const data = preloadedData || sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0].toString() === userId.toString()) {
+      return {
+        id: data[i][0].toString(),
+        targetDate: data[i][1] ? Utilities.formatDate(new Date(data[i][1]), "Asia/Jakarta", "yyyy-MM-dd") : '',
+        dailyTargetPages: data[i][2] || 0,
+        lastPageRead: data[i][3] || 0,
+        lastSurahId: data[i][4] || 1,
+        lastAyahRead: data[i][5] || 0,
+        streakDays: data[i][6] || 0,
+        lastUpdateDate: data[i][7] ? Utilities.formatDate(new Date(data[i][7]), "Asia/Jakarta", "yyyy-MM-dd") : '',
+        totalKhatam: totalKhatamIdx > -1 ? (data[i][totalKhatamIdx] || 0) : 0,
+        udzurStatus: statusUdzurIdx > -1 ? (data[i][statusUdzurIdx] || '') : '',
+        udzurEnd: udzurEndIdx > -1 ? (data[i][udzurEndIdx] ? Utilities.formatDate(new Date(data[i][udzurEndIdx]), "Asia/Jakarta", "yyyy-MM-dd") : '') : ''
+      };
+    }
+  }
+
+  const newRow = [userId, '', '', 0, 1, 0, 0, ''];
+  if (totalKhatamIdx > -1) newRow.push(0);
+  sheet.appendRow(newRow);
+
+  return {
+    id: userId, targetDate: '', dailyTargetPages: 0, lastPageRead: 0, lastSurahId: 1, lastAyahRead: 0, streakDays: 0, lastUpdateDate: '', totalKhatam: 0
+  };
+}
+
+function saveUserTarget(userId, targetData) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('Pengguna');
+  const data = sheet.getDataRange().getValues();
+
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0].toString() === userId.toString()) {
+      const rowIndex = i + 1;
+      sheet.getRange(rowIndex, 2).setValue('');
+      sheet.getRange(rowIndex, 3).setValue(targetData.dailyTargetPages || '');
+      return getUserProfile(userId);
+    }
+  }
+  throw new Error("Profil tidak ditemukan.");
+}
+
+function calculateStreak(lastUpdateDateStr, newUpdateDateStr, currentStreak) {
+  if (!lastUpdateDateStr) return 1;
+  const lastDate = new Date(lastUpdateDateStr); lastDate.setHours(0,0,0,0);
+  const newDate = new Date(newUpdateDateStr); newDate.setHours(0,0,0,0);
+  const diffDays = Math.ceil((newDate - lastDate) / (1000 * 60 * 60 * 24));
+  if (diffDays === 1) return (currentStreak || 0) + 1;
+  if (diffDays === 0 || diffDays < 0) return currentStreak || 1;
+  return 1;
+}
+
+function saveProgressUpdate(userId, progressData) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const userSheet = ss.getSheetByName('Pengguna');
+  const logSheet = ss.getSheetByName('Log_Bacaan');
+
+  const userProfile = getUserProfile(userId);
+  if (!userProfile) throw new Error("Pengguna tidak ditemukan.");
+
+  const headers = userSheet.getRange(1, 1, 1, userSheet.getLastColumn()).getValues()[0];
+  const totalKhatamIdx = headers.indexOf('Total_Khatam');
+
+  const tz = "Asia/Jakarta";
+  const newDateStr = progressData.date || Utilities.formatDate(new Date(), tz, "yyyy-MM-dd");
+  const newStreak = calculateStreak(userProfile.lastUpdateDate, newDateStr, userProfile.streakDays);
+
+  const startPage = parseInt(progressData.startPage) || userProfile.lastPageRead;
+  const endPage = parseInt(progressData.lastPageInput) || 0;
+
+  if (endPage <= 0) throw new Error("Halaman terakhir tidak valid.");
+  if (endPage > 604) throw new Error("Halaman maksimal Al-Quran adalah 604. Anda tidak bisa memasukkan lebih dari 604.");
+
+  // Jika murid baru khatam (lastPageRead=604), izinkan mulai lagi dari halaman 1
+  // dengan menganggap halaman awalnya adalah 0 untuk perhitungan jumlah halaman yang dibaca hari ini.
+  const isNewCycleAfterKhatam = userProfile.lastPageRead >= 604;
+  const effectiveStartPage = isNewCycleAfterKhatam ? 0 : startPage;
+
+  if (!isNewCycleAfterKhatam && endPage < effectiveStartPage) {
+    throw new Error("Halaman yang diinput (" + endPage + ") lebih kecil dari halaman awal hari ini (" + effectiveStartPage + "). Periksa kembali inputmu.");
+  }
+
+  let pagesReadThisUpdate = endPage - effectiveStartPage;
+  if (pagesReadThisUpdate < 0) pagesReadThisUpdate = 0;
+
+  let calculatedPage = endPage;
+  let totalKhatam = userProfile.totalKhatam;
+  const isFullKhatam = endPage >= 604;
+
+  if (isFullKhatam) {
+    // Khatam: naikkan counter, reset posisi bacaan ke 0
+    totalKhatam += 1;
+    calculatedPage = 0;
+  }
+
+  const percentage = isFullKhatam ? 100 : (calculatedPage / 604) * 100;
+
+  const userData = userSheet.getDataRange().getValues();
+  for (let i = 1; i < userData.length; i++) {
+    if (userData[i][0].toString() === userId.toString()) {
+      const rowIndex = i + 1;
+      userSheet.getRange(rowIndex, 4).setValue(calculatedPage); // simpan 0 jika khatam
+      userSheet.getRange(rowIndex, 5).setValue("");
+      userSheet.getRange(rowIndex, 6).setValue("");
+      userSheet.getRange(rowIndex, 7).setValue(newStreak);
+      userSheet.getRange(rowIndex, 8).setValue(newDateStr);
+      if (totalKhatamIdx > -1) userSheet.getRange(rowIndex, totalKhatamIdx + 1).setValue(totalKhatam);
+      break;
+    }
+  }
+
+  const logId = new Date().getTime().toString() + '_' + Math.random().toString(36).substring(7);
+  const currentProgress = getTodayProgress(userId);
+  // Catat di log sebagai 604 (fakta bacaan), tapi posisi disimpan 0
+  logSheet.appendRow([logId, userId, newDateStr, "", "", isFullKhatam ? 604 : calculatedPage, percentage.toFixed(2), pagesReadThisUpdate, effectiveStartPage]);
+
+  const nextStart = isFullKhatam ? 1 : calculatedPage + 1;
+
+  return {
+    profile: getUserProfile(userId),
+    todayProgress: currentProgress + pagesReadThisUpdate,
+    pagesReadThisSession: pagesReadThisUpdate,
+    nextPageStart: nextStart,
+    isKhatamNow: isFullKhatam
+  };
+}
+
+/**
+ * Mengambil seluruh riwayat bacaan murid dari Log_Bacaan.
+ * Mengembalikan array objek per-sesi (setiap input = 1 entri),
+ * dikelompokkan per hari di sisi klien untuk fleksibilitas filter.
+ *
+ * Kolom Log_Bacaan:
+ * [0] ID_Log  [1] ID_Pengguna  [2] Tanggal_Baca
+ * [3] Surah_ID_Dibaca  [4] Ayat_Dibaca  [5] Halaman_Terkalkulasi
+ * [6] Persentase_Progres  [7] Halaman_Dibaca_Hari_Ini  [8] Halaman_Awal_Hari_Ini
+ */
+function getFullHistory(userId) {
+  if (!userId) throw new Error("Akses ditolak.");
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('Log_Bacaan');
+  if (!sheet) return [];
+
+  const data = sheet.getDataRange().getValues();
+  const tz = "Asia/Jakarta";
+
+  // Agregasi per tanggal — 1 baris per hari, jumlah halaman dijumlahkan
+  const dayMap = {};
+
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    if (row[1].toString() !== userId.toString()) continue;
+
+    let tgl;
+    try {
+      tgl = row[2] instanceof Date
+        ? Utilities.formatDate(row[2], tz, "yyyy-MM-dd")
+        : row[2].toString().substring(0, 10);
+    } catch(e) { continue; }
+
+    if (!tgl || tgl.length < 10) continue;
+
+    const halDibaca = parseInt(row[7]) || 0;
+    const halamanAkhir = parseInt(row[5]) || 0;
+
+    if (!dayMap[tgl]) {
+      dayMap[tgl] = { tanggal: tgl, halamanDibaca: 0, halamanAkhir: halamanAkhir };
+    }
+    dayMap[tgl].halamanDibaca += halDibaca;
+    // Ambil halaman akhir tertinggi hari itu
+    if (halamanAkhir > dayMap[tgl].halamanAkhir) {
+      dayMap[tgl].halamanAkhir = halamanAkhir;
+    }
+  }
+
+  // Konversi ke array dan urutkan terbaru dulu
+  return Object.values(dayMap).sort((a, b) => b.tanggal.localeCompare(a.tanggal));
+}
+
+function getJournals(userId, preloadedData = null) {
+  let data = preloadedData;
+  if (!data) {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName('Jurnal_Refleksi');
+    if (!sheet) return [];
+    data = sheet.getDataRange().getValues();
+  }
+
+  const journals = [];
+  // Rekomendasi #2: Reverse Loop (Dapat data terbaru tanpa perlu diputar urutannya)
+  for (let i = data.length - 1; i >= 1; i--) {
+    if (data[i][1] && data[i][1].toString() === userId.toString()) {
+      journals.push({ 
+        id: data[i][0], 
+        date: data[i][2] ? Utilities.formatDate(new Date(data[i][2]), "Asia/Jakarta", "yyyy-MM-dd") : '', 
+        surahId: data[i][3], 
+        ayahStart: data[i][4], 
+        ayahEnd: data[i][5], 
+        note: data[i][6] 
+      });
+    }
+  }
+  return journals;
+}
+
+function saveJournal(userId, journalData) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('Jurnal_Refleksi');
+  const targetDate = journalData.date || Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
+
+  if (journalData.id) {
+    const data = sheet.getDataRange().getValues();
+    for (let i = 1; i < data.length; i++) {
+      if (data[i][0].toString() === journalData.id.toString()) {
+        const rowIndex = i + 1;
+        sheet.getRange(rowIndex, 3).setValue(targetDate);
+        sheet.getRange(rowIndex, 4).setValue(journalData.surahId);
+        sheet.getRange(rowIndex, 5).setValue(journalData.ayahStart || '');
+        sheet.getRange(rowIndex, 6).setValue(journalData.ayahEnd || '');
+        sheet.getRange(rowIndex, 7).setValue(journalData.note);
+        return getJournals(userId);
+      }
+    }
+  } else {
+    const logId = new Date().getTime().toString() + '_' + Math.random().toString(36).substring(7);
+    sheet.appendRow([logId, userId, targetDate, journalData.surahId, journalData.ayahStart || '', journalData.ayahEnd || '', journalData.note]);
+    return getJournals(userId);
+  }
+  throw new Error("Gagal menyimpan jurnal.");
+}
+
+function deleteJournal(userId, id) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('Jurnal_Refleksi');
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0].toString() === id.toString()) {
+      sheet.deleteRow(i + 1);
+      return getJournals(userId);
+    }
+  }
+  throw new Error("Jurnal tidak ditemukan.");
+}
+
+function getTeacherDashboardData(teacherId) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheetAkun = ss.getSheetByName('Akun');
+  const akunData = sheetAkun.getDataRange().getValues();
+  const akunHeaders = akunData[0];
+  const waIdx = akunHeaders.indexOf('No_WhatsApp');
+
+  let teacherHalaqahStr = '';
+  for (let i = 1; i < akunData.length; i++) {
+    if (akunData[i][0].toString() === teacherId.toString()) {
+      teacherHalaqahStr = akunData[i][4];
+      break;
+    }
+  }
+  if (!teacherHalaqahStr) throw new Error("Halaqah guru tidak ditemukan.");
+
+  const teacherHalaqahs = teacherHalaqahStr.split(',').map(s => s.trim()).filter(s => s);
+
+  const students = [];
+  for (let i = 1; i < akunData.length; i++) {
+    if (akunData[i][3].toString().toLowerCase() === 'murid') {
+      const studentHalaqah = akunData[i][4];
+      if (teacherHalaqahs.includes(studentHalaqah) || teacherHalaqahs.includes('Semua')) {
+        students.push({
+          id: akunData[i][0].toString(),
+          name: akunData[i][2],
+          halaqah: studentHalaqah,
+          wa: waIdx > -1 ? (akunData[i][waIdx] || '') : ''
+        });
+      }
+    }
+  }
+
+  const sheetPengguna = ss.getSheetByName('Pengguna');
+  const pengData = sheetPengguna.getDataRange().getValues();
+  const pengHeaders = pengData[0];
+  const totalKhatamIdx = pengHeaders.indexOf('Total_Khatam');
+
+  const sheetLog = ss.getSheetByName('Log_Bacaan');
+  const logData = sheetLog ? sheetLog.getDataRange().getValues() : [];
+
+  const tz = Session.getScriptTimeZone();
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const todayStr = Utilities.formatDate(today, tz, "yyyy-MM-dd");
+
+  const last7Days = [];
+  for (let d = 6; d >= 0; d--) {
+    const tempDate = new Date();
+    tempDate.setDate(tempDate.getDate() - d);
+    last7Days.push(Utilities.formatDate(tempDate, tz, "yyyy-MM-dd"));
+  }
+
+  const results = students.map(st => {
+    let target = 0;
+    let lastPage = 0;
+    let totalKhatam = 0;
+    let todayRead = 0;
+    let lastUpdateDateStr = '';
+    let udzurStatus = '';
+    let udzurEnd = '';
+
+    const statusUdzurIdx = pengHeaders.indexOf('Status_Udzur');
+    const udzurEndIdx = pengHeaders.indexOf('Udzur_End_Date');
+
+    for (let i = 1; i < pengData.length; i++) {
+      if (pengData[i][0].toString() === st.id) {
+        target = pengData[i][2] || 0;
+        lastPage = pengData[i][3] || 0;
+        lastUpdateDateStr = pengData[i][7] ? Utilities.formatDate(new Date(pengData[i][7]), "Asia/Jakarta", "yyyy-MM-dd") : '';
+        totalKhatam = totalKhatamIdx > -1 ? (pengData[i][totalKhatamIdx] || 0) : 0;
+        udzurStatus = statusUdzurIdx > -1 ? (pengData[i][statusUdzurIdx] || '') : '';
+        udzurEnd = udzurEndIdx > -1 ? (pengData[i][udzurEndIdx] ? Utilities.formatDate(new Date(pengData[i][udzurEndIdx]), "Asia/Jakarta", "yyyy-MM-dd") : '') : '';
+        break;
+      }
+    }
+
+    let diffDays = 999;
+    if (lastUpdateDateStr) {
+      const lastUpdateObj = new Date(lastUpdateDateStr);
+      lastUpdateObj.setHours(0,0,0,0);
+      diffDays = Math.floor((today - lastUpdateObj) / (1000 * 60 * 60 * 24));
+    }
+
+    const historyMap = {};
+    for (let i = 1; i < logData.length; i++) {
+      if (logData[i][1].toString() === st.id) {
+        let logDate;
+        if (logData[i][2] instanceof Date) {
+          logDate = Utilities.formatDate(logData[i][2], "Asia/Jakarta", "yyyy-MM-dd");
+        } else {
+          logDate = logData[i][2].toString().substring(0, 10);
+        }
+
+        const pages = parseInt(logData[i][7] || 0);
+
+        if (logDate === todayStr) {
+          todayRead += pages;
+        }
+
+        if (last7Days.includes(logDate)) {
+          historyMap[logDate] = (historyMap[logDate] || 0) + pages;
+        }
+      }
+    }
+
+    const history7Days = last7Days.map(dateStr => {
+      return { date: dateStr, pagesRead: historyMap[dateStr] || 0 };
+    });
+
+    const isAtRisk = (diffDays >= 3) && (!udzurStatus);
+
+    return {
+      id: st.id,
+      name: st.name,
+      halaqah: st.halaqah,
+      wa: st.wa,
+      target: target,
+      lastPage: lastPage,
+      totalKhatam: totalKhatam,
+      todayRead: todayRead,
+      hasReadToday: todayRead > 0,
+      daysSinceLastRead: diffDays,
+      isAtRisk: isAtRisk,
+      udzurStatus: udzurStatus,
+      udzurEnd: udzurEnd,
+      history7Days: history7Days
+    };
+  });
+
+  return {
+    halaqahs: teacherHalaqahs,
+    students: results
+  };
+}
+
+function saveUdzurStatus(userId, status) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('Pengguna');
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+
+  const statusUdzurIdx = headers.indexOf('Status_Udzur') + 1;
+  const udzurStartIdx = headers.indexOf('Udzur_Start_Date') + 1;
+  const udzurEndIdx = headers.indexOf('Udzur_End_Date') + 1;
+
+  if (statusUdzurIdx < 1) throw new Error("Kolom Udzur tidak ditemukan.");
+
+  const startDate = new Date();
+  const endDate = new Date(startDate);
+  endDate.setDate(startDate.getDate() + 7);
+
+  const startStr = Utilities.formatDate(startDate, "Asia/Jakarta", "yyyy-MM-dd");
+  const endStr = Utilities.formatDate(endDate, "Asia/Jakarta", "yyyy-MM-dd");
+
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0].toString() === userId.toString()) {
+      const rowIndex = i + 1;
+      if (status) {
+        sheet.getRange(rowIndex, statusUdzurIdx).setValue(status);
+        sheet.getRange(rowIndex, udzurStartIdx).setValue(startStr);
+        sheet.getRange(rowIndex, udzurEndIdx).setValue(endStr);
+      } else {
+        sheet.getRange(rowIndex, statusUdzurIdx).setValue("");
+        sheet.getRange(rowIndex, udzurStartIdx).setValue("");
+        sheet.getRange(rowIndex, udzurEndIdx).setValue("");
+      }
+      return getUserProfile(userId);
+    }
+  }
+  throw new Error("Siswa tidak ditemukan.");
+}
+
+function autoResetUdzur() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('Pengguna');
+  if (!sheet) return;
+
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const statusUdzurIdx = headers.indexOf('Status_Udzur') + 1;
+  const udzurEndIdx = headers.indexOf('Udzur_End_Date') + 1;
+  if (statusUdzurIdx < 1) return;
+
+  const todayStr = Utilities.formatDate(new Date(), "Asia/Jakarta", "yyyy-MM-dd");
+  const data = sheet.getDataRange().getValues();
+
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][statusUdzurIdx - 1]) {
+      const endDateVal = data[i][udzurEndIdx - 1];
+      if (endDateVal) {
+        const endStr = Utilities.formatDate(new Date(endDateVal), "Asia/Jakarta", "yyyy-MM-dd");
+        if (todayStr >= endStr) {
+          const rowIndex = i + 1;
+          sheet.getRange(rowIndex, statusUdzurIdx).setValue("");
+          sheet.getRange(rowIndex, statusUdzurIdx + 1).setValue("");
+          sheet.getRange(rowIndex, udzurEndIdx).setValue("");
+        }
+      }
+    }
+  }
+}
+
+// ============================================================
+// TAMBAHAN KODE APPS SCRIPT — FITUR RESET DATA BACAAN
+// Tempelkan fungsi ini ke dalam file Code.gs kamu
+// (Letakkan di bagian bawah, setelah fungsi autoResetUdzur)
+// ============================================================
+
+/**
+ * Mereset data bacaan seorang pengguna:
+ * - Halaman_Terakhir_Dibaca        → 0
+ * - Target_Harian_Halaman          → 0
+ * - Tanggal_Target                 → ''
+ * - Streak_Hari                    → 0
+ * - Tanggal_Update_Terakhir        → ''
+ * - Total_Khatam                   → 0
+ * - Status_Udzur / tanggal udzur   → ''
+ *
+ * Log bacaan (Log_Bacaan) dan jurnal (Jurnal_Refleksi) milik
+ * pengguna ini juga dihapus sepenuhnya.
+ *
+ * DIPANGGIL DARI: index.html → google.script.run.resetReadingData(userId)
+ */
+function resetReadingData(userId) {
+  if (!userId) throw new Error("Akses ditolak: userId tidak ditemukan.");
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  // --- 1. Reset baris di sheet Pengguna ---
+  const sheetPengguna = ss.getSheetByName('Pengguna');
+  if (!sheetPengguna) throw new Error("Sheet 'Pengguna' tidak ditemukan.");
+
+  const headers = sheetPengguna.getRange(1, 1, 1, sheetPengguna.getLastColumn()).getValues()[0];
+
+  // Mapping nama kolom → indeks (0-based)
+  const col = (name) => headers.indexOf(name); // mengembalikan -1 jika tidak ada
+
+  const dataPengguna = sheetPengguna.getDataRange().getValues();
+  let resetDone = false;
+
+  for (let i = 1; i < dataPengguna.length; i++) {
+    if (dataPengguna[i][0].toString() === userId.toString()) {
+      const rowIndex = i + 1; // getRange row dimulai dari 1
+
+      // Kolom tetap (urutan standar berdasarkan generateDummyData):
+      // [0] ID  [1] Tgl_Target  [2] Target_Harian  [3] Hal_Terakhir
+      // [4] Surah  [5] Ayat  [6] Streak  [7] Tgl_Update
+      sheetPengguna.getRange(rowIndex, 2).setValue('');  // Tanggal_Target
+      sheetPengguna.getRange(rowIndex, 3).setValue(0);   // Target_Harian_Halaman
+      sheetPengguna.getRange(rowIndex, 4).setValue(0);   // Halaman_Terakhir_Dibaca
+      sheetPengguna.getRange(rowIndex, 5).setValue(1);   // Surah_Terakhir (reset ke 1)
+      sheetPengguna.getRange(rowIndex, 6).setValue(0);   // Ayat_Terakhir
+      sheetPengguna.getRange(rowIndex, 7).setValue(0);   // Streak_Hari
+      sheetPengguna.getRange(rowIndex, 8).setValue('');  // Tanggal_Update_Terakhir
+
+      // Kolom dinamis (mungkin berbeda posisi)
+      const totalKhatamIdx = col('Total_Khatam');
+      if (totalKhatamIdx > -1) sheetPengguna.getRange(rowIndex, totalKhatamIdx + 1).setValue(0);
+
+      const statusUdzurIdx = col('Status_Udzur');
+      if (statusUdzurIdx > -1) sheetPengguna.getRange(rowIndex, statusUdzurIdx + 1).setValue('');
+
+      const udzurStartIdx = col('Udzur_Start_Date');
+      if (udzurStartIdx > -1) sheetPengguna.getRange(rowIndex, udzurStartIdx + 1).setValue('');
+
+      const udzurEndIdx = col('Udzur_End_Date');
+      if (udzurEndIdx > -1) sheetPengguna.getRange(rowIndex, udzurEndIdx + 1).setValue('');
+
+      resetDone = true;
+      break;
+    }
+  }
+
+  if (!resetDone) throw new Error("Profil pengguna '" + userId + "' tidak ditemukan.");
+
+  // --- 2. Hapus semua log bacaan milik user ini ---
+  const sheetLog = ss.getSheetByName('Log_Bacaan');
+  if (sheetLog) {
+    const dataLog = sheetLog.getDataRange().getValues();
+    // Kumpulkan nomor baris yang perlu dihapus (dari bawah agar index tidak bergeser)
+    const rowsToDelete = [];
+    for (let i = 1; i < dataLog.length; i++) {
+      if (dataLog[i][1] && dataLog[i][1].toString() === userId.toString()) {
+        rowsToDelete.push(i + 1); // +1 karena getRange 1-based
+      }
+    }
+    // Hapus dari bawah ke atas
+    for (let r = rowsToDelete.length - 1; r >= 0; r--) {
+      sheetLog.deleteRow(rowsToDelete[r]);
+    }
+  }
+
+  // --- 3. Hapus semua jurnal refleksi milik user ini ---
+  const sheetJurnal = ss.getSheetByName('Jurnal_Refleksi');
+  if (sheetJurnal) {
+    const dataJurnal = sheetJurnal.getDataRange().getValues();
+    const rowsToDelete = [];
+    for (let i = 1; i < dataJurnal.length; i++) {
+      if (dataJurnal[i][1] && dataJurnal[i][1].toString() === userId.toString()) {
+        rowsToDelete.push(i + 1);
+      }
+    }
+    for (let r = rowsToDelete.length - 1; r >= 0; r--) {
+      sheetJurnal.deleteRow(rowsToDelete[r]);
+    }
+  }
+
+  // Kembalikan profil segar (semua nilai sudah 0/kosong)
+  return getUserProfile(userId);
+}
+// ============================================================
+// FITUR KALIBRASI POSISI BACAAN
+// Hanya update Halaman_Terakhir_Dibaca, TIDAK mencatat ke Log_Bacaan
+// ============================================================
+function calibrateReadingPosition(userId, calibrationData) {
+  if (!userId) throw new Error("userId diperlukan.");
+  const page = parseInt(calibrationData.page);
+  if (isNaN(page) || page < 0 || page > 604) throw new Error("Halaman tidak valid (0–604).");
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('Pengguna');
+  if (!sheet) throw new Error("Sheet 'Pengguna' tidak ditemukan.");
+
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0].toString() === userId.toString()) {
+      const rowIndex = i + 1;
+      // Kolom 4 = Halaman_Terakhir_Dibaca
+      sheet.getRange(rowIndex, 4).setValue(page);
+      // Update surah terakhir berdasarkan halaman jika disertakan
+      if (calibrationData.surahId) {
+        sheet.getRange(rowIndex, 5).setValue(parseInt(calibrationData.surahId));
+      }
+      return getUserProfile(userId);
+    }
+  }
+  throw new Error("Pengguna tidak ditemukan.");
+}
+
+// ============================================================
+// CEK APAKAH PENGGUNA BARU (lastPageRead == 0 && totalKhatam == 0)
+// ============================================================
+function isNewUser(userId) {
+  const profile = getUserProfile(userId);
+  if (!profile) return true;
+  return (profile.lastPageRead === 0 && profile.totalKhatam === 0);
+}

@@ -1,0 +1,198 @@
+// ============================================================
+// TAMBAHAN KODE APPS SCRIPT — FITUR POTRET
+// Tempelkan kode ini ke dalam file Code.gs kamu
+// ============================================================
+
+/**
+ * Membuat sheet "Potret" dengan konten dummy jika belum ada.
+ * Admin dapat menambah/mengedit artikel langsung dari spreadsheet.
+ *
+ * STRUKTUR KOLOM SHEET "Potret":
+ * A: ID_Artikel   (unik, contoh: p1, p2, ...)
+ * B: Judul        (judul artikel)
+ * C: Kategori     (Panduan / Kisah Sahabat / Kisah Ulama)
+ * D: Penulis      (nama penulis)
+ * E: Tanggal      (format yyyy-MM-dd)
+ * F: Ringkasan    (teks singkat 1-2 kalimat, tampil di list)
+ * G: Isi          (isi lengkap artikel, gunakan baris baru untuk paragraf)
+ * H: Referensi    (opsional: sumber / dalil)
+ * I: Aktif        (TRUE/FALSE — isi FALSE untuk menyembunyikan artikel)
+ */
+function createPotretSheet(ss) {
+  const sheet = ss.insertSheet('Potret');
+
+  // Atur lebar kolom agar mudah dibaca di spreadsheet
+  sheet.setColumnWidth(1, 80);   // ID
+  sheet.setColumnWidth(2, 250);  // Judul
+  sheet.setColumnWidth(3, 120);  // Kategori
+  sheet.setColumnWidth(4, 150);  // Penulis
+  sheet.setColumnWidth(5, 120);  // Tanggal
+  sheet.setColumnWidth(6, 300);  // Ringkasan
+  sheet.setColumnWidth(7, 500);  // Isi
+  sheet.setColumnWidth(8, 300);  // Referensi
+  sheet.setColumnWidth(9, 80);   // Aktif
+
+  // Header
+  const header = ['ID_Artikel', 'Judul', 'Kategori', 'Penulis', 'Tanggal', 'Ringkasan', 'Isi', 'Referensi', 'Aktif'];
+  sheet.appendRow(header);
+  sheet.getRange(1, 1, 1, header.length)
+    .setFontWeight('bold')
+    .setBackground('#e8f4fd')
+    .setFontColor('#1e3a5f');
+
+  // Freeze header row
+  sheet.setFrozenRows(1);
+
+  // ---- Data Dummy ----
+  const today = new Date();
+  const fmt = d => Utilities.formatDate(d, "Asia/Jakarta", "yyyy-MM-dd");
+
+  const d1 = new Date(today); d1.setDate(d1.getDate() - 30);
+  const d2 = new Date(today); d2.setDate(d2.getDate() - 20);
+  const d3 = new Date(today); d3.setDate(d3.getDate() - 10);
+  const d4 = new Date(today); d4.setDate(d4.getDate() - 5);
+  const d5 = new Date(today); d5.setDate(d5.getDate() - 2);
+
+  const rows = [
+    [
+      'p1',
+      'Adab Membaca Al-Quran yang Perlu Diketahui',
+      'Panduan',
+      'Tim Rattilil Quran',
+      fmt(d1),
+      'Panduan lengkap adab sebelum dan saat membaca Al-Quran agar bacaan lebih berkah dan khusyuk.',
+      'Membaca Al-Quran bukan sekadar melafazkan huruf-hurufnya, tetapi merupakan ibadah yang memerlukan adab dan persiapan batin yang baik.\n\n1. BERSUCI TERLEBIH DAHULU\nSebelum membaca Al-Quran, pastikan kamu dalam keadaan suci dari hadats besar maupun kecil. Berwudhu adalah sunnah yang sangat dianjurkan.\n\n2. MEMILIH TEMPAT YANG BERSIH DAN TENANG\nCarilah tempat yang tenang, bersih, dan bebas dari gangguan.\n\n3. MEMBACA TA\'AWWUDZ DAN BASMALAH\nMulailah dengan membaca: "A\'ûdzu billâhi minasy syaithânir rajîm" kemudian "Bismillâhir rahmânir rahîm".\n\n4. MEMBACA DENGAN TARTIL\nAllah ﷻ berfirman: "Rattil-il Qur\'âna tartîlâ" — bacalah Al-Quran dengan tartil (perlahan dan jelas). (QS. Al-Muzzammil: 4)\n\n5. TADABBUR (MERENUNGI MAKNANYA)\nBerusahalah untuk merenungi makna setiap ayat yang dibaca.',
+      'QS. Al-Muzzammil: 4 | Shahih Muslim no. 798 | Al-Tibyan fi Adabi Hamalatil Quran - Imam Nawawi',
+      true
+    ],
+    [
+      'p2',
+      "Abdullah ibn Mas'ud: Sahabat yang Bacaannya Paling Dicintai Nabi",
+      'Kisah Sahabat',
+      'Tim Rattilil Quran',
+      fmt(d2),
+      "Kisah mengharukan bagaimana Abdullah ibn Mas'ud membaca Al-Quran hingga membuat Nabi ﷺ menitikkan air mata.",
+      "Abdullah ibn Mas'ud radhiyallahu 'anhu adalah salah satu sahabat Nabi ﷺ yang dikenal memiliki hafalan Al-Quran yang luar biasa.\n\nSuatu hari, Nabi ﷺ berkata kepadanya, \"Bacakanlah Al-Quran untukku, wahai Ibnu Mas'ud.\"\n\nAbdullah pun heran, \"Ya Rasulallah, bagaimana aku membacakan Al-Quran kepadamu, sedangkan Al-Quran diturunkan kepadamu?\"\n\nNabi ﷺ menjawab, \"Aku senang mendengarnya dari orang lain.\"\n\nMaka Abdullah pun mulai membaca surah An-Nisa'. Ketika sampai pada ayat 41, Nabi ﷺ berkata, \"Cukup, cukup.\" — dan kedua mata beliau bercucuran air mata.\n\nPelajaran:\n• Al-Quran yang dibaca dengan tartil mampu menyentuh hati siapapun.\n• Mendengarkan bacaan Al-Quran dari orang lain adalah sunnah Nabi ﷺ.\n• Menghayati makna Al-Quran adalah kunci agar hati menjadi lembut.",
+      "HR. Bukhari no. 5055 | HR. Muslim no. 800",
+      true
+    ],
+    [
+      'p3',
+      "Imam Asy-Syafi'i: Khatam Dua Kali Sehari di Bulan Ramadhan",
+      'Kisah Ulama',
+      'Tim Rattilil Quran',
+      fmt(d3),
+      "Kesungguhan Imam Asy-Syafi'i rahimahullah dalam membaca Al-Quran di bulan Ramadhan yang luar biasa.",
+      "Imam Asy-Syafi'i rahimahullah adalah ulama besar yang sangat dekat dengan Al-Quran.\n\nAr-Rabi' ibn Sulaiman, murid setia beliau, meriwayatkan:\n\"Imam Asy-Syafi'i mengkhatamkan Al-Quran sebanyak enam puluh kali di bulan Ramadhan, dan itu semua dilakukan dalam shalat.\"\n\nArtinya, beliau khatam Al-Quran dua kali sehari sepanjang Ramadhan!\n\nBeliau berkata: \"Seandainya manusia mau merenungi surah Al-Ashr, niscaya ia mencukupi mereka.\"\n\nPelajaran:\n• Kesibukan bukan halangan untuk memperbanyak tilawah.\n• Konsistensi setiap hari jauh lebih baik daripada banyak sekaligus tapi tidak rutin.\n• Ramadhan adalah momentum emas untuk melipatgandakan tilawah.",
+      "Manaqib Asy-Syafi'i - Al-Baihaqi | Siyar A'lam An-Nubala - Adz-Dzahabi",
+      true
+    ],
+    [
+      'p4',
+      'Keutamaan Membaca Al-Quran Setiap Hari',
+      'Panduan',
+      'Tim Rattilil Quran',
+      fmt(d4),
+      'Dalil-dalil shahih tentang keutamaan konsisten membaca Al-Quran setiap hari, meski hanya sedikit.',
+      'Nabi ﷺ bersabda: "Amalan yang paling dicintai Allah adalah amalan yang dilakukan secara terus-menerus meskipun sedikit." (HR. Bukhari dan Muslim)\n\n🌟 1 HURUF = 10 KEBAIKAN\n"Barangsiapa membaca satu huruf dari Al-Quran, maka baginya satu kebaikan, dan satu kebaikan itu dibalas sepuluh kali lipatnya." (HR. Tirmidzi)\n\n📖 AL-QURAN AKAN MEMBERI SYAFA\'AT\n"Bacalah Al-Quran, karena sesungguhnya ia akan datang pada hari Kiamat sebagai pemberi syafa\'at bagi para pembacanya." (HR. Muslim)\n\n🏆 DERAJAT TERGANTUNG BACAAN\n"Akan dikatakan kepada pembaca Al-Quran: Bacalah dan naiklah... karena sesungguhnya tempatmu (di surga) adalah di akhir ayat yang kamu baca." (HR. Abu Dawud)\n\nTIPS AGAR KONSISTEN:\n• Jadikan tilawah sebagai rutinitas setelah Subuh atau Isya.\n• Mulailah dengan target kecil: 2-5 halaman per hari.\n• Gunakan KhatamKu untuk mencatat progresmu setiap hari! 📲',
+      'HR. Bukhari no. 6464 | HR. Muslim no. 782 | HR. Tirmidzi no. 2910 | HR. Abu Dawud no. 1464',
+      true
+    ],
+    [
+      'p5',
+      "Utsman ibn Affan: Tidak Tidur Sebelum Khatam",
+      'Kisah Sahabat',
+      'Tim Rattilil Quran',
+      fmt(d5),
+      "Kisah luar biasa Sayyidina Utsman ibn Affan yang sering mengkhatamkan Al-Quran dalam satu malam shalat.",
+      "Utsman ibn Affan radhiyallahu 'anhu, khalifah ketiga umat Islam, adalah sosok yang sangat dekat dengan Al-Quran.\n\nBeliau sering mengkhatamkan seluruh Al-Quran dalam satu rakaat shalat witir di malam hari.\n\nIMam Nawawi dalam kitab At-Tibyan menjelaskan: \"Utsman ibn Affan biasa mengkhatamkan Al-Quran dalam satu rakaat, dan ini adalah kekhususan bagi orang yang telah mencapai tingkat hafalan dan kualitas bacaan yang tinggi.\"\n\nWARISAN MUSHAF UTSMANI\nWarisan terbesar Utsman adalah penyusunan standarisasi penulisan Al-Quran (Mushaf Utsmani) yang hingga kini menjadi acuan seluruh mushaf di dunia.\n\nBeliau pernah berkata: \"Seandainya hati kita bersih, niscaya kita tidak akan pernah kenyang dari membaca Kalamullah.\"\n\nMaka jika kita merasa malas membaca Al-Quran, itu adalah sinyal untuk memperbaiki hati kita.",
+      "At-Tibyan fi Adabi Hamalatil Quran - Imam Nawawi | Siyar A'lam An-Nubala - Adz-Dzahabi",
+      true
+    ]
+  ];
+
+  rows.forEach(row => sheet.appendRow(row));
+
+  // Format kolom Aktif sebagai checkbox
+  sheet.getRange(2, 9, rows.length, 1).insertCheckboxes();
+
+  // Beri warna baris berselang untuk kemudahan baca
+  rows.forEach((_, i) => {
+    if (i % 2 === 0) {
+      sheet.getRange(i + 2, 1, 1, header.length).setBackground('#f8fafc');
+    }
+  });
+
+  return sheet;
+}
+
+/**
+ * Mengambil semua artikel dari sheet "Potret" dan mengembalikannya
+ * sebagai array of objects. Hanya artikel dengan kolom Aktif = TRUE
+ * yang akan ditampilkan.
+ *
+ * Dipanggil dari sisi klien (Index.html) saat halaman Potret dibuka.
+ */
+function getPotretContent() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName('Potret');
+
+  // Buat sheet default jika belum ada
+  if (!sheet) {
+    sheet = createPotretSheet(ss);
+  }
+
+  const data = sheet.getDataRange().getValues();
+  const result = [];
+
+  // Mulai dari baris ke-2 (skip header)
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    const id        = row[0] ? row[0].toString().trim() : '';
+    const judul     = row[1] ? row[1].toString().trim() : '';
+    const kategori  = row[2] ? row[2].toString().trim() : 'Panduan';
+    const penulis   = row[3] ? row[3].toString().trim() : '';
+    const tanggal   = row[4] ? Utilities.formatDate(new Date(row[4]), "Asia/Jakarta", "yyyy-MM-dd") : '';
+    const ringkasan = row[5] ? row[5].toString().trim() : '';
+    const isi       = row[6] ? row[6].toString().trim() : '';
+    const referensi = row[7] ? row[7].toString().trim() : '';
+    const aktif     = row[8]; // boolean TRUE/FALSE
+
+    // Lewati baris kosong atau yang tidak aktif
+    if (!id || !judul) continue;
+    if (aktif === false || aktif === 'FALSE' || aktif === 0) continue;
+
+    result.push({ id, judul, kategori, penulis, tanggal, ringkasan, isi, referensi });
+  }
+
+  return result;
+}
+
+// ============================================================
+// TAMBAHAN DI FUNGSI initData() — Panggil createPotretSheet
+// ============================================================
+// Tambahkan baris berikut di dalam fungsi initData() yang sudah ada,
+// di bawah baris yang membuat sheet Tentang:
+//
+//   // Buat sheet Potret jika belum ada
+//   if (!ss.getSheetByName('Potret')) {
+//     createPotretSheet(ss);
+//   }
+//
+// ============================================================
+// CARA MENAMBAH ARTIKEL BARU DI SPREADSHEET:
+// 1. Buka Google Spreadsheet kamu
+// 2. Klik tab sheet "Potret"
+// 3. Tambahkan baris baru di bawah data yang ada
+// 4. Isi kolom:
+//    - ID_Artikel: buat unik (contoh: p6, p7, dst.)
+//    - Judul: judul artikel
+//    - Kategori: pilih salah satu dari:
+//        "Panduan" / "Kisah Sahabat" / "Kisah Ulama"
+//    - Penulis: nama penulis/sumber
+//    - Tanggal: format yyyy-MM-dd (contoh: 2026-03-15)
+//    - Ringkasan: 1-2 kalimat ringkasan (tampil di daftar artikel)
+//    - Isi: isi lengkap artikel (gunakan Enter untuk paragraf baru)
+//    - Referensi: opsional, tulis sumber/dalil
+//    - Aktif: centang untuk menampilkan, hapus centang untuk menyembunyikan
+// ============================================================

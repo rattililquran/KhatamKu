@@ -129,8 +129,11 @@ const gscript = {
       headers: { Authorization: `Bearer ${token}` },
     });
     if (error) {
-      let msg = error.message;
-      try { msg = (await error.context.json()).error || msg; } catch (_) {}
+      let msg = error.message || "Kesalahan pada server (tidak ada pesan detail).";
+      try {
+        const json = await error.context.json();
+        msg = json?.error || json?.message || msg;
+      } catch (_) {}
       throw new Error(msg);
     }
     if (data && data.error) throw new Error(data.error);

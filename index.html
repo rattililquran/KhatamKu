@@ -2827,7 +2827,11 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       document.getElementById('loadingOverlay').style.display = 'flex';
     }
     function hideLoading() { document.getElementById('loadingOverlay').style.display = 'none'; }
-    function onError(err) { hideLoading(); customAlert("Kesalahan", err.message || err, "error"); }
+    function onError(err) {
+      hideLoading();
+      const msg = (err && typeof err === 'object') ? (err.message || String(err) || "Kesalahan tak terduga.") : String(err || "Kesalahan tak terduga.");
+      customAlert("Kesalahan", msg, "error");
+    }
 
     function showLoginScreen() {
       document.getElementById('loginView').classList.remove('hidden');
