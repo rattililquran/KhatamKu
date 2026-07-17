@@ -1402,43 +1402,41 @@
   <div id="modalDzikir" class="fixed inset-0 z-50 modal-overlay hidden flex flex-col justify-end sm:justify-center items-center">
     <div class="modal-content w-full max-w-md h-[92vh] sm:h-[88vh] rounded-t-[2.5rem] sm:rounded-3xl flex flex-col transform transition-transform translate-y-full text-slate-800 overflow-hidden" id="modalDzikirContent">
 
-      <!-- Header -->
-      <div class="shrink-0 px-7 pt-7 pb-5">
-        <div class="flex justify-between items-start mb-4">
+      <!-- Header (dipadatkan: status pagi/petang menyatu di tab, search collapsible) -->
+      <div class="shrink-0 px-6 pt-5 pb-3">
+        <div class="flex justify-between items-start mb-3">
           <div>
             <h3 class="text-2xl font-black tracking-tight leading-none">Dzikir &amp; Doa</h3>
             <p class="text-[11px] font-semibold text-slate-400 mt-1.5 tracking-wide">Pagi · Petang · Harian — sesuai sunnah</p>
           </div>
-          <button onclick="closeModal('modalDzikir')" class="text-slate-400 bg-slate-100 hover:bg-slate-200 w-10 h-10 rounded-full flex items-center justify-center transition-colors shadow-inner shrink-0"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        <!-- Status hari ini: tandai selesai pagi/petang + streak -->
-        <div class="flex items-center gap-2 mb-3">
-          <button onclick="toggleDzikirStatus('pagi')" id="dzStatusPagi" class="dz-status-pill flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[11px] font-bold border border-transparent bg-slate-100 text-slate-400 transition-all active:scale-95">
-            <i class="fa-regular fa-circle"></i> Pagi
-          </button>
-          <button onclick="toggleDzikirStatus('petang')" id="dzStatusPetang" class="dz-status-pill flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[11px] font-bold border border-transparent bg-slate-100 text-slate-400 transition-all active:scale-95">
-            <i class="fa-regular fa-circle"></i> Petang
-          </button>
-          <div id="dzStreakBadge" class="hidden shrink-0 items-center gap-1 px-2.5 py-2 rounded-xl bg-amber-50 text-amber-600 text-[11px] font-black">🔥<span id="dzStreakNum">0</span></div>
-          <div class="relative shrink-0">
-            <button onclick="toggleDzHistory()" id="dzHistoryBtn" class="w-9 h-9 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center transition-all active:scale-95" title="Riwayat 30 hari">
-              <i class="fa-solid fa-calendar-days text-xs"></i>
-            </button>
-            <div id="dzHistoryPopover" class="hidden absolute right-0 top-11 z-10 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 p-3">
-              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">30 Hari Terakhir</p>
-              <div id="dzHistoryGrid" class="flex flex-wrap gap-1"></div>
-              <div class="flex items-center gap-1.5 mt-2.5 text-[9px] font-bold text-slate-400 flex-wrap">
-                <span class="w-3 h-3 rounded-sm bg-slate-100 border border-slate-200"></span><span>Belum</span>
-                <span class="w-3 h-3 rounded-sm bg-amber-200 ml-1"></span><span>Sebagian</span>
-                <span class="w-3 h-3 rounded-sm bg-amber-500 ml-1"></span><span>Lengkap</span>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <div id="dzStreakBadge" class="hidden shrink-0 items-center gap-1 px-2.5 py-1.5 rounded-xl bg-amber-50 text-amber-600 text-[11px] font-black">🔥<span id="dzStreakNum">0</span></div>
+            <div class="relative shrink-0">
+              <button onclick="toggleDzHistory()" id="dzHistoryBtn" class="w-9 h-9 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center transition-all active:scale-95" title="Riwayat 30 hari">
+                <i class="fa-solid fa-calendar-days text-xs"></i>
+              </button>
+              <div id="dzHistoryPopover" class="hidden absolute right-0 top-11 z-10 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 p-3">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">30 Hari Terakhir</p>
+                <div id="dzHistoryGrid" class="flex flex-wrap gap-1"></div>
+                <div class="flex items-center gap-1.5 mt-2.5 text-[9px] font-bold text-slate-400 flex-wrap">
+                  <span class="w-3 h-3 rounded-sm bg-slate-100 border border-slate-200"></span><span>Belum</span>
+                  <span class="w-3 h-3 rounded-sm bg-amber-200 ml-1"></span><span>Sebagian</span>
+                  <span class="w-3 h-3 rounded-sm bg-amber-500 ml-1"></span><span>Lengkap</span>
+                </div>
               </div>
             </div>
+            <button onclick="closeModal('modalDzikir')" class="text-slate-400 bg-slate-100 hover:bg-slate-200 w-10 h-10 rounded-full flex items-center justify-center transition-colors shadow-inner shrink-0"><i class="fa-solid fa-xmark"></i></button>
           </div>
         </div>
-        <!-- Tab segmented control -->
-        <div class="flex gap-1 bg-slate-100 rounded-2xl p-1" id="dzikirTabs"></div>
-        <!-- Cari doa -->
-        <div class="relative mt-3">
+        <!-- Tab segmented control (centang selesai pagi/petang menyatu di tombol tab) + toggle cari -->
+        <div class="flex items-center gap-1.5">
+          <div class="flex-1 flex gap-1 bg-slate-100 rounded-2xl p-1" id="dzikirTabs"></div>
+          <button onclick="toggleDzikirSearch()" id="dzSearchToggleBtn" class="shrink-0 w-9 h-9 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center transition-all active:scale-95" title="Cari doa/dzikir">
+            <i class="fa-solid fa-magnifying-glass text-xs"></i>
+          </button>
+        </div>
+        <!-- Cari doa (tersembunyi default, buka via tombol di atas) -->
+        <div class="relative mt-2 hidden" id="dzikirSearchWrap">
           <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 text-xs pointer-events-none"></i>
           <input id="dzikirSearch" type="text" oninput="renderDzikirList()" placeholder="Cari doa / dzikir…" autocomplete="off" class="w-full pl-10 pr-9 py-3 text-[13px] bg-slate-100 border border-transparent focus:border-sky-300 focus:bg-white rounded-2xl outline-none font-medium transition-all">
           <button id="dzikirSearchClear" onclick="clearDzikirSearch()" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 w-6 h-6 flex items-center justify-center"><i class="fa-solid fa-circle-xmark text-sm"></i></button>
@@ -5776,6 +5774,13 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       initDzikirStatus();
       const pop = document.getElementById('dzHistoryPopover');
       if (pop) pop.classList.add('hidden');   // reset, jangan nyangkut terbuka dari sesi sebelumnya
+      const sw = document.getElementById('dzikirSearchWrap');
+      if (sw) sw.classList.add('hidden');     // reset, sama alasannya
+    }
+
+    // slug tab -> jenis tracking ('daily-dua' tak dilacak, cuma pagi/petang)
+    function dzTabJenis(slug) {
+      return slug === 'morning-dhikr' ? 'pagi' : slug === 'evening-dhikr' ? 'petang' : null;
     }
 
     function renderDzikirTabs() {
@@ -5783,8 +5788,11 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       if (!wrap) return;
       wrap.innerHTML = DZIKIR_TABS.map(t => {
         const on = t.slug === _dzikirActive;
-        return `<button onclick="switchDzikirTab('${t.slug}')" class="flex-1 py-2.5 text-[11px] font-bold tracking-widest uppercase rounded-xl transition-all ${on ? 'bg-white shadow-sm text-sky-600' : 'text-slate-400 hover:text-slate-600'}"><i class="fa-solid ${t.icon} mr-1.5"></i>${t.label}</button>`;
+        const jenis = dzTabJenis(t.slug);
+        const check = jenis ? `<span onclick="event.stopPropagation();toggleDzikirStatus('${jenis}')" id="dzTabCheck-${jenis}" class="dz-tab-check inline-flex items-center justify-center w-5 h-5 -my-1.5 rounded-full ml-1 border border-current opacity-40 align-middle transition-all"><i class="fa-solid fa-check text-[8px] opacity-0 transition-opacity"></i></span>` : '';
+        return `<button onclick="switchDzikirTab('${t.slug}')" class="flex-1 py-2.5 text-[11px] font-bold tracking-widest uppercase rounded-xl transition-all ${on ? 'bg-white shadow-sm text-sky-600' : 'text-slate-400 hover:text-slate-600'}"><i class="fa-solid ${t.icon} mr-1.5"></i>${t.label}${check}</button>`;
       }).join('');
+      paintDzikirTabChecks();   // sinkronkan langsung dgn _dzToday saat ini (mis. saat ganti tab)
     }
 
     function switchDzikirTab(slug) {
@@ -5800,6 +5808,19 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       const el = document.getElementById('dzikirSearch');
       if (el) { el.value = ''; el.focus(); }
       renderDzikirList();
+    }
+
+    function toggleDzikirSearch() {
+      const wrap = document.getElementById('dzikirSearchWrap');
+      if (!wrap) return;
+      const opening = wrap.classList.contains('hidden');
+      wrap.classList.toggle('hidden');
+      if (opening) {
+        document.getElementById('dzikirSearch').focus();
+      } else {
+        document.getElementById('dzikirSearch').value = '';
+        renderDzikirList();
+      }
     }
 
     function loadDzikir(slug) {
@@ -5996,21 +6017,23 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       if (pop && !pop.classList.contains('hidden')) loadDzHistory();
     }
 
+    // Centang status kini menyatu di tombol tab (bukan pill terpisah) — hemat 1 baris header.
+    function paintDzikirTabChecks() {
+      ['pagi', 'petang'].forEach(jenis => {
+        const el = document.getElementById('dzTabCheck-' + jenis);
+        if (!el) return;
+        const done = _dzToday[jenis];
+        el.classList.toggle('bg-emerald-500', done);
+        el.classList.toggle('border-emerald-500', done);
+        el.classList.toggle('opacity-40', !done);
+        el.classList.toggle('opacity-100', done);
+        const ic = el.querySelector('i');
+        if (ic) ic.classList.toggle('opacity-0', !done);
+      });
+    }
+
     function renderDzikirStatus() {
-      const paint = (jenis, done) => {
-        const btn = document.getElementById(jenis === 'pagi' ? 'dzStatusPagi' : 'dzStatusPetang');
-        if (!btn) return;
-        btn.classList.toggle('bg-emerald-50', done);
-        btn.classList.toggle('border-emerald-200', done);
-        btn.classList.toggle('text-emerald-600', done);
-        btn.classList.toggle('bg-slate-100', !done);
-        btn.classList.toggle('border-transparent', !done);
-        btn.classList.toggle('text-slate-400', !done);
-        const ic = btn.querySelector('i');
-        if (ic) ic.className = done ? 'fa-solid fa-circle-check' : 'fa-regular fa-circle';
-      };
-      paint('pagi', _dzToday.pagi);
-      paint('petang', _dzToday.petang);
+      paintDzikirTabChecks();
       const badge = document.getElementById('dzStreakBadge'), num = document.getElementById('dzStreakNum');
       if (badge && num) {
         const show = _dzToday.streak > 0;
