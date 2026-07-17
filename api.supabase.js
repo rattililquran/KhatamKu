@@ -74,6 +74,12 @@ const gscript = {
   calibrateReadingPosition: (_userId, c) =>
     rpc("app_calibrate", { p_page: parseInt(c.page), p_surah: c.surahId ? parseInt(c.surahId) : null }),
 
+  // ── DZIKIR TRACKING (FITUR BARU) — jenis: 'pagi' | 'petang' ─
+  getDzikirToday: () => rpc("app_dzikir_today"),
+  tickDzikir: (jenis) => rpc("app_dzikir_tick", { p_jenis: jenis }),
+  untickDzikir: (jenis) => rpc("app_dzikir_untick", { p_jenis: jenis }),
+  getDzikirHistory: (days) => rpc("app_dzikir_history", { p_days: days || 30 }),
+
   // ── BOOKMARK (FITUR BARU) — langsung tabel via RLS ────────
   addBookmark: async (surahId, ayat, catatan) => {
     const { data, error } = await sb.from("bookmark")
