@@ -1411,6 +1411,16 @@
           </div>
           <button onclick="closeModal('modalDzikir')" class="text-slate-400 bg-slate-100 hover:bg-slate-200 w-10 h-10 rounded-full flex items-center justify-center transition-colors shadow-inner shrink-0"><i class="fa-solid fa-xmark"></i></button>
         </div>
+        <!-- Status hari ini: tandai selesai pagi/petang + streak -->
+        <div class="flex items-center gap-2 mb-3">
+          <button onclick="toggleDzikirStatus('pagi')" id="dzStatusPagi" class="dz-status-pill flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[11px] font-bold border border-transparent bg-slate-100 text-slate-400 transition-all active:scale-95">
+            <i class="fa-regular fa-circle"></i> Pagi
+          </button>
+          <button onclick="toggleDzikirStatus('petang')" id="dzStatusPetang" class="dz-status-pill flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[11px] font-bold border border-transparent bg-slate-100 text-slate-400 transition-all active:scale-95">
+            <i class="fa-regular fa-circle"></i> Petang
+          </button>
+          <div id="dzStreakBadge" class="hidden shrink-0 items-center gap-1 px-2.5 py-2 rounded-xl bg-amber-50 text-amber-600 text-[11px] font-black">🔥<span id="dzStreakNum">0</span></div>
+        </div>
         <!-- Tab segmented control -->
         <div class="flex gap-1 bg-slate-100 rounded-2xl p-1" id="dzikirTabs"></div>
         <!-- Cari doa -->
@@ -5749,6 +5759,7 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       renderDzikirTabs();
       if (_dzikirData[_dzikirActive]) renderDzikirList();
       else loadDzikir(_dzikirActive);
+      initDzikirStatus();
     }
 
     function renderDzikirTabs() {
@@ -5894,6 +5905,97 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       if (lbl) lbl.textContent = c;
       if (bar) { bar.style.width = Math.round(c / target * 100) + '%'; bar.classList.toggle('done', done); }
       if (btn) btn.classList.toggle('done', done);
+    }
+
+    // ── Status harian pagi/petang (checklist + streak) ──────────────
+    // Supabase kalau login (RPC app_dzikir_*), fallback localStorage bila
+    // belum sempat login / RPC gagal — pola sama seperti bookmark di reader.html.
+    let _dzToday = { pagi: false, petang: false, streak: 0 };
+
+    function dzLocalKey() { return 'khatamku_dzikir_local'; }
+    function dzLocalGet() { try { return JSON.parse(localStorage.getItem(dzLocalKey()) || '{}'); } catch (_) { return {}; } }
+    function dzTodayStr() {
+      const d = new Date();
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+    function dzDateStr(d) {
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+    function dzLocalStreak() {
+      const all = dzLocalGet();
+      const complete = Object.keys(all).filter(k => all[k] && all[k].pagi && all[k].petang).sort();
+      if (!complete.length) return 0;
+      const last = complete[complete.length - 1];
+      const yday = new Date(); yday.setDate(yday.getDate() - 1);
+      if (last !== dzTodayStr() && last !== dzDateStr(yday)) return 0;   // streak sudah putus
+      let streak = 1;
+      for (let i = complete.length - 1; i > 0; i--) {
+        const diffDays = Math.round((new Date(complete[i]) - new Date(complete[i - 1])) / 86400000);
+        if (diffDays === 1) streak++; else break;
+      }
+      return streak;
+    }
+
+    async function initDzikirStatus() {
+      if (currentUser && window.gscript) {
+        try {
+          const r = await gscript.getDzikirToday();
+          _dzToday = { pagi: !!r.pagi, petang: !!r.petang, streak: r.dzikirStreak || 0 };
+          renderDzikirStatus();
+          return;
+        } catch (_) { /* jatuh ke localStorage */ }
+      }
+      const t = dzTodayStr(), today = dzLocalGet()[t] || { pagi: false, petang: false };
+      _dzToday = { pagi: !!today.pagi, petang: !!today.petang, streak: dzLocalStreak() };
+      renderDzikirStatus();
+    }
+
+    async function toggleDzikirStatus(jenis) {
+      const wasDone = _dzToday[jenis];
+      if (currentUser && window.gscript) {
+        try {
+          const r = wasDone ? await gscript.untickDzikir(jenis) : await gscript.tickDzikir(jenis);
+          _dzToday = { pagi: !!r.pagi, petang: !!r.petang, streak: r.dzikirStreak || 0 };
+          renderDzikirStatus();
+          if (!wasDone) showToast(jenis === 'pagi' ? '✓ Dzikir Pagi tercatat, Baarakallahu fiik' : '✓ Dzikir Petang tercatat, Baarakallahu fiik', 'success');
+          return;
+        } catch (e) {
+          showToast('Gagal menyimpan: ' + (e.message || e), 'error');
+          return;
+        }
+      }
+      // belum login → fallback localStorage
+      const all = dzLocalGet(), t = dzTodayStr();
+      const today = all[t] || { pagi: false, petang: false };
+      today[jenis] = !wasDone;
+      all[t] = today;
+      localStorage.setItem(dzLocalKey(), JSON.stringify(all));
+      _dzToday = { pagi: !!today.pagi, petang: !!today.petang, streak: dzLocalStreak() };
+      renderDzikirStatus();
+    }
+
+    function renderDzikirStatus() {
+      const paint = (jenis, done) => {
+        const btn = document.getElementById(jenis === 'pagi' ? 'dzStatusPagi' : 'dzStatusPetang');
+        if (!btn) return;
+        btn.classList.toggle('bg-emerald-50', done);
+        btn.classList.toggle('border-emerald-200', done);
+        btn.classList.toggle('text-emerald-600', done);
+        btn.classList.toggle('bg-slate-100', !done);
+        btn.classList.toggle('border-transparent', !done);
+        btn.classList.toggle('text-slate-400', !done);
+        const ic = btn.querySelector('i');
+        if (ic) ic.className = done ? 'fa-solid fa-circle-check' : 'fa-regular fa-circle';
+      };
+      paint('pagi', _dzToday.pagi);
+      paint('petang', _dzToday.petang);
+      const badge = document.getElementById('dzStreakBadge'), num = document.getElementById('dzStreakNum');
+      if (badge && num) {
+        const show = _dzToday.streak > 0;
+        badge.classList.toggle('hidden', !show);
+        badge.classList.toggle('flex', show);
+        num.textContent = _dzToday.streak;
+      }
     }
 
     // ================================================================
