@@ -250,8 +250,11 @@ async function loadSurah(s){
   if(!r.ok) throw new Error("teks surah belum tersedia");
   const d = await r.json(); surahCache[s] = d; return d;
 }
+let _goToken = 0;   // versi request aktif → cegah respons lambat menimpa halaman yang lebih baru
 async function go(p){
   if(p<1||p>604) return;
+  const myToken = ++_goToken;
+  const stale = () => myToken !== _goToken;
   page = p; hideSheet();
   try{ history.replaceState(null,"","?p="+p); }catch(_){}   // simpan posisi → refresh tetap di halaman ini
   const box = document.getElementById("mushaf");
@@ -259,17 +262,21 @@ async function go(p){
   box.classList.add("fade");
   if(!cached){
     await new Promise(r=>setTimeout(r,90));                // beri waktu fade-out hanya bila harus menunggu jaringan
+    if(stale()) return;
     box.innerHTML = '<div class="loading">Memuat halaman '+p+'…</div>';
   }
   document.getElementById("jump").value = p;
   let d;
   try{ d = await fetchPageData(p); }
-  catch(e){ box.classList.remove("fade"); box.innerHTML = '<div class="err">Halaman '+p+' belum diunduh (ingest berjalan). Coba lagi sebentar.</div>'; updateNav(); return; }
+  catch(e){ if(stale()) return; box.classList.remove("fade"); box.innerHTML = '<div class="err">Halaman '+p+' belum diunduh (ingest berjalan). Coba lagi sebentar.</div>'; updateNav(); return; }
+  if(stale()) return;
   await Promise.all([ensureFont(p), ensureFont(1),     // tunggu font halaman + basmalah + nama-surat → hindari kedip
     document.fonts.load("38px 'surahname'").catch(()=>{})]);
+  if(stale()) return;
   // muat nama semua surah di halaman ini (untuk banner)
   const names = {};
   for(const s of d.surahs){ try{ names[s] = await loadSurah(s); }catch(_){ names[s] = {nama:"Surah "+s, nama_arab:""}; } }
+  if(stale()) return;
   document.getElementById("surahName").textContent = "QS " + (names[d.surahs[0]] && names[d.surahs[0]].nama || d.surahs[0]);
 
   // baris pertama tiap surah (min line di mana S:1 muncul) → sisipkan banner+basmalah sebelumnya

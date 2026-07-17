@@ -41,9 +41,10 @@ const gscript = {
   doLogin: async (username, password) => {
     const res = await invokeAuth({ action: "login", identifier: username, password });
     // pasang sesi supabase agar RPC berikutnya terautentikasi
-    await sb.auth.setSession({
+    const { error: sessErr } = await sb.auth.setSession({
       access_token: res.access_token, refresh_token: res.refresh_token,
     });
+    if (sessErr) throw new Error("Gagal memasang sesi login: " + sessErr.message);
     return { user: res.user, dashboardData: res.dashboardData };
   },
 
@@ -82,8 +83,10 @@ const gscript = {
 
   // ── BOOKMARK (FITUR BARU) — langsung tabel via RLS ────────
   addBookmark: async (surahId, ayat, catatan) => {
+    const s = parseInt(surahId), a = parseInt(ayat);
+    if (!(s >= 1 && s <= 114) || !(a >= 1)) throw new Error("Referensi ayat tidak valid.");
     const { data, error } = await sb.from("bookmark")
-      .upsert({ surah_id: surahId, ayat, catatan: catatan || "",
+      .upsert({ surah_id: s, ayat: a, catatan: catatan || "",
                 user_id: (await sb.auth.getUser()).data.user.id },
               { onConflict: "user_id,surah_id,ayat" })
       .select().single();

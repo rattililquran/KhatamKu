@@ -2785,10 +2785,33 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
         syncSlider(parseInt(slider.value));
       });
 
-      const savedUser = localStorage.getItem('khatamku_user');
-      if (savedUser) { currentUser = JSON.parse(savedUser); initApp(); } 
-      else { showLoginScreen(); }
+      try {
+        const savedUser = localStorage.getItem('khatamku_user') || sessionStorage.getItem('khatamku_user');
+        if (savedUser) { currentUser = JSON.parse(savedUser); initApp(); }
+        else { showLoginScreen(); }
+      } catch (e) {
+        // data sesi tersimpan korup (mis. localStorage rusak) -> jangan biarkan user terjebak di layar kosong
+        localStorage.removeItem('khatamku_user');
+        sessionStorage.removeItem('khatamku_user');
+        showLoginScreen();
+      }
     });
+
+    // ── Escape aman utk data user (nama dll) sebelum masuk innerHTML — cegah XSS ──
+    // Konteks TEKS biasa (innerHTML sebagai node teks, mis. <p>${nama}</p>).
+    function escHtml(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+    // Konteks STRING DI DALAM onclick="fn('...')" — dua lapis berbeda dari escHtml:
+    // browser HTML-decode dulu isi atribut SEBELUM menjalankannya sbg JS, jadi entity HTML
+    // (&#39; dst) tidak melindungi dari lolos-keluar string JS. Harus escape backslash & kutip
+    // satu gaya JS (\\ dan \') DULU, baru escape HTML utk batas atribut (&,<,>,").
+    function escJsAttr(s) {
+      const js = String(s == null ? '' : s)
+        .replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n').replace(/\r/g, '');
+      return js.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
 
     // Dynamic Color Function based on Percentage
     function getProgressColor(pct) {
@@ -2867,7 +2890,8 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
 
     function doLogout() {
       localStorage.removeItem('khatamku_user');
-      localStorage.removeItem('khatamku_remember');
+      localStorage.removeItem('khatamku_remember');   // bersihkan sisa key lama (sebelum fix ini)
+      sessionStorage.removeItem('khatamku_user');
       // #7 Clear cache on logout
       Object.values(CACHE_KEYS).forEach(k => localStorage.removeItem(k));
       currentUser = null;
@@ -2914,8 +2938,15 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       gscript.doLogin(u, p)
         .then(response => {
           currentUser = response.user;
-          localStorage.setItem('khatamku_user', JSON.stringify(currentUser));
-          if (remember) localStorage.setItem('khatamku_remember', '1');
+          const userPayload = JSON.stringify(currentUser);
+          if (remember) {
+            localStorage.setItem('khatamku_user', userPayload);
+            sessionStorage.removeItem('khatamku_user');
+          } else {
+            // TIDAK dicentang -> jangan persisten lintas sesi browser (sessionStorage hilang saat tab/browser ditutup)
+            sessionStorage.setItem('khatamku_user', userPayload);
+            localStorage.removeItem('khatamku_user');
+          }
           hideLoading();
           // dashboardData bisa null jika guru, atau objek {profile,journals,todayProgress} jika murid
           if (response.dashboardData && response.dashboardData.profile) {
@@ -3208,10 +3239,10 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       atRiskEl.innerHTML = (d.at_risk_list || []).map(u => `
         <div class="flex items-center justify-between p-2 rounded-xl bg-red-50">
           <div>
-            <p class="text-sm font-bold text-slate-700">${u.nama}</p>
-            <p class="text-[11px] text-slate-400">${u.halaqah || '—'} · ${u.hari_absen === 999 ? 'Belum pernah setor' : u.hari_absen + ' hari absen'}</p>
+            <p class="text-sm font-bold text-slate-700">${escHtml(u.nama)}</p>
+            <p class="text-[11px] text-slate-400">${escHtml(u.halaqah) || '—'} · ${u.hari_absen === 999 ? 'Belum pernah setor' : u.hari_absen + ' hari absen'}</p>
           </div>
-          ${u.no_wa ? `<a href="https://wa.me/${u.no_wa}?text=Assalamualaikum+${encodeURIComponent(u.nama)}" target="_blank"
+          ${u.no_wa ? `<a href="https://wa.me/${encodeURIComponent(u.no_wa)}?text=Assalamualaikum+${encodeURIComponent(u.nama)}" target="_blank"
              class="text-emerald-500 bg-emerald-50 rounded-full w-8 h-8 flex items-center justify-center text-sm">
             <i class="fa-brands fa-whatsapp"></i></a>` : ''}
         </div>
@@ -3223,8 +3254,8 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
         <div class="flex items-center gap-3 p-2 rounded-xl ${i < 3 ? 'bg-amber-50' : 'bg-slate-50'}">
           <span class="text-lg font-black ${i === 0 ? 'text-amber-400' : i === 1 ? 'text-slate-400' : i === 2 ? 'text-amber-600' : 'text-slate-300'}">${i + 1}</span>
           <div class="flex-1">
-            <p class="text-sm font-bold text-slate-700">${u.nama}</p>
-            <p class="text-[11px] text-slate-400">${u.halaqah || '—'}</p>
+            <p class="text-sm font-bold text-slate-700">${escHtml(u.nama)}</p>
+            <p class="text-[11px] text-slate-400">${escHtml(u.halaqah) || '—'}</p>
           </div>
           <span class="text-sm font-black text-amber-500">🏆 ×${u.total_khatam}</span>
         </div>
@@ -3237,8 +3268,8 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
         const jam = t.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
         return `<div class="flex gap-2 text-xs py-1 border-b border-slate-50 last:border-0">
           <span class="text-slate-300 font-mono">${jam}</span>
-          <span class="text-slate-600"><b>${f.nama}</b> setor <b>${f.halaman} hal</b></span>
-          <span class="text-slate-400 ml-auto">${f.halaqah || ''}</span>
+          <span class="text-slate-600"><b>${escHtml(f.nama)}</b> setor <b>${f.halaman} hal</b></span>
+          <span class="text-slate-400 ml-auto">${escHtml(f.halaqah) || ''}</span>
         </div>`;
       }).join('') || '<p class="text-sm text-slate-400 text-center py-4">Belum ada aktivitas hari ini.</p>';
 
@@ -3319,17 +3350,17 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       tbody.innerHTML = users.map(u => `
         <tr class="hover:bg-slate-50/50 transition-colors">
           <td class="p-3">
-            <p class="font-bold text-slate-800">${u.nama_lengkap}</p>
-            <p class="text-[10px] text-slate-400 font-semibold">${u.username}</p>
+            <p class="font-bold text-slate-800">${escHtml(u.nama_lengkap)}</p>
+            <p class="text-[10px] text-slate-400 font-semibold">${escHtml(u.username)}</p>
           </td>
           <td class="p-3">${roleBadge(u.role)}</td>
-          <td class="p-3 text-slate-500">${u.id_halaqah || '—'}</td>
-          <td class="p-3 text-slate-500">${u.no_wa || '—'}</td>
+          <td class="p-3 text-slate-500">${escHtml(u.id_halaqah) || '—'}</td>
+          <td class="p-3 text-slate-500">${escHtml(u.no_wa) || '—'}</td>
           <td class="p-3 text-center">
             <div class="flex gap-1 justify-center">
               <button onclick='adminEditUser(${JSON.stringify(u).replace(/'/g,"&#39;")})' title="Edit" class="w-8 h-8 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-500 flex items-center justify-center transition-colors"><i class="fa-solid fa-pen-to-square text-[11px]"></i></button>
-              <button onclick="adminOpenResetPW('${u.user_id}','${u.nama_lengkap}')" title="Reset Password" class="w-8 h-8 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-500 flex items-center justify-center transition-colors"><i class="fa-solid fa-key text-[11px]"></i></button>
-              <button onclick="adminDeleteUser('${u.user_id}','${u.nama_lengkap}')" title="Hapus" class="w-8 h-8 rounded-lg bg-red-50 hover:bg-red-100 text-red-500 flex items-center justify-center transition-colors"><i class="fa-solid fa-trash text-[11px]"></i></button>
+              <button onclick="adminOpenResetPW('${u.user_id}','${escJsAttr(u.nama_lengkap)}')" title="Reset Password" class="w-8 h-8 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-500 flex items-center justify-center transition-colors"><i class="fa-solid fa-key text-[11px]"></i></button>
+              <button onclick="adminDeleteUser('${u.user_id}','${escJsAttr(u.nama_lengkap)}')" title="Hapus" class="w-8 h-8 rounded-lg bg-red-50 hover:bg-red-100 text-red-500 flex items-center justify-center transition-colors"><i class="fa-solid fa-trash text-[11px]"></i></button>
             </div>
           </td>
         </tr>
@@ -3512,10 +3543,10 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
           const previewBody = document.getElementById('adCsvPreviewTableBody');
           previewBody.innerHTML = adCsvParsedData.slice(0, 5).map(r => `
             <tr>
-              <td class="p-2">${r.username}</td>
-              <td class="p-2">${r.nama}</td>
-              <td class="p-2">${r.role}</td>
-              <td class="p-2">${r.halaqah_id || '—'}</td>
+              <td class="p-2">${escHtml(r.username)}</td>
+              <td class="p-2">${escHtml(r.nama)}</td>
+              <td class="p-2">${escHtml(r.role)}</td>
+              <td class="p-2">${escHtml(r.halaqah_id) || '—'}</td>
             </tr>
           `).join('');
           document.getElementById('adCsvStatusText').textContent = `Preview (${Math.min(5, adCsvParsedData.length)} dari ${adCsvParsedData.length} baris):`;
@@ -3628,9 +3659,11 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       }).join('');
     }
 
+    let adGuruCacheFailed = false;
     async function adminEnsureGuruCache() {
       if (adGuruCache.length) return;
-      try { adGuruCache = await gscript.adminListGuru() || []; } catch (_) {}
+      try { adGuruCache = await gscript.adminListGuru() || []; adGuruCacheFailed = false; }
+      catch (_) { adGuruCacheFailed = true; }
     }
 
     // Modal: tambah / edit halaqah
@@ -3697,12 +3730,12 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       mBody.innerHTML = murid.length ? murid.map(m => `
         <div class="flex items-center justify-between p-2 rounded-xl ${m.setor_hari_ini ? 'bg-emerald-50/60' : 'bg-slate-50'}">
           <div class="min-w-0">
-            <p class="text-sm font-bold text-slate-700 truncate">${m.nama} ${m.udzur ? `<span class="text-[9px] text-amber-500 font-black">(${m.udzur})</span>` : ''}</p>
+            <p class="text-sm font-bold text-slate-700 truncate">${escHtml(m.nama)} ${m.udzur ? `<span class="text-[9px] text-amber-500 font-black">(${escHtml(m.udzur)})</span>` : ''}</p>
             <p class="text-[10px] text-slate-400">Hal ${m.halaman_terakhir || 0} · 🔥${m.streak || 0} · 🏆${m.total_khatam || 0}</p>
           </div>
           <div class="flex items-center gap-1 shrink-0">
             ${m.setor_hari_ini ? '<span class="text-[9px] font-black text-emerald-600 uppercase">✓ Setor</span>' : ''}
-            <button onclick="adminOpenMoveStudent('${m.username}','${(m.nama||'').replace(/'/g,"\\'")}')" title="Pindah halaqah" class="w-7 h-7 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-500 flex items-center justify-center"><i class="fa-solid fa-right-left text-[10px]"></i></button>
+            <button onclick="adminOpenMoveStudent('${m.username}','${escJsAttr(m.nama)}')" title="Pindah halaqah" class="w-7 h-7 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-500 flex items-center justify-center"><i class="fa-solid fa-right-left text-[10px]"></i></button>
           </div>
         </div>`).join('') : '<p class="text-sm text-slate-400 text-center py-6">Belum ada murid di halaqah ini.</p>';
 
@@ -3729,6 +3762,10 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
     function renderHalaqahGuruTab(d) {
       const assigned = new Set((d.guru || []).map(g => g.user_id));
       const box = document.getElementById('adHdGuruList');
+      if (adGuruCacheFailed) {
+        box.innerHTML = '<p class="text-sm text-red-500 text-center py-6 font-bold">⚠️ Gagal memuat daftar guru. Tutup dan buka lagi tab ini sebelum menyimpan penugasan.</p>';
+        return;
+      }
       if (!adGuruCache.length) {
         box.innerHTML = '<p class="text-sm text-slate-400 text-center py-6">Belum ada akun guru terdaftar.</p>';
         return;
@@ -3736,12 +3773,16 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       box.innerHTML = adGuruCache.map(g => `
         <label class="flex items-center gap-3 p-2 rounded-xl bg-slate-50 hover:bg-slate-100 cursor-pointer transition-colors">
           <input type="checkbox" class="ad-hd-guru-cb w-4 h-4 accent-amber-500" value="${g.user_id}" ${assigned.has(g.user_id) ? 'checked' : ''}>
-          <span class="text-sm font-bold text-slate-700">${g.nama}</span>
+          <span class="text-sm font-bold text-slate-700">${escHtml(g.nama)}</span>
         </label>`).join('');
     }
 
     async function adminSaveHalaqahGuru() {
       if (!adCurrentHalaqah) return;
+      if (adGuruCacheFailed) {
+        showToast('Daftar guru gagal dimuat - penugasan TIDAK disimpan (mencegah terhapus tanpa sengaja). Tutup & buka lagi tab Guru, lalu coba lagi.', 'error');
+        return;
+      }
       const ids = Array.from(document.querySelectorAll('.ad-hd-guru-cb:checked')).map(cb => cb.value);
       try {
         showLoading('MENYIMPAN PENUGASAN GURU...');
@@ -3866,7 +3907,7 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       document.getElementById('adAnKonsistenList').innerHTML = (d.murid_konsisten || []).length
         ? d.murid_konsisten.map(m => `
           <div class="flex items-center justify-between p-2 rounded-xl bg-emerald-50/60">
-            <div><p class="text-sm font-bold text-slate-700">${m.nama}</p><p class="text-[10px] text-slate-400">${m.halaqah || '—'}</p></div>
+            <div><p class="text-sm font-bold text-slate-700">${escHtml(m.nama)}</p><p class="text-[10px] text-slate-400">${escHtml(m.halaqah) || '—'}</p></div>
             <span class="text-xs font-black text-emerald-600">${m.hari_setor} hari (${m.pct}%)</span>
           </div>`).join('')
         : '<p class="text-sm text-slate-400 text-center py-4">Belum ada yang mencapai 80%.</p>';
@@ -3875,7 +3916,7 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       document.getElementById('adAnAbsenList').innerHTML = (d.murid_absen || []).length
         ? d.murid_absen.map(m => `
           <div class="flex items-center justify-between p-2 rounded-xl bg-red-50">
-            <div><p class="text-sm font-bold text-slate-700">${m.nama}</p><p class="text-[10px] text-slate-400">${m.halaqah || '—'}</p></div>
+            <div><p class="text-sm font-bold text-slate-700">${escHtml(m.nama)}</p><p class="text-[10px] text-slate-400">${escHtml(m.halaqah) || '—'}</p></div>
             ${m.no_wa ? `<a href="https://wa.me/${adWaNum(m.no_wa)}?text=${encodeURIComponent('Assalamualaikum ' + m.nama + ', kami menunggu setoran bacaanmu 🤲')}" target="_blank" class="text-emerald-500 bg-emerald-50 rounded-full w-8 h-8 flex items-center justify-center"><i class="fa-brands fa-whatsapp"></i></a>` : ''}
           </div>`).join('')
         : '<p class="text-sm text-slate-400 text-center py-4">Semua murid pernah setor 🎉</p>';
@@ -5634,7 +5675,7 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       
       if (currentTargetMode === 'reguler') {
         finalTargetPages = parseInt(document.getElementById('inputTargetPages').value);
-        if(!finalTargetPages) return customAlert('Perhatian', 'Silakan masukkan target halaman.', 'warning');
+        if(!finalTargetPages || finalTargetPages <= 0) return customAlert('Perhatian', 'Silakan masukkan target halaman yang valid (lebih dari 0).', 'warning');
       } else {
         const targetDateStr = document.getElementById('inputTargetDate').value;
         if (!targetDateStr) return customAlert('Perhatian', 'Silakan pilih tanggal target khatam.', 'warning');
@@ -5978,39 +6019,53 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
         try {
           const r = await gscript.getDzikirToday();
           _dzToday = { pagi: !!r.pagi, petang: !!r.petang, streak: r.dzikirStreak || 0 };
+          localStorage.removeItem(dzLocalKey());   // bersihkan sisa data guest agar tak "menghantui" akun lain di device sama
           renderDzikirStatus();
           return;
-        } catch (_) { /* jatuh ke localStorage */ }
+        } catch (_) {
+          // RPC gagal PADAHAL sudah login -> jangan pura-pura pakai localStorage (bisa data guest/orang lain
+          // di device yang sama, salah user). Tampilkan status netral, biar tap berikutnya coba RPC lagi.
+          _dzToday = { pagi: false, petang: false, streak: 0 };
+          renderDzikirStatus();
+          return;
+        }
       }
       const t = dzTodayStr(), today = dzLocalGet()[t] || { pagi: false, petang: false };
       _dzToday = { pagi: !!today.pagi, petang: !!today.petang, streak: dzLocalStreak() };
       renderDzikirStatus();
     }
 
+    let _dzBusy = { pagi: false, petang: false };   // cegah tap ganda cepat memicu 2 request tick/untick bersamaan
     async function toggleDzikirStatus(jenis) {
-      const wasDone = _dzToday[jenis];
-      if (currentUser && window.gscript) {
-        try {
-          const r = wasDone ? await gscript.untickDzikir(jenis) : await gscript.tickDzikir(jenis);
-          _dzToday = { pagi: !!r.pagi, petang: !!r.petang, streak: r.dzikirStreak || 0 };
-          renderDzikirStatus();
-          refreshDzHistoryIfOpen();
-          if (!wasDone) showToast(jenis === 'pagi' ? '✓ Dzikir Pagi tercatat, Baarakallahu fiik' : '✓ Dzikir Petang tercatat, Baarakallahu fiik', 'success');
-          return;
-        } catch (e) {
-          showToast('Gagal menyimpan: ' + (e.message || e), 'error');
-          return;
+      if (_dzBusy[jenis]) return;
+      _dzBusy[jenis] = true;
+      try {
+        const wasDone = _dzToday[jenis];
+        if (currentUser && window.gscript) {
+          try {
+            const r = wasDone ? await gscript.untickDzikir(jenis) : await gscript.tickDzikir(jenis);
+            _dzToday = { pagi: !!r.pagi, petang: !!r.petang, streak: r.dzikirStreak || 0 };
+            renderDzikirStatus();
+            refreshDzHistoryIfOpen();
+            if (!wasDone) showToast(jenis === 'pagi' ? '✓ Dzikir Pagi tercatat, Baarakallahu fiik' : '✓ Dzikir Petang tercatat, Baarakallahu fiik', 'success');
+            return;
+          } catch (e) {
+            showToast('Gagal menyimpan: ' + (e.message || e), 'error');
+            return;
+          }
         }
+        // belum login → fallback localStorage
+        const all = dzLocalGet(), t = dzTodayStr();
+        const today = all[t] || { pagi: false, petang: false };
+        today[jenis] = !wasDone;
+        all[t] = today;
+        localStorage.setItem(dzLocalKey(), JSON.stringify(all));
+        _dzToday = { pagi: !!today.pagi, petang: !!today.petang, streak: dzLocalStreak() };
+        renderDzikirStatus();
+        refreshDzHistoryIfOpen();
+      } finally {
+        _dzBusy[jenis] = false;
       }
-      // belum login → fallback localStorage
-      const all = dzLocalGet(), t = dzTodayStr();
-      const today = all[t] || { pagi: false, petang: false };
-      today[jenis] = !wasDone;
-      all[t] = today;
-      localStorage.setItem(dzLocalKey(), JSON.stringify(all));
-      _dzToday = { pagi: !!today.pagi, petang: !!today.petang, streak: dzLocalStreak() };
-      renderDzikirStatus();
-      refreshDzHistoryIfOpen();
     }
     function refreshDzHistoryIfOpen() {
       const pop = document.getElementById('dzHistoryPopover');
