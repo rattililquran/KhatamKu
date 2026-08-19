@@ -957,7 +957,7 @@
           <i class="fa-solid fa-copy text-sm" aria-hidden="true"></i> Rekap Hari Ini
         </button>
         <button onclick="generateWeeklyReport()" class="flex-1 inline-flex items-center justify-center gap-2 rounded-full font-bold text-xs text-white whitespace-nowrap" style="background:var(--color-ink);min-height:44px;padding:10px 14px;box-shadow:0 4px 14px rgba(15,23,42,0.18)">
-          <i class="fa-solid fa-calendar-week text-sm" aria-hidden="true"></i> Rekap Mingguan
+          <i class="fa-solid fa-calendar-week text-sm" aria-hidden="true"></i> Rekap Rentang
         </button>
       </div>
 
@@ -1644,6 +1644,40 @@
             <i class="fa-solid fa-floppy-disk"></i> SIMPAN PERUBAHAN
           </button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Rekap Rentang Tanggal (Portal Guru) -->
+  <div id="modalWeeklyRange" class="fixed inset-0 z-50 modal-overlay hidden flex items-end justify-center sm:items-center">
+    <div class="modal-content w-full max-w-md rounded-t-[2.5rem] sm:rounded-3xl p-7 transform transition-transform translate-y-full text-slate-800" id="modalWeeklyRangeContent">
+      <div class="flex justify-between items-center mb-5 border-b pb-5" style="border-color:var(--color-border)">
+        <div>
+          <h3 class="text-xl font-bold tracking-tight" style="font-family:var(--font-display);color:var(--color-ink)">Rekap Rentang Tanggal</h3>
+          <p class="text-xs font-semibold mt-1 uppercase tracking-widest" style="color:var(--color-muted)">Pilih dari & sampai tanggal</p>
+        </div>
+        <button onclick="closeModal('modalWeeklyRange')" aria-label="Tutup" class="w-10 h-10 rounded-full flex items-center justify-center transition-colors border bg-white" style="border-color:var(--color-border);color:var(--color-muted)"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+      </div>
+      <div class="space-y-4">
+        <div class="flex gap-3">
+          <div class="flex-1">
+            <label for="tcRangeFrom" class="block text-[10px] font-bold uppercase tracking-widest mb-1.5" style="color:var(--color-muted)">Dari Tanggal</label>
+            <input type="date" id="tcRangeFrom" class="w-full px-3 py-2.5 rounded-xl border bg-white text-xs font-bold outline-none focus-visible:ring-2 transition-all" style="border-color:var(--color-border);color:var(--color-ink);--tw-ring-color:var(--color-accent);min-height:44px" />
+          </div>
+          <div class="flex-1">
+            <label for="tcRangeTo" class="block text-[10px] font-bold uppercase tracking-widest mb-1.5" style="color:var(--color-muted)">Sampai Tanggal</label>
+            <input type="date" id="tcRangeTo" class="w-full px-3 py-2.5 rounded-xl border bg-white text-xs font-bold outline-none focus-visible:ring-2 transition-all" style="border-color:var(--color-border);color:var(--color-ink);--tw-ring-color:var(--color-accent);min-height:44px" />
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="setWeeklyRange(7)" class="flex-1 py-2 rounded-full border bg-white text-xs font-bold transition-colors" style="border-color:var(--color-border);color:var(--color-muted);min-height:40px">7 hari</button>
+          <button onclick="setWeeklyRange(14)" class="flex-1 py-2 rounded-full border bg-white text-xs font-bold transition-colors" style="border-color:var(--color-border);color:var(--color-muted);min-height:40px">14 hari</button>
+          <button onclick="setWeeklyRange(30)" class="flex-1 py-2 rounded-full border bg-white text-xs font-bold transition-colors" style="border-color:var(--color-border);color:var(--color-muted);min-height:40px">30 hari</button>
+        </div>
+        <p id="tcRangeError" class="hidden text-xs font-semibold" style="color:var(--color-danger)" role="alert"></p>
+        <button id="tcRangeConfirmBtn" onclick="confirmWeeklyRangeReport()" class="w-full inline-flex items-center justify-center gap-2 rounded-full font-bold text-sm text-white" style="background:var(--color-ink);min-height:48px;box-shadow:0 4px 14px rgba(15,23,42,0.18)">
+          <i class="fa-solid fa-copy" aria-hidden="true"></i> Salin Rekap
+        </button>
       </div>
     </div>
   </div>
@@ -4532,38 +4566,99 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       });
     }
 
+    // ── Rekap rentang tanggal (Portal Guru) ────────────────
     function generateWeeklyReport() {
-      if (!teacherDataCache || !filteredStudents) return;
-      
-      const selectedHalaqah = document.getElementById('tcHalaqahSelect').value;
-      const reportTitle = selectedHalaqah === 'Semua' ? 'Seluruh Kelas' : selectedHalaqah;
-      
-      let report = `Bismillah, Rekap Ringkas 7 Hari (${reportTitle}).\n\n`;
-      
-      const sorted = [...filteredStudents].sort((a, b) => {
-        const aActive = (a.history7Days || []).filter(h => h.pagesRead > 0).length;
-        const bActive = (b.history7Days || []).filter(h => h.pagesRead > 0).length;
-        if (bActive !== aActive) return bActive - aActive;
-        return a.name.localeCompare(b.name);
-      });
+      openWeeklyRangeModal();
+    }
 
-      sorted.forEach((st, idx) => {
-        const activeDays = (st.history7Days || []).filter(h => h.pagesRead > 0).length;
-        const totalPages = (st.history7Days || []).reduce((s, h) => s + (h.pagesRead || 0), 0);
-        const khatamBadge = st.totalKhatam > 0 ? ` 🏆x${st.totalKhatam}` : '';
-        const statusBadge = st.isAtRisk ? ' ⚠️ Perlu Perhatian' : (st.udzurStatus ? ` 🌸 ${st.udzurStatus}` : '');
-        
-        report += `${idx+1}. *${st.name}*${khatamBadge}\n`;
-        report += `   └ Setor: ${activeDays}/7 hari (${totalPages} hal) | Posisi: Hal ${st.lastPage}${statusBadge}\n`;
-      });
-      
-      report += `\nJazakumullah khairan atas istiqomahnya! 🌟✨`;
-      
-      navigator.clipboard.writeText(report).then(() => {
-        showToast("✅ Rekap mingguan berhasil disalin!", 'success');
-      }).catch(err => {
-        customAlert('Gagal', "Gagal menyalin teks: " + err, 'error');
-      });
+    function openWeeklyRangeModal() {
+      const today = new Date();
+      const from = new Date(today);
+      from.setDate(today.getDate() - 6);
+      document.getElementById('tcRangeFrom').value = getLocalDateString(from);
+      document.getElementById('tcRangeTo').value = getLocalDateString(today);
+      document.getElementById('tcRangeTo').max = getLocalDateString(today);
+      document.getElementById('tcRangeFrom').max = getLocalDateString(today);
+      const errEl = document.getElementById('tcRangeError');
+      errEl.classList.add('hidden');
+      openModal('modalWeeklyRange');
+    }
+
+    function setWeeklyRange(days) {
+      const today = new Date();
+      const from = new Date(today);
+      from.setDate(today.getDate() - (days - 1));
+      document.getElementById('tcRangeFrom').value = getLocalDateString(from);
+      document.getElementById('tcRangeTo').value = getLocalDateString(today);
+      document.getElementById('tcRangeError').classList.add('hidden');
+    }
+
+    async function confirmWeeklyRangeReport() {
+      if (!teacherDataCache || !filteredStudents) return;
+      const fromVal = document.getElementById('tcRangeFrom').value;
+      const toVal = document.getElementById('tcRangeTo').value;
+      const errEl = document.getElementById('tcRangeError');
+      const todayStr = getLocalDateString();
+
+      if (!fromVal || !toVal) {
+        errEl.textContent = 'Isi tanggal awal dan akhir terlebih dahulu.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+      if (fromVal > toVal) {
+        errEl.textContent = 'Tanggal awal tidak boleh melebihi tanggal akhir.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+      if (toVal > todayStr) {
+        errEl.textContent = 'Tanggal akhir tidak boleh melebihi hari ini.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+      errEl.classList.add('hidden');
+
+      const selectedHalaqah = document.getElementById('tcHalaqahSelect').value;
+      showLoading('Menyusun rekap...');
+      try {
+        const res = await gscript.teacherReportRange(fromVal, toVal);
+        hideLoading();
+        if (!res || !res.students) throw new Error('Data rekap kosong.');
+
+        let students = res.students;
+        if (selectedHalaqah !== 'Semua') {
+          students = students.filter(s => s.halaqah === selectedHalaqah);
+        }
+
+        const reportTitle = selectedHalaqah === 'Semua' ? 'Seluruh Kelas' : selectedHalaqah;
+        const totalDays = res.totalDays || 7;
+        let report = `Bismillah, Rekap Ringkas ${formatDateID(res.from)} s/d ${formatDateID(res.to)} (${totalDays} hari) — ${reportTitle}.\n\n`;
+
+        const sorted = [...students].sort((a, b) => {
+          if (b.activeDays !== a.activeDays) return b.activeDays - a.activeDays;
+          return a.name.localeCompare(b.name);
+        });
+
+        sorted.forEach((st, idx) => {
+          const khatamBadge = st.totalKhatam > 0 ? ` 🏆x${st.totalKhatam}` : '';
+          const statusBadge = st.isAtRisk ? ' ⚠️ Perlu Perhatian' : (st.udzurStatus ? ` 🌸 ${st.udzurStatus}` : '');
+          report += `${idx+1}. *${st.name}*${khatamBadge}\n`;
+          report += `   └ Setor: ${st.activeDays}/${totalDays} hari (${st.totalPages} hal) | Posisi: Hal ${st.lastPage}${statusBadge}\n`;
+        });
+
+        report += `\nJazakumullah khairan atas istiqomahnya! 🌟✨`;
+
+        await navigator.clipboard.writeText(report);
+        showToast("✅ Rekap rentang berhasil disalin!", 'success');
+        closeModal('modalWeeklyRange');
+      } catch (err) {
+        hideLoading();
+        const msg = (err && err.message) ? err.message : String(err);
+        if (msg.includes('does not exist') || msg.includes('Could not find the function')) {
+          customAlert('Belum Terpasang', 'Jalankan patch_teacher_report_range.sql di Supabase SQL Editor terlebih dahulu.', 'warning');
+        } else {
+          customAlert('Gagal', msg, 'error');
+        }
+      }
     }
 
     function openHistoryModal(studentId) {

@@ -120,6 +120,7 @@ const gscript = {
   getTeacherDashboardData: (_userId) => rpc("app_teacher_dashboard"),
   teacherSetTarget: (username, dailyTarget) => rpc("app_teacher_set_target", { p_username: username, p_daily: parseInt(dailyTarget) || 0 }),
   teacherSetUdzur: (username, status, endDate) => rpc("app_teacher_set_udzur", { p_username: username, p_status: status || "", p_end: endDate || null }),
+  teacherReportRange: (from, to) => rpc("app_teacher_report_range", { p_from: from, p_to: to }),
 
   // ── ADMIN ─────────────────────────────────────────────────
   adminDashboard: () => rpc("app_admin_dashboard"),
