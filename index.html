@@ -878,9 +878,14 @@
         <button onclick="changeTeacherFilter('Udzur')" id="chip-Udzur" class="shrink-0 px-3 py-1.5 rounded-full font-bold bg-white text-slate-500 border border-slate-100 hover:bg-slate-50 transition-all">Udzur 🌸</button>
       </div>
 
-      <button onclick="generateGroupReport()" class="w-full mb-6 bg-sky-50 hover:bg-sky-100 text-sky-600 border border-sky-200 font-extrabold py-4 rounded-[1.5rem] flex justify-center items-center gap-3 transition-colors shadow-sm">
-        <i class="fa-solid fa-copy text-lg"></i> SALIN REKAP HARI INI
-      </button>
+      <div class="grid grid-cols-2 gap-3 mb-6">
+        <button onclick="generateGroupReport()" class="bg-sky-50 hover:bg-sky-100 text-sky-600 border border-sky-200 font-extrabold py-3.5 px-3 rounded-[1.25rem] flex justify-center items-center gap-2 transition-colors shadow-sm text-xs">
+          <i class="fa-solid fa-copy text-base"></i> REKAP HARI INI
+        </button>
+        <button onclick="generateWeeklyReport()" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-600 border border-emerald-200 font-extrabold py-3.5 px-3 rounded-[1.25rem] flex justify-center items-center gap-2 transition-colors shadow-sm text-xs">
+          <i class="fa-solid fa-calendar-week text-base"></i> REKAP MINGGUAN
+        </button>
+      </div>
 
       <div class="space-y-4 mb-8" id="tcStudentList">
         <!-- Injected via JS -->
@@ -4412,34 +4417,78 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       
       const doneList = [];
       const notDoneList = [];
+      const udzurList = [];
       
       filteredStudents.forEach(st => {
-        if (st.hasReadToday) {
-          doneList.push(`${st.name} (Hal ${st.lastPage})`);
+        if (st.udzurStatus) {
+          udzurList.push(`${st.name} (${st.udzurStatus})`);
+        } else if (st.hasReadToday) {
+          const tgtStr = st.target > 0 ? ` [${st.todayRead || 0}/${st.target} hal]` : '';
+          doneList.push(`${st.name} (Hal ${st.lastPage}${tgtStr})`);
         } else {
-          notDoneList.push(st.name);
+          const atRiskStr = st.isAtRisk ? ` ⚠️ ${st.daysSinceLastRead} hari` : '';
+          notDoneList.push(`${st.name}${atRiskStr}`);
         }
       });
       
       let report = `Bismillah, Laporan ${reportTitle} Hari Ini.\n\n`;
-      report += `✅ *SUDAH SETOR:*\n`;
+      report += `✅ *SUDAH SETOR (${doneList.length}):*\n`;
       if (doneList.length > 0) {
         doneList.forEach((n, i) => report += `${i+1}. ${n}\n`);
       } else {
         report += `- Belum ada -\n`;
       }
       
-      report += `\n⏳ *BELUM SETOR:*\n`;
+      report += `\n⏳ *BELUM SETOR (${notDoneList.length}):*\n`;
       if (notDoneList.length > 0) {
         notDoneList.forEach((n, i) => report += `${i+1}. ${n}\n`);
       } else {
         report += `- Alhamdulillah tuntas semua -\n`;
       }
+
+      if (udzurList.length > 0) {
+        report += `\n🌸 *UDZUR / IZIN (${udzurList.length}):*\n`;
+        udzurList.forEach((n, i) => report += `${i+1}. ${n}\n`);
+      }
       
       report += `\nMari selesaikan target harian kita sebelum jam 00:00! 💪✨`;
       
       navigator.clipboard.writeText(report).then(() => {
-        showToast("✅ Rekap berhasil disalin ke clipboard!", 'success');
+        showToast("✅ Rekap harian berhasil disalin!", 'success');
+      }).catch(err => {
+        customAlert('Gagal', "Gagal menyalin teks: " + err, 'error');
+      });
+    }
+
+    function generateWeeklyReport() {
+      if (!teacherDataCache || !filteredStudents) return;
+      
+      const selectedHalaqah = document.getElementById('tcHalaqahSelect').value;
+      const reportTitle = selectedHalaqah === 'Semua' ? 'Seluruh Kelas' : selectedHalaqah;
+      
+      let report = `Bismillah, Rekap Ringkas 7 Hari (${reportTitle}).\n\n`;
+      
+      const sorted = [...filteredStudents].sort((a, b) => {
+        const aActive = (a.history7Days || []).filter(h => h.pagesRead > 0).length;
+        const bActive = (b.history7Days || []).filter(h => h.pagesRead > 0).length;
+        if (bActive !== aActive) return bActive - aActive;
+        return a.name.localeCompare(b.name);
+      });
+
+      sorted.forEach((st, idx) => {
+        const activeDays = (st.history7Days || []).filter(h => h.pagesRead > 0).length;
+        const totalPages = (st.history7Days || []).reduce((s, h) => s + (h.pagesRead || 0), 0);
+        const khatamBadge = st.totalKhatam > 0 ? ` 🏆x${st.totalKhatam}` : '';
+        const statusBadge = st.isAtRisk ? ' ⚠️ Perlu Perhatian' : (st.udzurStatus ? ` 🌸 ${st.udzurStatus}` : '');
+        
+        report += `${idx+1}. *${st.name}*${khatamBadge}\n`;
+        report += `   └ Setor: ${activeDays}/7 hari (${totalPages} hal) | Posisi: Hal ${st.lastPage}${statusBadge}\n`;
+      });
+      
+      report += `\nJazakumullah khairan atas istiqomahnya! 🌟✨`;
+      
+      navigator.clipboard.writeText(report).then(() => {
+        showToast("✅ Rekap mingguan berhasil disalin!", 'success');
       }).catch(err => {
         customAlert('Gagal', "Gagal menyalin teks: " + err, 'error');
       });
