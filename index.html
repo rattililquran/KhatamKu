@@ -2433,11 +2433,15 @@
       const rekeningEl = document.getElementById('donasiRekeningList');
       if (!rekeningEl) return;
 
-      const rekening = [1, 2, 3].map(i => ({
+      const rekeningDariKonten = [1, 2, 3].map(i => ({
         bank: data[`donasi_bank${i}_nama`],
         nomor: data[`donasi_bank${i}_nomor`],
         atas: data[`donasi_bank${i}_atas`]
       })).filter(item => item.bank && item.nomor);
+      const rekening = rekeningDariKonten.length ? rekeningDariKonten : [
+        { bank: 'BCA', nomor: '1200718034', atas: 'Umar Abdul Aziz' },
+        { bank: 'BSI', nomor: '9513222990', atas: 'Annisa Rizkya Rahmawati' }
+      ];
 
       if (rekening.length === 0) {
         rekeningEl.innerHTML = '<p class="text-xs text-purple-200 italic text-center py-2">Info rekening donasi belum tersedia. Silakan hubungi admin Rattilil Qur\'an.</p>';
