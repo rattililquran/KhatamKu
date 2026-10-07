@@ -1,6 +1,6 @@
 # Standar editorial Potret
 
-Potret adalah tulisan edukasi untuk pembaca KhatamKu. Naskah aktif bawaan berada di [`potret-content.js`](potret-content.js). Tanggal pada kartu adalah tanggal revisi naskah. Lima naskah bawaan direvisi pada 8 Oktober 2026.
+Potret adalah tulisan edukasi untuk pembaca KhatamKu. Naskah aktif bawaan berada di [`potret-content.js`](potret-content.js). Tanggal pada kartu adalah tanggal penulisan atau revisi naskah. Pada 8 Oktober 2026, lima naskah awal direvisi dan tujuh naskah ditambahkan. Kini ada 12 artikel: masing-masing empat Panduan, Kisah Sahabat, dan Kisah Ulama.
 
 ## Cara menulis dalil dan analisis
 
@@ -12,6 +12,8 @@ Potret adalah tulisan edukasi untuk pembaca KhatamKu. Naskah aktif bawaan berada
 6. **Keterlacakan.** Setiap penanda `[n]` dalam isi harus memiliki entri `sumber` dengan nomor sama, sitasi, status, dan tautan HTTPS menuju teks yang dipakai. Periksa ulang tautan dan nomor sebelum menerbitkan revisi.
 
 ## Catatan koreksi edisi ini
+
+Tujuh artikel tambahan memakai teks Al-Qur'an, riwayat sahih, atau karya asli ulama sebagai rujukan. Setiap artikel membedakan isi sumber, batas kesimpulan, dan saran redaksi. Pada kategori Kisah Ulama, tulisan dapat memotret penjelasan dari karya ulama; penjelasan itu tidak diperlakukan sebagai hadis Nabi.
 
 | Naskah lama | Koreksi berbasis sumber |
 | --- | --- |
