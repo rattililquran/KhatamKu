@@ -347,28 +347,33 @@
     .toast-top.show { transform: translateX(-50%) translateY(0); opacity: 1; pointer-events: auto; }
 
     /* ===== #14 Bottom Navigation ===== */
+    #studentView { padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px)); }
     .bottom-nav {
       position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
       width: 100%; max-width: 480px; z-index: 40;
-      background: rgba(255, 255, 255, 0.60);
+      background: rgba(255, 255, 255, 0.90);
       backdrop-filter: blur(60px) saturate(180%);
       -webkit-backdrop-filter: blur(60px) saturate(180%);
-      border-top: 1px solid rgba(255, 255, 255, 0.75);
+      border-top: 1px solid rgba(148, 163, 184, 0.28);
       box-shadow: 0 -8px 32px rgba(14, 165, 233, 0.08), 0 -1px 0 rgba(255,255,255,0.9) inset;
-      padding: 6px 0 env(safe-area-inset-bottom, 8px);
+      padding: 6px 8px max(8px, env(safe-area-inset-bottom, 0px));
     }
     .bottom-nav-item {
       display: flex; flex-direction: column; align-items: center; gap: 2px;
-      font-size: 9px; font-weight: 700; letter-spacing: 0.03em;
-      color: #94a3b8; padding: 6px 2px; border-radius: 12px;
+      appearance: none; border: 0; background: transparent; font-family: inherit;
+      min-width: 0; min-height: 52px; font-size: 11px; line-height: 1.15;
+      font-weight: 700; letter-spacing: 0.01em;
+      color: #475569; padding: 7px 2px; border-radius: 12px;
       transition: color 0.25s ease, background 0.25s ease, transform 0.1s ease;
       cursor: pointer; flex: 1; text-align: center; position: relative;
     }
-    .bottom-nav-item:hover { color: #0ea5e9; }
-    .bottom-nav-item:active { transform: scale(0.92); }
-    .bottom-nav-item.active { color: #0ea5e9; background: rgba(14, 165, 233, 0.10); }
+    .bottom-nav-item span { white-space: nowrap; }
+    .bottom-nav-item:hover { color: #0369a1; }
+    .bottom-nav-item:active { transform: scale(0.96); }
+    .bottom-nav-item:focus-visible { outline: 2px solid #075985; outline-offset: 2px; }
+    .bottom-nav-item.active { color: #075985; background: rgba(14, 165, 233, 0.12); }
     .bottom-nav-item.active i { transform: scale(1.15); }
-    .bottom-nav-item i { font-size: 17px; transition: transform 0.25s ease; }
+    .bottom-nav-item i { font-size: 18px; transition: transform 0.25s ease; }
 
     /* ===== #12 Range Slider ===== */
     .range-slider {
@@ -567,7 +572,7 @@
   <div id="mainAppView" class="hidden min-h-screen">
     
     <!-- Top Nav -->
-    <nav class="relative sm:sticky top-0 z-30 pt-4 sm:pt-6 pb-3 sm:pb-4 px-4 sm:px-5 max-w-md mx-auto flex items-center bg-white/95 backdrop-blur-xl border-b border-white/50 shadow-sm">
+    <header id="appTopNav" class="relative sm:sticky top-0 z-30 pt-4 sm:pt-6 pb-3 sm:pb-4 px-4 sm:px-5 max-w-md mx-auto flex items-center bg-white/95 backdrop-blur-xl border-b border-white/50 shadow-sm">
       <button id="accountMenuTrigger" type="button" onclick="openAccountMenu()" class="min-w-0 w-full font-bold text-slate-800 text-base sm:text-lg flex items-center gap-2.5 sm:gap-3 text-left rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500" aria-label="Buka menu akun" aria-haspopup="dialog" aria-expanded="false" aria-controls="modalAccount" title="Akun">
         <span class="w-11 h-11 rounded-full bg-gradient-to-tr from-sky-400 to-blue-600 text-white flex items-center justify-center shadow-md shrink-0">
           <i class="fa-solid fa-user text-sm"></i>
@@ -578,7 +583,7 @@
         </span>
         <i class="fa-solid fa-chevron-down text-xs text-slate-400 shrink-0" aria-hidden="true"></i>
       </button>
-    </nav>
+    </header>
 
     <!-- CONTENT: STUDENT VIEW -->
     <main id="studentView" class="max-w-md mx-auto px-5 hidden pt-6 pb-24 relative z-10">
@@ -1302,31 +1307,31 @@
   </div>
 
   <!-- #14 Bottom Navigation Bar -->
-  <div id="bottomNav" class="bottom-nav hidden">
+  <nav id="bottomNav" class="bottom-nav hidden" aria-label="Navigasi utama">
     <div class="flex justify-around items-center">
-      <div class="bottom-nav-item active" onclick="scrollToSection('top')" id="navHome">
-        <i class="fa-solid fa-house"></i>
+      <button type="button" class="bottom-nav-item active" onclick="scrollToSection('top')" id="navHome" aria-current="page">
+        <i class="fa-solid fa-house" aria-hidden="true"></i>
         <span>Beranda</span>
-      </div>
-      <div class="bottom-nav-item" onclick="openMushaf()" id="navMushaf">
-        <i class="fa-solid fa-book-quran"></i>
-        <span>Baca Mushaf</span>
-      </div>
-      <div class="bottom-nav-item" onclick="openModal('modalDzikir')" id="navDzikir">
-        <i class="fa-solid fa-hands-praying"></i>
+      </button>
+      <button type="button" class="bottom-nav-item" onclick="openMushaf()" id="navMushaf">
+        <i class="fa-solid fa-book-quran" aria-hidden="true"></i>
+        <span>Mushaf</span>
+      </button>
+      <button type="button" class="bottom-nav-item" onclick="openModal('modalDzikir')" id="navDzikir" aria-controls="modalDzikir" aria-haspopup="dialog" aria-expanded="false">
+        <i class="fa-solid fa-hands-praying" aria-hidden="true"></i>
         <span>Dzikir</span>
-      </div>
+      </button>
 
-      <div class="bottom-nav-item" onclick="openPotretModal()" id="navPotret">
-        <i class="fa-solid fa-scroll"></i>
+      <button type="button" class="bottom-nav-item" onclick="openPotretModal()" id="navPotret" aria-controls="modalPotret" aria-haspopup="dialog" aria-expanded="false">
+        <i class="fa-solid fa-scroll" aria-hidden="true"></i>
         <span>Potret</span>
-      </div>
-      <div class="bottom-nav-item" onclick="openTentangModal()" id="navTentang">
-        <i class="fa-solid fa-circle-info"></i>
+      </button>
+      <button type="button" class="bottom-nav-item" onclick="openTentangModal()" id="navTentang" aria-controls="modalTentang" aria-haspopup="dialog" aria-expanded="false">
+        <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
         <span>Tentang</span>
-      </div>
+      </button>
     </div>
-  </div>
+  </nav>
 
   <!-- MODALS -->
 
@@ -1518,7 +1523,7 @@
   </div>
 
   <!-- Modal: Dzikir & Doa Harian (pengganti Jurnal) -->
-  <div id="modalDzikir" class="fixed inset-0 z-50 modal-overlay hidden flex flex-col justify-end sm:justify-center items-center">
+  <div id="modalDzikir" class="fixed inset-0 z-50 modal-overlay hidden flex flex-col justify-end sm:justify-center items-center" role="dialog" aria-modal="true" aria-label="Dzikir dan Doa">
     <div class="modal-content w-full max-w-md h-[92vh] sm:h-[88vh] rounded-t-[2.5rem] sm:rounded-3xl flex flex-col transform transition-transform translate-y-full text-slate-800 overflow-hidden" id="modalDzikirContent">
 
       <!-- Header (dipadatkan: status pagi/petang menyatu di tab, search collapsible) -->
@@ -2133,7 +2138,7 @@
   </div>
 
   <!-- Modal: Tentang KhatamKu & Rattilil Qur'an -->
-  <div id="modalTentang" class="fixed inset-0 z-50 modal-overlay hidden flex flex-col justify-end sm:justify-center items-center">
+  <div id="modalTentang" class="fixed inset-0 z-50 modal-overlay hidden flex flex-col justify-end sm:justify-center items-center" role="dialog" aria-modal="true" aria-label="Tentang KhatamKu">
     <div class="modal-content w-full max-w-md h-[88vh] sm:h-[85vh] rounded-t-[2.5rem] sm:rounded-3xl p-0 flex flex-col transform transition-transform translate-y-full text-slate-800 overflow-hidden" id="modalTentangContent">
       
       <!-- Header fixed -->
@@ -2228,7 +2233,7 @@
   </div>
 
   <!-- Modal: Potret - Panduan & Kisah Quran -->
-  <div id="modalPotret" class="fixed inset-0 z-50 modal-overlay hidden flex flex-col justify-end sm:justify-center items-center">
+  <div id="modalPotret" class="fixed inset-0 z-50 modal-overlay hidden flex flex-col justify-end sm:justify-center items-center" role="dialog" aria-modal="true" aria-label="Potret">
     <div class="modal-content w-full max-w-md h-[92vh] sm:h-[88vh] rounded-t-[2.5rem] sm:rounded-3xl p-0 flex flex-col transform transition-transform translate-y-full text-slate-800 overflow-hidden" id="modalPotretContent">
 
       <!-- Header fixed -->
@@ -2785,12 +2790,12 @@
         const el = document.getElementById('sectionRekap');
         if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
-      updateActiveNav(section === 'top' ? 'navHome' : 'navRekap');
+      updateActiveNav('navHome');
     }
     function updateActiveNav(activeId) {
-      document.querySelectorAll('.bottom-nav-item').forEach(el => el.classList.remove('active'));
-      const el = document.getElementById(activeId);
-      if (el) el.classList.add('active');
+      document.querySelectorAll('.bottom-nav-item').forEach(el => {
+        el.classList.toggle('active', el.id === activeId);
+      });
     }
 
     // ===== #12 Slider Sync =====
@@ -2912,6 +2917,13 @@
     let progressSavePending = false;
     let progressRequestId = null;
     let progressRequestPayload = null;
+    const navModalTriggers = { modalDzikir: 'navDzikir', modalPotret: 'navPotret', modalTentang: 'navTentang' };
+    function setNavModalExpanded(id, expanded) {
+      const triggerId = navModalTriggers[id];
+      if (!triggerId) return;
+      const trigger = document.getElementById(triggerId);
+      if (trigger) trigger.setAttribute('aria-expanded', String(expanded));
+    }
 
     function openModal(id) {
       if (id === 'modalCalibrate') { setTimeout(initCalibrateModal, 50); }
@@ -2920,6 +2932,7 @@
       const modal = document.getElementById(id);
       const content = document.getElementById(id + 'Content');
       modal.classList.remove('hidden');
+      setNavModalExpanded(id, true);
       setTimeout(() => { 
         content.classList.remove('translate-y-full', 'scale-95', 'opacity-0'); 
       }, 10);
@@ -2933,6 +2946,7 @@
       } else {
         content.classList.add('translate-y-full');
       }
+      setNavModalExpanded(id, false);
       if (id === 'modalDzikir' || id === 'modalPotret' || id === 'modalTentang') updateActiveNav('navHome');
       setTimeout(() => { document.getElementById(id).classList.add('hidden'); }, 300);
     }
@@ -3165,12 +3179,15 @@
       }, 300);
 
       document.getElementById('navUserName').textContent = `Ahlan, ${currentUser.name.split(' ')[0]}`;
+      document.getElementById('appTopNav').style.background = '';
+      document.getElementById('appTopNav').style.borderBottom = '';
       
       if (currentUser.role === 'murid') {
         document.getElementById('studentView').classList.remove('hidden');
         document.getElementById('teacherView').classList.add('hidden');
         document.getElementById('adminView').classList.add('hidden');
         document.getElementById('bottomNav').classList.remove('hidden');
+        updateActiveNav('navHome');
         initPullToRefresh();
         loadTentangData(); // Muat konten halaman Tentang di background
         loadPotretData();  // Muat konten Potret di background
@@ -3195,8 +3212,8 @@
         document.getElementById('adminView').classList.remove('hidden');
         document.getElementById('bottomNav').classList.add('hidden');
         
-        document.querySelector('nav').style.background = 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(245,158,11,0.08))';
-        document.querySelector('nav').style.borderBottom = '1px solid rgba(245,158,11,0.2)';
+        document.getElementById('appTopNav').style.background = 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(245,158,11,0.08))';
+        document.getElementById('appTopNav').style.borderBottom = '1px solid rgba(245,158,11,0.2)';
         document.getElementById('navUserName').textContent = `⚙️ Admin: ${currentUser.name.split(' ')[0]}`;
         
         loadAdminDashboard();
@@ -3230,12 +3247,15 @@
       }, 300);
 
       document.getElementById('navUserName').textContent = `Ahlan, ${currentUser.name.split(' ')[0]}`;
+      document.getElementById('appTopNav').style.background = '';
+      document.getElementById('appTopNav').style.borderBottom = '';
       
       if (currentUser.role === 'murid') {
         document.getElementById('studentView').classList.remove('hidden');
         document.getElementById('teacherView').classList.add('hidden');
         document.getElementById('adminView').classList.add('hidden');
         document.getElementById('bottomNav').classList.remove('hidden');
+        updateActiveNav('navHome');
         initPullToRefresh();
         loadTentangData(); // Muat konten halaman Tentang di background
         loadPotretData();  // Muat konten Potret di background
@@ -3262,8 +3282,8 @@
         document.getElementById('adminView').classList.remove('hidden');
         document.getElementById('bottomNav').classList.add('hidden');
         
-        document.querySelector('nav').style.background = 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(245,158,11,0.08))';
-        document.querySelector('nav').style.borderBottom = '1px solid rgba(245,158,11,0.2)';
+        document.getElementById('appTopNav').style.background = 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(245,158,11,0.08))';
+        document.getElementById('appTopNav').style.borderBottom = '1px solid rgba(245,158,11,0.2)';
         document.getElementById('navUserName').textContent = `⚙️ Admin: ${currentUser.name.split(' ')[0]}`;
         
         adminDataCache = data;
