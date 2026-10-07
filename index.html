@@ -559,21 +559,21 @@
   <div id="mainAppView" class="hidden min-h-screen">
     
     <!-- Top Nav -->
-    <nav class="sticky top-0 z-30 pt-6 pb-4 px-5 max-w-md mx-auto flex justify-between items-center bg-white/50 backdrop-blur-xl border-b border-white/50 shadow-sm">
-      <div class="font-bold text-slate-800 text-lg flex items-center gap-3">
+    <nav class="relative sm:sticky top-0 z-30 pt-4 sm:pt-6 pb-3 sm:pb-4 px-4 sm:px-5 max-w-md mx-auto flex items-center gap-2 sm:gap-3 bg-white/95 backdrop-blur-xl border-b border-white/50 shadow-sm">
+      <div class="min-w-0 flex-1 font-bold text-slate-800 text-base sm:text-lg flex items-center gap-2.5 sm:gap-3">
         <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-sky-400 to-blue-600 text-white flex items-center justify-center shadow-md shrink-0">
           <i class="fa-solid fa-user text-sm"></i>
         </div>
-        <div class="flex flex-col">
-          <span id="navUserName">Ahlan, Fulan</span>
-          <span class="text-[10px] text-slate-500 font-medium leading-tight mt-0.5">Mari berjuang membaca pesan cinta Pencipta kita</span>
+        <div class="min-w-0 flex-1 flex flex-col">
+          <span id="navUserName" class="block truncate">Ahlan, Fulan</span>
+          <span class="block truncate text-[10px] text-slate-500 font-medium leading-tight mt-0.5">Mari berjuang membaca pesan cinta Pencipta kita</span>
         </div>
       </div>
-      <div class="flex items-center gap-2">
-        <button onclick="openModal('modalPassword')" class="text-slate-500 bg-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-sky-50 hover:text-sky-500 shadow-sm transition-all border border-slate-100" title="Ganti Password">
+      <div class="flex shrink-0 items-center gap-2">
+        <button type="button" onclick="openModal('modalPassword')" class="shrink-0 text-slate-500 bg-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-sky-50 hover:text-sky-500 shadow-sm transition-all border border-slate-100" title="Ganti Password" aria-label="Ganti Password">
           <i class="fa-solid fa-key text-sm"></i>
         </button>
-        <button onclick="doLogout()" class="text-slate-500 bg-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-red-50 hover:text-red-500 shadow-sm transition-all border border-slate-100" title="Keluar">
+        <button type="button" onclick="doLogout()" class="shrink-0 text-slate-500 bg-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-red-50 hover:text-red-500 shadow-sm transition-all border border-slate-100" title="Keluar" aria-label="Keluar">
           <i class="fa-solid fa-right-from-bracket text-sm"></i>
         </button>
       </div>
