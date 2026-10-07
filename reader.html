@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mushaf Madinah — KhatamKu</title>
 <style>
 :root{--ink:#2c2117;--cream:#fbf5e6;--frame:#b08d4f;--gold:#c9a44c;--bg:#20242a;}
@@ -117,7 +117,7 @@ body.immersive .stage{padding:16px 12px;}
 .w.active{background:rgba(201,164,76,.4);}
 .loading,.err{color:#8a8f96;text-align:center;padding:40px;font-size:14px;}
 /* ── nav bawah ── */
-.nav{display:flex;gap:10px;padding:12px 14px;background:#191c21;border-top:1px solid #2c313a;
+.nav{display:flex;gap:10px;padding:12px 14px calc(12px + env(safe-area-inset-bottom, 0px));background:#191c21;border-top:1px solid #2c313a;
   position:sticky;bottom:0;}
 .nav button{flex:1;padding:13px;border:0;border-radius:13px;background:#2b313a;color:#e8e8e8;
   font-weight:700;font-size:14px;cursor:pointer;transition:transform .1s,filter .12s;}
@@ -130,7 +130,7 @@ body.immersive .stage{padding:16px 12px;}
 .backdrop.show{opacity:1;pointer-events:auto;}
 /* ── bottom sheet ── */
 .sheet{position:fixed;left:0;right:0;bottom:0;background:#20242a;border-top:2px solid var(--gold);
-  border-radius:20px 20px 0 0;padding:10px 18px 28px;max-height:70vh;overflow:auto;z-index:20;
+  border-radius:20px 20px 0 0;padding:10px 18px calc(28px + env(safe-area-inset-bottom, 0px));max-height:70vh;overflow:auto;z-index:20;
   transform:translateY(102%);transition:transform .28s cubic-bezier(.22,.9,.35,1);box-shadow:0 -10px 30px rgba(0,0,0,.5);}
 .sheet.show{transform:translateY(0);}
 .sheet .handle{width:38px;height:4px;background:#3a4048;border-radius:4px;margin:2px auto 12px;}
@@ -147,6 +147,13 @@ body.immersive .stage{padding:16px 12px;}
 .close{background:#3a4048;border:0;color:#cfd3d8;width:30px;height:30px;border-radius:50%;font-size:16px;cursor:pointer;flex:0 0 auto;
   transition:background .12s,transform .1s;}
 .close:active{background:#454c56;transform:scale(.92);}
+button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+@media(max-width:390px){
+  .bar{gap:6px;padding:10px 8px;}
+  .bar .back,.bar .bkbtn,.fsbtn{width:40px;height:40px;}
+  .bar .jump{height:40px;}
+}
+.sheet .bk,.sheet .close{width:40px;height:40px;}
 </style>
 <!-- Supabase adapter: sesi login dari index.html menular (same-origin, storageKey khatamku_auth) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -154,12 +161,12 @@ body.immersive .stage{padding:16px 12px;}
 </head>
 <body>
 <div class="bar">
-  <button class="back" onclick="history.length>1?history.back():location.href='index.html'">‹</button>
+  <button class="back" aria-label="Kembali ke beranda" onclick="history.length>1?history.back():location.href='index.html'">‹</button>
   <div class="info"><b id="surahName">Mushaf Madinah</b><span id="pageInfo">memuat…</span></div>
-  <button class="bkbtn" onclick="openNav()" title="Daftar surat & cari">📚</button>
-  <button class="bkbtn" onclick="openBkPanel()" title="Daftar bookmark">🔖</button>
-  <button class="fsbtn" onclick="toggleFS()" title="Layar penuh / fokus baca">⛶</button>
-  <input class="jump" id="jump" type="number" min="1" max="604" placeholder="Hal" title="Loncat ke halaman">
+  <button class="bkbtn" onclick="openNav()" title="Daftar surat & cari" aria-label="Daftar surat dan cari ayat">📚</button>
+  <button class="bkbtn" onclick="openBkPanel()" title="Daftar bookmark" aria-label="Daftar bookmark">🔖</button>
+  <button class="fsbtn" onclick="toggleFS()" title="Layar penuh / fokus baca" aria-label="Aktifkan atau keluar dari layar penuh">⛶</button>
+  <input class="jump" id="jump" type="number" min="1" max="604" placeholder="Hal" title="Loncat ke halaman" aria-label="Loncat ke halaman mushaf">
 </div>
 
 <div class="stage"><div id="mushaf" class="mushaf"><div class="loading">Memuat mushaf…</div></div></div>
@@ -172,7 +179,7 @@ body.immersive .stage{padding:16px 12px;}
   </div>
 </div>
 <div id="toast" class="toast"></div>
-<div id="tapHint" class="taphint">👆 Ketuk: menu &nbsp;·&nbsp; ✋ Tekan lama: terjemah &nbsp;·&nbsp; 👉 Geser: ganti halaman</div>
+<div id="tapHint" class="taphint">👆 Ketuk: menu &nbsp;·&nbsp; ✋ Tekan lama: terjemah &nbsp;·&nbsp; 👉 Geser: ganti halaman &nbsp;·&nbsp; 🤏 Cubit: perbesar</div>
 
 <div id="confirmModal" class="modal"><div class="box">
   <h3 id="cmTitle">Tandai Bacaan</h3>
@@ -193,7 +200,7 @@ body.immersive .stage{padding:16px 12px;}
     <span style="flex:1"></span>
     <button class="bk" id="s-cp" title="Salin ayat & terjemah" onclick="copyAyat()">📋</button>
     <button class="bk" id="s-bk" title="Bookmark" onclick="toggleBookmark()">☆</button>
-    <button class="close" onclick="hideSheet()">×</button></div>
+    <button class="close" onclick="hideSheet()" aria-label="Tutup terjemah ayat">×</button></div>
   <div class="ar" id="s-ar"></div>
   <p class="lt" id="s-lt"></p>
   <h3>Terjemah (Kemenag)</h3><p id="s-id"></p>
@@ -203,14 +210,14 @@ body.immersive .stage{padding:16px 12px;}
 <div id="bkPanel" class="sheet">
   <div class="handle"></div>
   <div class="row"><span class="tag">🔖 Bookmark</span>
-    <button class="close" onclick="hideBk()" style="margin-left:auto">×</button></div>
+    <button class="close" onclick="hideBk()" style="margin-left:auto" aria-label="Tutup daftar bookmark">×</button></div>
   <div id="bkList"><div class="bk-empty">Memuat…</div></div>
 </div>
 
 <div id="navPanel" class="sheet">
   <div class="handle"></div>
   <div class="row"><span class="tag">📚 Daftar &amp; Cari</span>
-    <button class="close" onclick="hideNav()" style="margin-left:auto">×</button></div>
+    <button class="close" onclick="hideNav()" style="margin-left:auto" aria-label="Tutup daftar surat dan pencarian">×</button></div>
   <input id="q" class="qbox" placeholder="Cari surat, kata dalam terjemah, atau ketik 2:255…" oninput="doSearch(this.value)">
   <div id="navList"></div>
 </div>
@@ -219,6 +226,7 @@ body.immersive .stage{padding:16px 12px;}
 const FONT_BASE = "https://static.qurancdn.com/fonts/quran/hafs/v2/woff2"; // CORS * → aman
 const BASMALAH = "ﱁﱂﱃﱄ"; // glyph basmalah dari font halaman 1 (QS 1:1, tanpa penanda ayat)
 let page = parseInt(new URLSearchParams(location.search).get("p")) || 3;
+let renderedPage = null;
 const surahCache = {}, fontLoaded = new Set(), pageCache = {};
 let curAyat = null;
 
@@ -311,6 +319,7 @@ async function go(p){
   });
   document.getElementById("pageInfo").textContent = "Halaman "+p+" · Juz "+(d.juz||"-");
   fitPage();
+  renderedPage = p;
   updateNav();
   requestAnimationFrame(()=> box.classList.remove("fade"));
   prefetchAdjacent(p);
@@ -469,28 +478,38 @@ function toggleFS(){
 }
 function toggleControls(){ document.body.classList.toggle("controls"); }
 
-// Gestur: ketuk sekali → menu · tekan lama (~1,5s) ayat → terjemah · geser → ganti halaman
+// Gestur: ketuk sekali → menu · tekan lama (~0,5s) ayat → terjemah · geser → ganti halaman
 function setupGestures(){
   const stage=document.querySelector(".stage");
   stage.addEventListener("contextmenu", e=>e.preventDefault());   // cegah popup copy saat tekan lama
-  let sx=0,sy=0,st=0,moved=false,longFired=false,lpTimer=null,lpWord=null,suppress=false,fsAsked=false;
+  let sx=0,sy=0,st=0,moved=false,longFired=false,lpTimer=null,lpWord=null,suppress=false,multiTouch=false;
   const LP=500, MOVE=12, SWIPE=55;
   stage.addEventListener("touchstart",e=>{
-    if(e.touches.length>1) return;
+    if(e.touches.length>1){ multiTouch=true; moved=true; clearTimeout(lpTimer); return; }
+    if(multiTouch) return;
     const t=e.touches[0]; sx=t.clientX; sy=t.clientY; st=Date.now(); moved=false; longFired=false;
     lpWord=e.target.closest(".w"); clearTimeout(lpTimer);
-    lpTimer=setTimeout(()=>{ if(!moved && lpWord){ longFired=true; if(navigator.vibrate) navigator.vibrate(25); openAyat(lpWord.dataset.v); } }, LP);
+    lpTimer=setTimeout(()=>{ if(!moved && !multiTouch && lpWord){ longFired=true; if(navigator.vibrate) navigator.vibrate(25); openAyat(lpWord.dataset.v); } }, LP);
   },{passive:true});
   stage.addEventListener("touchmove",e=>{
+    if(e.touches.length>1){ multiTouch=true; moved=true; clearTimeout(lpTimer); return; }
+    if(multiTouch || !e.touches.length) return;
     const t=e.touches[0]; if(Math.abs(t.clientX-sx)>MOVE||Math.abs(t.clientY-sy)>MOVE){ moved=true; clearTimeout(lpTimer); }
   },{passive:true});
   stage.addEventListener("touchend",e=>{
     clearTimeout(lpTimer); suppress=true; setTimeout(()=>suppress=false,450);
-    if(!fsAsked){ fsAsked=true; try{ if(!document.fullscreenElement && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(()=>{}); }catch(_){} }
+    if(multiTouch){ if(!e.touches.length) multiTouch=false; return; }
     if(longFired) return;
     const t=e.changedTouches[0], dx=t.clientX-sx, dy=t.clientY-sy, dt=Date.now()-st;
-    if(Math.abs(dx)>SWIPE && Math.abs(dx)>Math.abs(dy)*1.4){ if(dx>0) go(page+1); else go(page-1); return; }   // RTL: geser kanan = maju
+    if(Math.abs(dx)>SWIPE && Math.abs(dx)>Math.abs(dy)*1.4){
+      if(window.visualViewport && window.visualViewport.scale<=1.01){ if(dx>0) go(page+1); else go(page-1); }
+      return;
+    }   // RTL: geser kanan = maju; saat diperbesar, geser untuk menjelajah halaman
     if(Math.abs(dx)<MOVE && Math.abs(dy)<MOVE && dt<500){ toggleControls(); }
+  },{passive:true});
+  stage.addEventListener("touchcancel",e=>{
+    clearTimeout(lpTimer); moved=true; if(e.touches.length) multiTouch=true; else multiTouch=false;
+    suppress=true; setTimeout(()=>suppress=false,450);
   },{passive:true});
   stage.addEventListener("click",e=>{                 // desktop
     if(suppress) return;
@@ -523,7 +542,7 @@ function showDua(title, ar, tr){
 
 // cek udzur → nonaktifkan tombol tandai-dibaca
 let udzurActive=false;
-let pendingProgressRequest=null;
+let pendingProgressRequest=null, markFlowActive=false;
 async function checkUdzur(){
   if(!(window.gscript && await hasSession())) return;
   try{
@@ -537,31 +556,38 @@ async function checkUdzur(){
 }
 
 async function markRead(){
-  if(!(window.gscript && await hasSession())){ toast("Login dulu (lewat halaman utama) untuk mencatat progres."); return; }
-  if(udzurActive){ toast("🌙 Sedang udzur — pencatatan bacaan dinonaktifkan."); return; }
-  const ok = await askConfirm(
-    "Engkau akan mencatat telah membaca hingga halaman "+page+". Semoga Allah menjadikan Al-Qur'an penerang hati dan pemberat timbanganmu.",
-    "اللَّهُمَّ ارْحَمْنِي بِالْقُرْآنِ",
-    "Ya Allah, rahmatilah aku dengan Al-Qur'an.");
-  if(!ok) return;
-  const btn=document.getElementById("markBtn"); btn.disabled=true;
+  if(markFlowActive) return;
+  const readPage=page;
+  if(readPage!==renderedPage){ toast("Tunggu halaman mushaf selesai dimuat sebelum mencatat bacaan."); return; }
+  const btn=document.getElementById("markBtn");
+  markFlowActive=true; btn.disabled=true;
   try{
-    if(!pendingProgressRequest || pendingProgressRequest.page!==page){
-      pendingProgressRequest={page,id:gscript.createRequestId()};
+    if(!(window.gscript && await hasSession())){ toast("Login dulu (lewat halaman utama) untuk mencatat progres."); return; }
+    if(page!==readPage || renderedPage!==readPage){ toast("Halaman sudah berganti. Buka halaman yang ingin dicatat lalu coba lagi."); return; }
+    if(udzurActive){ toast("🌙 Sedang udzur — pencatatan bacaan dinonaktifkan."); return; }
+    const ok = await askConfirm(
+      "Engkau akan mencatat telah membaca hingga halaman "+readPage+". Semoga Allah menjadikan Al-Qur'an penerang hati dan pemberat timbanganmu.",
+      "اللَّهُمَّ ارْحَمْنِي بِالْقُرْآنِ",
+      "Ya Allah, rahmatilah aku dengan Al-Qur'an.");
+    if(!ok) return;
+    if(page!==readPage || renderedPage!==readPage){ toast("Halaman sudah berganti. Buka halaman yang ingin dicatat lalu coba lagi."); return; }
+    if(udzurActive){ toast("🌙 Sedang udzur — pencatatan bacaan dinonaktifkan."); return; }
+    if(!pendingProgressRequest || pendingProgressRequest.page!==readPage){
+      pendingProgressRequest={page:readPage,id:gscript.createRequestId()};
     }
-    const r = await gscript.saveProgressUpdate(null, {lastPageInput: page, requestId:pendingProgressRequest.id});
+    const r = await gscript.saveProgressUpdate(null, {lastPageInput: readPage, requestId:pendingProgressRequest.id});
     pendingProgressRequest=null;
     if(r.isKhatamNow){
       showDua("🎉 Alhamdulillah, Khatam!",
         "اللَّهُمَّ ارْحَمْنِي بِالْقُرْآنِ وَاجْعَلْهُ لِي إِمَامًا وَنُورًا وَهُدًى وَرَحْمَةً",
         "Ya Allah, rahmatilah aku dengan Al-Qur'an, jadikanlah ia imam, cahaya, petunjuk, dan rahmat bagiku. (Khatam ke-"+r.profile.totalKhatam+")");
-    } else toast("✓ Tercatat s/d halaman "+page+" · streak "+r.profile.streakDays+" hari · Baarakallahu fiik");
+    } else toast("✓ Tercatat s/d halaman "+readPage+" · streak "+r.profile.streakDays+" hari · Baarakallahu fiik");
   }catch(e){
     const m=(e.message||e).toString();
     toast(m.includes("lebih kecil") || m.includes("Posisi bacaan sudah berubah")
       ? "Progres berubah atau halaman sudah tercatat. Muat ulang progres lalu coba lagi."
       : ("Gagal: "+m));
-  }finally{ if(!udzurActive) btn.disabled=false; }
+  }finally{ markFlowActive=false; if(!udzurActive) btn.disabled=false; }
 }
 
 // ── Daftar surat & pencarian ──
