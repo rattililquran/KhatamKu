@@ -252,7 +252,7 @@ async function loadSurah(s){
 }
 let _goToken = 0;   // versi request aktif → cegah respons lambat menimpa halaman yang lebih baru
 async function go(p){
-  if(p<1||p>604) return;
+  if(p<1||p>604) return false;
   const myToken = ++_goToken;
   const stale = () => myToken !== _goToken;
   page = p; hideSheet();
@@ -262,21 +262,21 @@ async function go(p){
   box.classList.add("fade");
   if(!cached){
     await new Promise(r=>setTimeout(r,90));                // beri waktu fade-out hanya bila harus menunggu jaringan
-    if(stale()) return;
+    if(stale()) return false;
     box.innerHTML = '<div class="loading">Memuat halaman '+p+'…</div>';
   }
   document.getElementById("jump").value = p;
   let d;
   try{ d = await fetchPageData(p); }
-  catch(e){ if(stale()) return; box.classList.remove("fade"); box.innerHTML = '<div class="err">Halaman '+p+' belum diunduh (ingest berjalan). Coba lagi sebentar.</div>'; updateNav(); return; }
-  if(stale()) return;
+  catch(e){ if(stale()) return false; box.classList.remove("fade"); box.innerHTML = '<div class="err">Halaman '+p+' belum diunduh (ingest berjalan). Coba lagi sebentar.</div>'; updateNav(); return false; }
+  if(stale()) return false;
   await Promise.all([ensureFont(p), ensureFont(1),     // tunggu font halaman + basmalah + nama-surat → hindari kedip
     document.fonts.load("38px 'surahname'").catch(()=>{})]);
-  if(stale()) return;
+  if(stale()) return false;
   // muat nama semua surah di halaman ini (untuk banner)
   const names = {};
   for(const s of d.surahs){ try{ names[s] = await loadSurah(s); }catch(_){ names[s] = {nama:"Surah "+s, nama_arab:""}; } }
-  if(stale()) return;
+  if(stale()) return false;
   document.getElementById("surahName").textContent = "QS " + (names[d.surahs[0]] && names[d.surahs[0]].nama || d.surahs[0]);
 
   // baris pertama tiap surah (min line di mana S:1 muncul) → sisipkan banner+basmalah sebelumnya
@@ -314,6 +314,7 @@ async function go(p){
   updateNav();
   requestAnimationFrame(()=> box.classList.remove("fade"));
   prefetchAdjacent(p);
+  return true;
 }
 function updateNav(){
   document.getElementById("prev").disabled = page<=1;
@@ -326,7 +327,9 @@ function syncBackdrop(){
 }
 document.getElementById("backdrop").addEventListener("click", ()=>{ hideSheet(); hideBk(); hideNav(); });
 
+let _ayatLoadToken = 0;
 async function openAyat(vk){
+  const loadToken = ++_ayatLoadToken;
   const [s,a] = vk.split(":").map(Number);
   document.querySelectorAll(".w.active").forEach(e=>e.classList.remove("active"));
   document.querySelectorAll(`.w[data-v="${vk}"]`).forEach(e=>e.classList.add("active"));
@@ -339,10 +342,14 @@ async function openAyat(vk){
   refreshBk();
   try{
     const su = await loadSurah(s);
+    if(loadToken !== _ayatLoadToken || curAyat?.vk !== vk) return;
     const ay = su.ayat.find(x=>x.n===a) || {};
     set("s-ar", ay.ar||""); set("s-lt", ay.lt||"");
     set("s-id", ay.id||"(terjemah belum tersedia)"); set("s-tf", ay.tf||"(tafsir belum tersedia)");
-  }catch(e){ set("s-id","Teks surah "+s+" belum diunduh."); set("s-tf",""); }
+  }catch(e){
+    if(loadToken !== _ayatLoadToken || curAyat?.vk !== vk) return;
+    set("s-id","Teks surah "+s+" belum diunduh."); set("s-tf","");
+  }
 }
 function hideSheet(){ document.getElementById("sheet").classList.remove("show"); syncBackdrop();
   document.querySelectorAll(".w.active").forEach(e=>e.classList.remove("active")); }
@@ -387,8 +394,17 @@ async function toggleBookmark(){
   localStorage.setItem(bkKey(), JSON.stringify(bk)); refreshBk();
 }
 // ── Panel daftar bookmark ──
-let PAGEIDX = {};
-async function loadIndex(){ try{ PAGEIDX = await (await fetch("mushaf/index.json")).json(); }catch(_){} }
+let PAGEIDX = null, _pageIndexPromise = null;
+async function loadIndex(){
+  if(PAGEIDX) return PAGEIDX;
+  if(!_pageIndexPromise){
+    _pageIndexPromise = fetch("mushaf/index.json")
+      .then(r=>{ if(!r.ok) throw new Error("Gagal memuat indeks ayat."); return r.json(); })
+      .then(index=>{ PAGEIDX = index; return index; })
+      .catch(e=>{ _pageIndexPromise = null; throw e; });
+  }
+  return _pageIndexPromise;
+}
 async function getAllBookmarks(){
   if(window.gscript && await hasSession()){
     try{ return (await gscript.listBookmarks()||[]).map(b=>({s:b.surah_id,a:b.ayat,id:b.id})); }catch(_){}
@@ -423,7 +439,18 @@ async function removeBk(it){
   let bk = getBk(); const i = bk.findIndex(b=>b.v===key);
   if(i>=0){ bk.splice(i,1); localStorage.setItem(bkKey(), JSON.stringify(bk)); }
 }
-async function gotoAyat(s,a){ hideBk(); await go(PAGEIDX[s+":"+a] || 1); openAyat(s+":"+a); }
+async function gotoAyat(s,a){
+  hideBk();
+  let index;
+  try{
+    index = await loadIndex();
+  }catch(_){ toast("Gagal memuat indeks ayat. Coba lagi."); return; }
+  const targetPage = index[s+":"+a];
+  if(!targetPage){ toast("Referensi QS "+s+":"+a+" tidak ditemukan."); return; }
+  try{
+    if(await go(targetPage)) openAyat(s+":"+a);
+  }catch(_){ toast("Gagal membuka halaman ayat. Coba lagi."); }
+}
 
 // ── Tandai sudah dibaca (progres → dashboard) ──
 function toast(msg){
@@ -493,6 +520,7 @@ function showDua(title, ar, tr){
 
 // cek udzur → nonaktifkan tombol tandai-dibaca
 let udzurActive=false;
+let pendingProgressRequest=null;
 async function checkUdzur(){
   if(!(window.gscript && await hasSession())) return;
   try{
@@ -514,8 +542,12 @@ async function markRead(){
     "Ya Allah, rahmatilah aku dengan Al-Qur'an.");
   if(!ok) return;
   const btn=document.getElementById("markBtn"); btn.disabled=true;
+  if(!pendingProgressRequest || pendingProgressRequest.page!==page){
+    pendingProgressRequest={page,id:crypto.randomUUID()};
+  }
   try{
-    const r = await gscript.saveProgressUpdate(null, {lastPageInput: page});
+    const r = await gscript.saveProgressUpdate(null, {lastPageInput: page, requestId:pendingProgressRequest.id});
+    pendingProgressRequest=null;
     if(r.isKhatamNow){
       showDua("🎉 Alhamdulillah, Khatam!",
         "اللَّهُمَّ ارْحَمْنِي بِالْقُرْآنِ وَاجْعَلْهُ لِي إِمَامًا وَنُورًا وَهُدًى وَرَحْمَةً",
@@ -523,7 +555,9 @@ async function markRead(){
     } else toast("✓ Tercatat s/d halaman "+page+" · streak "+r.profile.streakDays+" hari · Baarakallahu fiik");
   }catch(e){
     const m=(e.message||e).toString();
-    toast(m.includes("lebih kecil")? "Halaman ini sudah terlewati dari progresmu." : ("Gagal: "+m));
+    toast(m.includes("lebih kecil") || m.includes("Posisi bacaan sudah berubah")
+      ? "Progres berubah atau halaman sudah tercatat. Muat ulang progres lalu coba lagi."
+      : ("Gagal: "+m));
   }finally{ if(!udzurActive) btn.disabled=false; }
 }
 
@@ -598,7 +632,7 @@ window.addEventListener("resize", ()=>{ clearTimeout(_rz); _rz=setTimeout(()=>{ 
 document.getElementById("jump").addEventListener("change",e=>{ const p=parseInt(e.target.value); if(p) go(p); });
 go(page);
 initBookmarks();
-loadIndex();
+loadIndex().catch(()=>{});
 checkUdzur();
 // immersive (fullscreen fokus) sebagai default; kontrol tampil sebentar lalu sembunyi
 document.body.classList.add("immersive","controls");

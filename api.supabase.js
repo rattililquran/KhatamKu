@@ -11,8 +11,43 @@ const SUPABASE_URL = "https://afykoejnpkiorqbkgndp.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFmeWtvZWpucGtpb3JxYmtnbmRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM5NjYxMzMsImV4cCI6MjA5OTU0MjEzM30.iqkExRXfmYH3734r8SHSGlv91kCTe2IUGE6b7wKiXwk";
 // ────────────────────────────────────────────────────────────
 
+const AUTH_STORAGE_KEY = "khatamku_auth";
+const savedRememberPreference = localStorage.getItem("khatamku_remember");
+let rememberAuthSession = savedRememberPreference === "true" ||
+  (savedRememberPreference === null && localStorage.getItem("khatamku_user") !== null);
+if (savedRememberPreference === null &&
+    localStorage.getItem("khatamku_user") === null &&
+    sessionStorage.getItem("khatamku_user") === null) {
+  // Drop legacy persistent tokens when there is no remembered profile to own them.
+  localStorage.removeItem(AUTH_STORAGE_KEY);
+}
+const authStorage = {
+  getItem(key) {
+    const preferred = rememberAuthSession ? localStorage : sessionStorage;
+    const fallback = rememberAuthSession ? sessionStorage : localStorage;
+    const value = preferred.getItem(key);
+    if (value !== null) return value;
+    const legacyValue = fallback.getItem(key);
+    if (legacyValue !== null && key === AUTH_STORAGE_KEY) {
+      preferred.setItem(key, legacyValue);
+      fallback.removeItem(key);
+    }
+    return legacyValue;
+  },
+  setItem(key, value) {
+    const preferred = rememberAuthSession ? localStorage : sessionStorage;
+    const fallback = rememberAuthSession ? sessionStorage : localStorage;
+    preferred.setItem(key, value);
+    fallback.removeItem(key);
+  },
+  removeItem(key) {
+    localStorage.removeItem(key);
+    sessionStorage.removeItem(key);
+  },
+};
+
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: { persistSession: true, autoRefreshToken: true, storageKey: "khatamku_auth" },
+  auth: { persistSession: true, autoRefreshToken: true, storageKey: AUTH_STORAGE_KEY, storage: authStorage },
 });
 
 // Helper: buka hasil RPC / lempar error seragam (mirip gasCall lama)
@@ -38,8 +73,10 @@ async function invokeAuth(payload) {
 const gscript = {
   // ── AUTH ──────────────────────────────────────────────────
   // Mengembalikan {user, dashboardData} — sama seperti GAS doLogin.
-  doLogin: async (username, password) => {
+  doLogin: async (username, password, remember = true) => {
     const res = await invokeAuth({ action: "login", identifier: username, password });
+    rememberAuthSession = remember === true;
+    localStorage.setItem("khatamku_remember", rememberAuthSession ? "true" : "false");
     // pasang sesi supabase agar RPC berikutnya terautentikasi
     const { error: sessErr } = await sb.auth.setSession({
       access_token: res.access_token, refresh_token: res.refresh_token,
@@ -51,7 +88,26 @@ const gscript = {
   doRegister: (namaLengkap, username, password, email) =>
     invokeAuth({ action: "register", namaLengkap, username, password, email }),
 
-  logout: () => sb.auth.signOut(),
+  logout: async () => {
+    try {
+      const signOutPromise = sb.auth.signOut({ scope: "local" });
+      authStorage.removeItem(AUTH_STORAGE_KEY);
+      const { error } = await signOutPromise;
+      if (error) throw error;
+    } finally { authStorage.removeItem(AUTH_STORAGE_KEY); }
+  },
+
+  loginDashboardForRole: (role, data) => {
+    const normalizedRole = String(role || "").toLowerCase();
+    if (normalizedRole === "murid") return data && data.profile ? data : null;
+    if (normalizedRole === "guru") {
+      return data && Array.isArray(data.halaqahs) && Array.isArray(data.students) ? data : null;
+    }
+    if (normalizedRole === "admin") {
+      return data && Object.prototype.hasOwnProperty.call(data, "total_murid") ? data : null;
+    }
+    return null;
+  },
 
   // ── DATA MURID (userId diabaikan; server pakai auth.uid) ──
   getInitialData: (_userId) => rpc("app_get_initial_data"),
@@ -61,6 +117,7 @@ const gscript = {
       p_start: parseInt(p.startPage) || 0,
       p_last: parseInt(p.lastPageInput) || 0,
       p_date: p.date || null,
+      p_request_id: p.requestId || crypto.randomUUID(),
     }),
 
   saveUserTarget: (_userId, t) =>

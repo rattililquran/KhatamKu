@@ -2936,6 +2936,10 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       return '#fbbf24'; // Amber-400 / Gold
     }
 
+    let progressSavePending = false;
+    let progressRequestId = null;
+    let progressRequestPayload = null;
+
     function openModal(id) {
       if (id === 'modalCalibrate') { setTimeout(initCalibrateModal, 50); }
       if (id === 'modalProgress') populateProgressModal();
@@ -2949,6 +2953,7 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
     }
     
     function closeModal(id) {
+      if (id === 'modalProgress' && progressSavePending) return;
       const content = document.getElementById(id + 'Content');
       if (id === 'modalMilestone' || id === 'modalUdzur' || id === 'modalAlert' || id === 'modalConfirm' || id === 'modalRegisterError') {
         content.classList.add('scale-95', 'opacity-0');
@@ -3003,8 +3008,10 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
     }
 
     function doLogout() {
+      const signOut = gscript.logout().catch(err => {
+        console.warn('Sesi lokal dibersihkan setelah sign-out gagal:', err);
+      });
       localStorage.removeItem('khatamku_user');
-      localStorage.removeItem('khatamku_remember');   // bersihkan sisa key lama (sebelum fix ini)
       sessionStorage.removeItem('khatamku_user');
       // #7 Clear cache on logout
       Object.values(CACHE_KEYS).forEach(k => localStorage.removeItem(k));
@@ -3015,6 +3022,7 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       document.getElementById('loginPassword').value = '';
       switchAuthTab('masuk');
       showLoginScreen();
+      return signOut;
     }
 
     function switchAuthTab(tab) {
@@ -3049,7 +3057,7 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       const p = document.getElementById('loginPassword').value;
       const remember = document.getElementById('loginRemember').checked;
       showLoading("Bismillah, masuk ke KhatamKu...");
-      gscript.doLogin(u, p)
+      gscript.doLogin(u, p, remember)
         .then(response => {
           currentUser = response.user;
           const userPayload = JSON.stringify(currentUser);
@@ -3062,16 +3070,8 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
             localStorage.removeItem('khatamku_user');
           }
           hideLoading();
-          // dashboardData bisa null jika guru, atau objek {profile,journals,todayProgress} jika murid
-          if (response.dashboardData && response.dashboardData.profile) {
-            initAppWithData(response.dashboardData);
-          } else if (response.dashboardData && response.dashboardData.students) {
-            // Data guru sudah ada
-            initAppWithData(response.dashboardData);
-          } else {
-            // Fallback: muat data setelah login
-            initAppWithData({ profile: null, todayProgress: 0 });
-          }
+          const dashboardData = gscript.loginDashboardForRole(currentUser.role, response.dashboardData);
+          initAppWithData(dashboardData);
         })
         .catch(err => {
           hideLoading();
@@ -3263,6 +3263,10 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
         document.getElementById('adminView').classList.add('hidden');
         document.getElementById('bottomNav').classList.add('hidden');
         
+        if (!data || !Array.isArray(data.halaqahs) || !Array.isArray(data.students)) {
+          loadTeacherData();
+          return;
+        }
         teacherDataCache = data;
         const sel = document.getElementById('tcHalaqahSelect');
         sel.innerHTML = '<option value="Semua">SEMUA KELAS</option>';
@@ -4276,6 +4280,9 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       showLoading("MEMUAT DATA HALAQAH...");
       gscript.getTeacherDashboardData(currentUser.id)
         .then(data => {
+          if (!data || !Array.isArray(data.halaqahs) || !Array.isArray(data.students)) {
+            throw new Error('Format data dashboard guru tidak valid. Silakan muat ulang.');
+          }
           teacherDataCache = data;
           const sel = document.getElementById('tcHalaqahSelect');
           sel.innerHTML = '<option value="Semua">SEMUA KELAS</option>';
@@ -4711,9 +4718,12 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
     function populateProgressModal() {
       const startPage = appProfile ? (appProfile.lastPageRead || 0) : 0;
       const resumeFrom = startPage + 1 > 604 ? 1 : startPage + 1;
+      const dateInput = document.getElementById('progressDate');
+      dateInput.max = getLocalDateString();
+      if (!dateInput.value || dateInput.value > dateInput.max) dateInput.value = dateInput.max;
       document.getElementById('modalStartPage').textContent = resumeFrom;
       document.getElementById('progressStartPage').value = startPage;
-      document.getElementById('progressLastPage').value = '';
+      if (!progressRequestId) document.getElementById('progressLastPage').value = '';
       document.getElementById('progressLastPage').min = resumeFrom;
       document.getElementById('progressLiveFeedback').classList.add('hidden');
       document.getElementById('progressErrorMsg').classList.add('hidden');
@@ -5912,43 +5922,56 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
         .catch(onError);
     }
 
+    function newProgressRequestId() {
+      if (window.crypto && typeof window.crypto.randomUUID === 'function') return window.crypto.randomUUID();
+      const bytes = new Uint8Array(16);
+      window.crypto.getRandomValues(bytes);
+      bytes[6] = (bytes[6] & 0x0f) | 0x40;
+      bytes[8] = (bytes[8] & 0x3f) | 0x80;
+      const hex = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+      return `${hex.slice(0,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}-${hex.slice(16,20)}-${hex.slice(20)}`;
+    }
+
     function handleProgressSubmit(e) {
       e.preventDefault();
+      if (progressSavePending) return;
       const date = document.getElementById('progressDate').value;
       const lastPageInput = parseInt(document.getElementById('progressLastPage').value);
       const startPage = parseInt(document.getElementById('progressStartPage').value) || 0;
 
-      if (!lastPageInput) return customAlert('Perhatian', 'Isi halaman terakhir yang kamu baca hari ini.', 'warning');
+      if (!date) return customAlert('Perhatian', 'Pilih tanggal pencatatan.', 'warning');
+      if (date > getLocalDateString()) return customAlert('Perhatian', 'Tanggal pencatatan tidak boleh di masa depan.', 'warning');
+      if (!Number.isInteger(lastPageInput) || lastPageInput < 1) return customAlert('Perhatian', 'Isi halaman terakhir yang kamu baca hari ini.', 'warning');
+      if (!Number.isInteger(startPage) || startPage < 0 || startPage > 604) return customAlert('Perhatian', 'Titik mulai bacaan tidak valid. Muat ulang progres lalu coba lagi.', 'warning');
       if (lastPageInput < startPage + 1 && startPage < 604) {
         return customAlert('Perhatian', `Halaman ${lastPageInput} tidak valid. Mulai dari halaman ${startPage + 1}.`, 'warning');
       }
       if (lastPageInput > 604) return customAlert('Perhatian', 'Halaman tidak boleh melebihi 604.', 'warning');
 
       const oldJuz = typeof getJuzFromPage === 'function' ? getJuzFromPage(appProfile.lastPageRead || 0) : 1;
-      
-      const effectiveStartPage = startPage >= 604 ? 0 : startPage;
-      const pagesReadThisSession = lastPageInput - effectiveStartPage;
+      const payloadKey = JSON.stringify({ date, lastPageInput, startPage });
+      if (payloadKey !== progressRequestPayload) {
+        progressRequestId = newProgressRequestId();
+        progressRequestPayload = payloadKey;
+      }
+      progressSavePending = true;
+      const submitButton = document.querySelector('#progressForm button[type="submit"]');
+      submitButton.disabled = true;
+      showToast('Menyimpan bacaan…', 'info');
 
-      // #3 Optimistic UI: Update immediately before server responds
-      const previousProfile = { ...appProfile };
-      const previousTodayCount = todayProgressCount;
-      // Jika khatam (604), reset posisi ke 0 secara optimistik
-      appProfile.lastPageRead = lastPageInput >= 604 ? 0 : lastPageInput;
-      appProfile.totalKhatam = lastPageInput >= 604 ? (appProfile.totalKhatam || 0) + 1 : (appProfile.totalKhatam || 0);
-      todayProgressCount += pagesReadThisSession;
-      updateDashboard();
-      closeModal('modalProgress');
-      document.getElementById('progressForm').reset();
-      document.getElementById('progressDate').value = getLocalDateString();
-
-      showToast(`Menyimpan... ${pagesReadThisSession} halaman 📖`, 'info');
-
-      gscript.saveProgressUpdate(currentUser.id, { date, lastPageInput, startPage })
+      gscript.saveProgressUpdate(currentUser.id, { date, lastPageInput, startPage, requestId: progressRequestId })
         .then(res => {
+          progressSavePending = false;
+          progressRequestId = null;
+          progressRequestPayload = null;
+          submitButton.disabled = false;
           appProfile = res.profile;
           todayProgressCount = res.todayProgress;
           saveToCache();
           updateDashboard();
+          closeModal('modalProgress');
+          document.getElementById('progressForm').reset();
+          document.getElementById('progressDate').value = getLocalDateString();
 
           if (res.isKhatamNow) {
           // Reset posisi bacaan ke 0, tampilkan perayaan khatam
@@ -5976,11 +5999,10 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
         }
         })
         .catch(err => {
-          // #3 Rollback on failure
-          appProfile = previousProfile;
-          todayProgressCount = previousTodayCount;
-          updateDashboard();
-          onError(err);
+          progressSavePending = false;
+          submitButton.disabled = false;
+          // Pertahankan payload dan request ID: retry identik aman bila server sudah commit.
+          customAlert('Pencatatan belum terkonfirmasi', `${err.message || err}\nData tetap di formulir. Tekan SIMPAN lagi untuk mencoba ulang.`, 'error');
         });
     }
 
