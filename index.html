@@ -2198,6 +2198,27 @@
           <p class="text-sm text-slate-600 leading-relaxed font-medium" id="tentangDeskRattil">Memuat konten...</p>
         </div>
 
+        <!-- Donasi Operasional -->
+        <div class="relative overflow-hidden rounded-[1.5rem] p-5" style="background:linear-gradient(135deg,#7c3aed,#4f46e5)">
+          <div class="absolute -top-6 -right-6 w-24 h-24 bg-white/10 rounded-full" aria-hidden="true"></div>
+          <div class="absolute -bottom-4 -left-4 w-16 h-16 bg-black/10 rounded-full" aria-hidden="true"></div>
+          <div class="relative z-10">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
+                <i class="fa-solid fa-heart text-white text-sm" aria-hidden="true"></i>
+              </div>
+              <div>
+                <h4 class="text-[11px] font-black text-purple-200 uppercase tracking-widest">Donasi Operasional</h4>
+                <p class="text-xs text-white/80 mt-0.5">Dukung program ini tetap berjalan</p>
+              </div>
+            </div>
+            <p class="text-xs text-purple-100 leading-relaxed mb-4">Jazakallahu khairan atas dukunganmu. Donasi membantu menjaga layanan KhatamKu dan mengembangkan program tilawah. 🤲</p>
+            <div class="space-y-2" id="donasiRekeningList" aria-live="polite">
+              <p class="text-xs text-purple-200 italic text-center py-2">Memuat info rekening...</p>
+            </div>
+          </div>
+        </div>
+
         <!-- Ikuti Kami / Social Media -->
         <div class="bg-white border border-slate-200 rounded-[1.5rem] p-5 shadow-sm">
           <div class="flex items-center gap-2 mb-4">
@@ -2405,6 +2426,50 @@
       setTentangSocialLink(wa, tentangData.wa_link);
       setTentangSocialLink(ig, tentangData.ig_link);
       setTentangSocialLink(yt, tentangData.yt_link);
+      renderTentangDonasi(tentangData);
+    }
+
+    function renderTentangDonasi(data) {
+      const rekeningEl = document.getElementById('donasiRekeningList');
+      if (!rekeningEl) return;
+
+      const rekening = [1, 2, 3].map(i => ({
+        bank: data[`donasi_bank${i}_nama`],
+        nomor: data[`donasi_bank${i}_nomor`],
+        atas: data[`donasi_bank${i}_atas`]
+      })).filter(item => item.bank && item.nomor);
+
+      if (rekening.length === 0) {
+        rekeningEl.innerHTML = '<p class="text-xs text-purple-200 italic text-center py-2">Info rekening donasi belum tersedia. Silakan hubungi admin Rattilil Qur\'an.</p>';
+        return;
+      }
+
+      rekeningEl.innerHTML = rekening.map(item => `
+        <div class="bg-white/15 backdrop-blur rounded-xl p-3 flex items-center justify-between gap-3">
+          <div class="min-w-0">
+            <p class="text-[9px] font-black text-purple-200 uppercase tracking-wider">${escapeTentangHtml(item.bank)}</p>
+            <p class="text-base font-black text-white tracking-wider break-all">${escapeTentangHtml(item.nomor)}</p>
+            ${item.atas ? `<p class="text-[10px] text-purple-200">a.n. ${escapeTentangHtml(item.atas)}</p>` : ''}
+          </div>
+          <button type="button" onclick="copyTentangRekening(this.dataset.nomor, this.dataset.bank)" data-nomor="${escapeTentangHtml(item.nomor.replace(/\s/g, ''))}" data-bank="${escapeTentangHtml(item.bank)}" aria-label="Salin nomor rekening ${escapeTentangHtml(item.bank)}" class="shrink-0 w-9 h-9 bg-white/20 hover:bg-white/30 rounded-lg flex items-center justify-center transition active:scale-90">
+            <i class="fa-regular fa-copy text-white text-xs" aria-hidden="true"></i>
+          </button>
+        </div>`).join('');
+    }
+
+    function escapeTentangHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, char => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[char]));
+    }
+
+    async function copyTentangRekening(nomor, bank) {
+      try {
+        await navigator.clipboard.writeText(nomor);
+        showToast(`Nomor rekening ${bank} berhasil disalin.`, 'success');
+      } catch (_) {
+        showToast('Nomor rekening tidak dapat disalin. Silakan salin secara manual.', 'error');
+      }
     }
 
     function setTentangSocialLink(link, value) {
