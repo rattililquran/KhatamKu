@@ -559,24 +559,17 @@
   <div id="mainAppView" class="hidden min-h-screen">
     
     <!-- Top Nav -->
-    <nav class="relative sm:sticky top-0 z-30 pt-4 sm:pt-6 pb-3 sm:pb-4 px-4 sm:px-5 max-w-md mx-auto flex items-center gap-2 sm:gap-3 bg-white/95 backdrop-blur-xl border-b border-white/50 shadow-sm">
-      <div class="min-w-0 flex-1 font-bold text-slate-800 text-base sm:text-lg flex items-center gap-2.5 sm:gap-3">
-        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-sky-400 to-blue-600 text-white flex items-center justify-center shadow-md shrink-0">
+    <nav class="relative sm:sticky top-0 z-30 pt-4 sm:pt-6 pb-3 sm:pb-4 px-4 sm:px-5 max-w-md mx-auto flex items-center bg-white/95 backdrop-blur-xl border-b border-white/50 shadow-sm">
+      <button id="accountMenuTrigger" type="button" onclick="openAccountMenu()" class="min-w-0 w-full font-bold text-slate-800 text-base sm:text-lg flex items-center gap-2.5 sm:gap-3 text-left rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500" aria-label="Buka menu akun" aria-haspopup="dialog" aria-expanded="false" aria-controls="modalAccount" title="Akun">
+        <span class="w-11 h-11 rounded-full bg-gradient-to-tr from-sky-400 to-blue-600 text-white flex items-center justify-center shadow-md shrink-0">
           <i class="fa-solid fa-user text-sm"></i>
-        </div>
-        <div class="min-w-0 flex-1 flex flex-col">
+        </span>
+        <span class="min-w-0 flex-1 flex flex-col">
           <span id="navUserName" class="block truncate">Ahlan, Fulan</span>
           <span class="block truncate text-[10px] text-slate-500 font-medium leading-tight mt-0.5">Mari berjuang membaca pesan cinta Pencipta kita</span>
-        </div>
-      </div>
-      <div class="flex shrink-0 items-center gap-2">
-        <button type="button" onclick="openModal('modalPassword')" class="shrink-0 text-slate-500 bg-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-sky-50 hover:text-sky-500 shadow-sm transition-all border border-slate-100" title="Ganti Password" aria-label="Ganti Password">
-          <i class="fa-solid fa-key text-sm"></i>
-        </button>
-        <button type="button" onclick="doLogout()" class="shrink-0 text-slate-500 bg-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-red-50 hover:text-red-500 shadow-sm transition-all border border-slate-100" title="Keluar" aria-label="Keluar">
-          <i class="fa-solid fa-right-from-bracket text-sm"></i>
-        </button>
-      </div>
+        </span>
+        <i class="fa-solid fa-chevron-down text-xs text-slate-400 shrink-0" aria-hidden="true"></i>
+      </button>
     </nav>
 
     <!-- CONTENT: STUDENT VIEW -->
@@ -1328,6 +1321,36 @@
   </div>
 
   <!-- MODALS -->
+
+  <!-- Modal: Akun -->
+  <div id="modalAccount" class="fixed inset-0 z-50 modal-overlay hidden flex items-end justify-center sm:items-center" role="dialog" aria-modal="true" aria-labelledby="modalAccountTitle">
+    <div id="modalAccountContent" class="modal-content w-full max-w-md rounded-t-[2.5rem] sm:rounded-3xl px-6 pt-6 pb-6 transform transition-transform translate-y-full text-slate-800" style="padding-bottom: max(1.5rem, env(safe-area-inset-bottom));">
+      <div class="flex items-center justify-between mb-5">
+        <div>
+          <p class="text-[10px] font-bold uppercase tracking-widest text-sky-500 mb-1">Pengaturan</p>
+          <h3 id="modalAccountTitle" class="text-2xl font-black tracking-tight">Akun</h3>
+        </div>
+        <button id="accountMenuClose" type="button" onclick="closeAccountMenu()" class="w-11 h-11 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500" aria-label="Tutup menu akun">
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="rounded-2xl bg-sky-50 border border-sky-100 px-4 py-3 mb-5">
+        <p class="text-[10px] font-bold uppercase tracking-widest text-sky-500 mb-1">Masuk sebagai</p>
+        <p id="accountMenuName" class="text-sm font-bold text-slate-800 break-all">—</p>
+      </div>
+      <div class="space-y-2">
+        <button type="button" onclick="openPasswordFromAccount()" class="w-full min-h-[48px] px-4 py-3 rounded-2xl border border-slate-200 bg-white text-slate-700 font-bold text-sm flex items-center gap-3 text-left hover:bg-sky-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500">
+          <i class="fa-solid fa-key w-5 text-sky-500" aria-hidden="true"></i>
+          <span class="flex-1">Ganti password</span>
+          <i class="fa-solid fa-chevron-right text-xs text-slate-400" aria-hidden="true"></i>
+        </button>
+        <button type="button" onclick="logoutFromAccount()" class="w-full min-h-[48px] px-4 py-3 rounded-2xl border border-red-100 bg-red-50 text-red-600 font-bold text-sm flex items-center gap-3 text-left hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500">
+          <i class="fa-solid fa-right-from-bracket w-5" aria-hidden="true"></i>
+          <span>Keluar</span>
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- Modal: Update Progress (Sistem Halaman Terakhir) -->
   <div id="modalProgress" class="fixed inset-0 z-50 modal-overlay hidden flex items-end justify-center sm:items-center">
@@ -2796,6 +2819,28 @@
     document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('loginForm').addEventListener('submit', handleLogin);
       document.getElementById('registerForm').addEventListener('submit', handleRegister);
+      const accountModal = document.getElementById('modalAccount');
+      accountModal.addEventListener('click', (event) => {
+        if (event.target === accountModal) closeAccountMenu();
+      });
+      document.addEventListener('keydown', (event) => {
+        if (accountModal.classList.contains('hidden')) return;
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          closeAccountMenu();
+        } else if (event.key === 'Tab') {
+          const buttons = accountModal.querySelectorAll('button:not([disabled])');
+          const first = buttons[0];
+          const last = buttons[buttons.length - 1];
+          if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+          } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+          }
+        }
+      });
       document.getElementById('inputTargetPages').addEventListener('input', calculateTargetPagesPreview);
       document.getElementById('progressForm').addEventListener('submit', handleProgressSubmit);
       document.getElementById('targetForm').addEventListener('submit', handleTargetSubmit);
@@ -2879,6 +2924,44 @@
       }
       if (id === 'modalDzikir' || id === 'modalPotret' || id === 'modalTentang') updateActiveNav('navHome');
       setTimeout(() => { document.getElementById(id).classList.add('hidden'); }, 300);
+    }
+
+    function openAccountMenu() {
+      if (!currentUser) return;
+      const modal = document.getElementById('modalAccount');
+      if (!modal.classList.contains('hidden')) return;
+      document.getElementById('accountMenuName').textContent = currentUser.name || 'Pengguna';
+      document.getElementById('accountMenuTrigger').setAttribute('aria-expanded', 'true');
+      openModal('modalAccount');
+      setTimeout(() => {
+        if (!modal.classList.contains('hidden')) document.getElementById('accountMenuClose').focus();
+      }, 30);
+    }
+
+    function closeAccountMenu(restoreFocus = true, immediate = false) {
+      const modal = document.getElementById('modalAccount');
+      if (modal.classList.contains('hidden')) return;
+      document.getElementById('accountMenuTrigger').setAttribute('aria-expanded', 'false');
+      if (immediate) {
+        document.getElementById('modalAccountContent').classList.add('translate-y-full');
+        modal.classList.add('hidden');
+      } else {
+        closeModal('modalAccount');
+      }
+      if (restoreFocus) {
+        setTimeout(() => document.getElementById('accountMenuTrigger').focus(), immediate ? 0 : 300);
+      }
+    }
+
+    function openPasswordFromAccount() {
+      closeAccountMenu(false, true);
+      openModal('modalPassword');
+      setTimeout(() => document.getElementById('newPasswordInput').focus(), 30);
+    }
+
+    function logoutFromAccount() {
+      closeAccountMenu(false, true);
+      doLogout();
     }
 
     async function handlePasswordChange(e) {
