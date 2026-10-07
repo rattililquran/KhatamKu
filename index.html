@@ -166,6 +166,7 @@
     .tc-card { transition: border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease; }
     .tc-card:hover, .tc-card.is-hover { background: var(--color-paper-2); border-color: oklch(0.88 0.02 240); }
     .tc-card:focus-visible, .tc-card.is-focus { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+    .tc-history:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
     .tc-card:active, .tc-card.is-active { transform: scale(0.99); }
     .tc-card[aria-disabled="true"], .tc-card.is-disabled { opacity: 0.55; pointer-events: none; }
     .tc-card.is-loading { opacity: 0.7; pointer-events: none; }
@@ -185,12 +186,19 @@
     .tc-chip:hover, .tc-chip.is-hover { border-color: oklch(0.86 0.02 240); }
     .tc-chip:focus-visible, .tc-chip.is-focus { outline: 2px solid var(--color-accent); outline-offset: 2px; }
     .tc-chip:active, .tc-chip.is-active { transform: scale(0.97); }
-    .tc-chip[aria-selected="true"] { background: var(--color-ink); color: white; border-color: var(--color-ink); box-shadow: 0 4px 14px rgba(15,23,42,0.18); }
-    .tc-chip[aria-selected="false"] { background: white; color: var(--color-muted); border-color: var(--color-border); }
-    .tc-chip[aria-selected="false"]:hover { background: var(--color-paper-2); color: var(--color-ink); }
+    .tc-chip[aria-pressed="true"] { background: var(--color-ink); color: white; border-color: var(--color-ink); box-shadow: 0 4px 14px rgba(15,23,42,0.18); }
+    .tc-chip[aria-pressed="false"] { background: white; color: var(--color-muted); border-color: var(--color-border); }
+    .tc-chip[aria-pressed="false"]:hover { background: var(--color-paper-2); color: var(--color-ink); }
     /* Masthead frost on scroll */
-    .teacher-masthead { position: sticky; top: 0; z-index: 5; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); background: color-mix(in oklch, var(--color-paper) 88%, transparent); border-bottom: 1px solid transparent; margin: -6px -20px 20px; padding: 10px 20px; }
+    .teacher-masthead { position: sticky; top: 0; z-index: 5; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); background: color-mix(in oklch, var(--color-paper) 88%, transparent); border-bottom: 1px solid transparent; margin: -6px calc(0px - clamp(1rem, 4vw, 1.5rem)) 20px; padding: 10px clamp(1rem, 4vw, 1.5rem); }
     .teacher-masthead.is-scrolled { border-bottom-color: var(--color-border); box-shadow: 0 4px 16px -12px rgba(15,23,42,0.08); }
+    @media (max-width: 480px) {
+      .teacher-masthead { align-items: stretch; flex-direction: column; }
+      .teacher-halaqah-controls, #tcHalaqahSelect { width: 100%; }
+    }
+    #modalHistoryContent { height: min(92dvh, 760px); max-height: calc(100dvh - 8px); overflow-y: auto; padding-bottom: max(1.25rem, env(safe-area-inset-bottom, 0px)); }
+    #histList { min-height: 120px; overscroll-behavior: contain; }
+    @media (min-width: 640px) { #modalHistoryContent { height: auto; max-height: 85dvh; } }
     /* Teacher blobs — replaced by subtle dot grid so blobs don't bleed */
     #teacherView .bg-blobs { display: none; }
     #teacherView { background-image: radial-gradient(circle at 1px 1px, oklch(0.92 0.01 240) 1px, transparent 0); background-size: 22px 22px; background-position: 0 0; }
@@ -895,13 +903,17 @@
           <p class="text-[10px] font-bold tracking-[0.14em] uppercase" style="color:var(--color-muted)">KhatamKu · Portal Guru</p>
           <h2 class="text-[22px] font-bold tracking-tight leading-none" style="font-family:var(--font-display);color:var(--color-ink)">Portal Guru</h2>
         </div>
-        <div class="flex items-center gap-2 shrink-0">
+        <div class="teacher-halaqah-controls flex items-center gap-2 shrink-0">
           <label for="tcHalaqahSelect" class="sr-only">Pilih halaqah</label>
-          <select id="tcHalaqahSelect" onchange="filterTeacherView()" class="rounded-full border bg-white text-xs font-bold cursor-pointer outline-none appearance-none" style="border-color:var(--color-border);color:var(--color-ink);padding:8px 32px 8px 14px;min-height:36px;background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 12 12%22><path fill=%22%2364748b%22 d=%22M6 8L1 3h10z%22/></svg>');background-repeat:no-repeat;background-position:right 10px center;">
+          <select id="tcHalaqahSelect" onchange="filterTeacherView()" class="rounded-full border bg-white text-xs font-bold cursor-pointer outline-none appearance-none" style="border-color:var(--color-border);color:var(--color-ink);padding:8px 32px 8px 14px;min-height:44px;background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 12 12%22><path fill=%22%2364748b%22 d=%22M6 8L1 3h10z%22/></svg>');background-repeat:no-repeat;background-position:right 10px center;">
             <option value="Semua">Memuat…</option>
           </select>
         </div>
       </header>
+      <div class="flex items-center justify-between gap-2 mb-4 px-1">
+        <p id="tcUpdatedAt" class="text-[11px] font-medium" style="color:var(--color-muted)" aria-live="polite">Data belum dimuat</p>
+        <button id="tcRefreshBtn" type="button" onclick="loadTeacherData(true)" class="shrink-0 inline-flex items-center gap-2 rounded-full border bg-white px-3 font-bold text-xs" style="border-color:var(--color-border);color:var(--color-ink);min-height:44px"><i class="fa-solid fa-rotate" aria-hidden="true"></i> Perbarui data</button>
+      </div>
 
       <!-- Stat hero: 3-up H4 -->
       <section aria-label="Ringkasan hari ini" class="grid gap-3 mb-3" style="grid-template-columns:repeat(3,minmax(0,1fr));">
@@ -936,14 +948,14 @@
       </section>
 
       <!-- Search & Sorting Controls -->
-      <div class="mb-3 flex gap-2">
+      <div class="mb-3 flex flex-col sm:flex-row gap-2">
         <div class="relative flex-1 min-w-0">
           <label for="tcSearchInput" class="sr-only">Cari nama murid</label>
-          <input type="text" id="tcSearchInput" oninput="filterTeacherView()" placeholder="Cari nama murid…" autocomplete="off" class="w-full pl-9 pr-4 py-2.5 rounded-xl border bg-white text-xs font-medium outline-none transition-all" style="border-color:var(--color-border);color:var(--color-ink);min-height:40px" />
+          <input type="text" id="tcSearchInput" oninput="filterTeacherView()" placeholder="Cari nama murid…" autocomplete="off" class="w-full pl-9 pr-4 py-2.5 rounded-xl border bg-white text-xs font-medium outline-none transition-all" style="border-color:var(--color-border);color:var(--color-ink);min-height:44px" />
           <i class="fa-solid fa-magnifying-glass absolute left-3 top-3.5 text-xs" style="color:var(--color-muted)" aria-hidden="true"></i>
         </div>
         <label for="tcSortSelect" class="sr-only">Urutkan</label>
-        <select id="tcSortSelect" onchange="filterTeacherView()" class="px-3 py-2.5 rounded-full border bg-white text-xs font-bold outline-none cursor-pointer whitespace-nowrap" style="border-color:var(--color-border);color:var(--color-ink);min-height:40px">
+        <select id="tcSortSelect" onchange="filterTeacherView()" class="w-full sm:w-auto px-3 py-2.5 rounded-full border bg-white text-xs font-bold outline-none cursor-pointer whitespace-nowrap" style="border-color:var(--color-border);color:var(--color-ink);min-height:44px">
           <option value="perhatian">Urut: Perlu Perhatian</option>
           <option value="nama">Urut: Nama (A-Z)</option>
           <option value="halaman">Urut: Halaman</option>
@@ -952,12 +964,12 @@
       </div>
 
       <!-- Quick Filter Chips — C1 -->
-      <div class="flex gap-2 overflow-x-auto pb-3 mb-1 text-xs" id="tcFilterChips" role="tablist" aria-label="Filter status">
-        <button onclick="changeTeacherFilter('Semua')" id="chip-Semua" role="tab" aria-selected="true" class="tc-chip shrink-0 px-3.5 py-2 rounded-full font-bold border whitespace-nowrap" style="min-height:36px">Semua</button>
-        <button onclick="changeTeacherFilter('Sudah')" id="chip-Sudah" role="tab" aria-selected="false" class="tc-chip shrink-0 px-3.5 py-2 rounded-full font-bold border whitespace-nowrap" style="min-height:36px">Sudah Setor</button>
-        <button onclick="changeTeacherFilter('Belum')" id="chip-Belum" role="tab" aria-selected="false" class="tc-chip shrink-0 px-3.5 py-2 rounded-full font-bold border whitespace-nowrap" style="min-height:36px">Belum Setor</button>
-        <button onclick="changeTeacherFilter('AtRisk')" id="chip-AtRisk" role="tab" aria-selected="false" class="tc-chip shrink-0 px-3.5 py-2 rounded-full font-bold border whitespace-nowrap" style="min-height:36px">At-Risk</button>
-        <button onclick="changeTeacherFilter('Udzur')" id="chip-Udzur" role="tab" aria-selected="false" class="tc-chip shrink-0 px-3.5 py-2 rounded-full font-bold border whitespace-nowrap" style="min-height:36px">Udzur</button>
+      <div class="flex gap-2 overflow-x-auto pb-3 mb-1 text-xs" id="tcFilterChips" role="group" aria-label="Filter status">
+        <button type="button" onclick="changeTeacherFilter('Semua')" id="chip-Semua" aria-pressed="true" class="tc-chip shrink-0 px-3.5 py-2 rounded-full font-bold border whitespace-nowrap" style="min-height:44px">Semua</button>
+        <button type="button" onclick="changeTeacherFilter('Sudah')" id="chip-Sudah" aria-pressed="false" class="tc-chip shrink-0 px-3.5 py-2 rounded-full font-bold border whitespace-nowrap" style="min-height:44px">Sudah Setor</button>
+        <button type="button" onclick="changeTeacherFilter('Belum')" id="chip-Belum" aria-pressed="false" class="tc-chip shrink-0 px-3.5 py-2 rounded-full font-bold border whitespace-nowrap" style="min-height:44px">Belum Setor</button>
+        <button type="button" onclick="changeTeacherFilter('AtRisk')" id="chip-AtRisk" aria-pressed="false" class="tc-chip shrink-0 px-3.5 py-2 rounded-full font-bold border whitespace-nowrap" style="min-height:44px">Perlu Perhatian</button>
+        <button type="button" onclick="changeTeacherFilter('Udzur')" id="chip-Udzur" aria-pressed="false" class="tc-chip shrink-0 px-3.5 py-2 rounded-full font-bold border whitespace-nowrap" style="min-height:44px">Udzur</button>
       </div>
 
       <!-- Action bar: C1 hierarchy -->
@@ -1645,14 +1657,14 @@
   </div>
 
   <!-- Modal: Student History (Teacher View) -->
-  <div id="modalHistory" class="fixed inset-0 z-50 modal-overlay hidden flex flex-col justify-end sm:justify-center items-center">
+  <div id="modalHistory" class="fixed inset-0 z-50 modal-overlay hidden flex flex-col justify-end sm:justify-center items-center" role="dialog" aria-modal="true" aria-labelledby="histStudentName">
     <div class="modal-content w-full max-w-md h-[75vh] sm:h-[auto] sm:max-h-[85vh] rounded-t-[2.5rem] sm:rounded-3xl p-7 flex flex-col transform transition-transform translate-y-full text-slate-800" id="modalHistoryContent">
       <div class="flex justify-between items-center mb-5 shrink-0 border-b border-slate-100 pb-5">
         <div>
           <h3 class="text-2xl font-black tracking-tight" id="histStudentName">Nama Murid</h3>
           <p class="text-xs font-semibold text-slate-500 mt-1 uppercase tracking-widest">Riwayat 7 Hari Terakhir</p>
         </div>
-        <button onclick="closeModal('modalHistory')" class="text-slate-400 bg-slate-100 hover:bg-slate-200 w-10 h-10 rounded-full flex items-center justify-center transition-colors shadow-inner"><i class="fa-solid fa-xmark"></i></button>
+        <button id="tcHistoryCloseBtn" type="button" onclick="closeModal('modalHistory')" aria-label="Tutup riwayat murid" class="text-slate-400 bg-slate-100 hover:bg-slate-200 w-11 h-11 rounded-full flex items-center justify-center transition-colors shadow-inner"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
       </div>
       <div class="flex-1 overflow-y-auto pr-2 space-y-3" id="histList">
         <!-- Injected via JS -->
@@ -1664,12 +1676,12 @@
         <div class="space-y-3">
           <div class="flex gap-2">
             <div class="flex-1">
-              <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Target (Hal/Hari)</label>
-              <input type="number" id="tcStudentTargetInput" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white text-xs font-bold outline-none text-slate-700 focus:ring-2 focus:ring-sky-200 transition-all" min="0" max="604" />
+              <label for="tcStudentTargetInput" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Target (Hal/Hari)</label>
+              <input type="number" id="tcStudentTargetInput" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white text-xs font-bold outline-none text-slate-700 focus:ring-2 focus:ring-sky-200 transition-all" style="min-height:44px" min="0" max="604" step="1" />
             </div>
             <div class="flex-1">
-              <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Status Udzur</label>
-              <select id="tcStudentUdzurSelect" onchange="toggleUdzurDateInput()" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white text-xs font-bold outline-none text-slate-700 focus:ring-2 focus:ring-sky-200 transition-all">
+              <label for="tcStudentUdzurSelect" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Status Udzur</label>
+              <select id="tcStudentUdzurSelect" onchange="toggleUdzurDateInput()" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white text-xs font-bold outline-none text-slate-700 focus:ring-2 focus:ring-sky-200 transition-all" style="min-height:44px">
                 <option value="">- Aktif (Tidak Udzur) -</option>
                 <option value="Haid">Haid 🌸</option>
                 <option value="Sakit">Sakit 🤒</option>
@@ -1679,10 +1691,10 @@
             </div>
           </div>
           <div id="tcStudentUdzurEndDateDiv" class="hidden">
-            <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Tanggal Berakhir Udzur</label>
-            <input type="date" id="tcStudentUdzurEndInput" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white text-xs font-semibold outline-none text-slate-700 focus:ring-2 focus:ring-sky-200 transition-all" />
+            <label for="tcStudentUdzurEndInput" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Perkiraan Akhir Udzur</label>
+            <input type="date" id="tcStudentUdzurEndInput" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white text-xs font-semibold outline-none text-slate-700 focus:ring-2 focus:ring-sky-200 transition-all" style="min-height:44px" />
           </div>
-          <button id="tcSaveStudentSettingsBtn" onclick="saveStudentSettings()" class="w-full py-3 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-600 border border-sky-100 font-extrabold text-xs tracking-wider transition-colors shadow-sm flex items-center justify-center gap-2">
+          <button id="tcSaveStudentSettingsBtn" type="button" onclick="saveStudentSettings()" class="w-full py-3 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-600 border border-sky-100 font-extrabold text-xs tracking-wider transition-colors shadow-sm flex items-center justify-center gap-2" style="min-height:44px">
             <i class="fa-solid fa-floppy-disk"></i> SIMPAN PERUBAHAN
           </button>
         </div>
@@ -2311,7 +2323,11 @@
       }, 'question');
     }
 
+    let alertReturnFocus = null;
     function customAlert(title, message, type = 'warning') {
+      if (document.getElementById('modalAlert').classList.contains('hidden')) {
+        alertReturnFocus = document.activeElement;
+      }
       const container = document.getElementById('alertIconContainer');
       const icon = document.getElementById('alertIcon');
       if (type === 'error') {
@@ -2330,6 +2346,11 @@
       document.getElementById('alertTitle').textContent = title;
       document.getElementById('alertMessage').textContent = message;
       openModal('modalAlert');
+      requestAnimationFrame(() => {
+        if (!document.getElementById('modalAlert').classList.contains('hidden')) {
+          document.querySelector('#modalAlert button').focus();
+        }
+      });
     }
 
     function customConfirm(title, message, onConfirm, type = 'warning') {
@@ -2918,6 +2939,7 @@
     let progressRequestId = null;
     let progressRequestPayload = null;
     const navModalTriggers = { modalDzikir: 'navDzikir', modalPotret: 'navPotret', modalTentang: 'navTentang' };
+    const modalHideTimers = new Map();
     function setNavModalExpanded(id, expanded) {
       const triggerId = navModalTriggers[id];
       if (!triggerId) return;
@@ -2926,6 +2948,10 @@
     }
 
     function openModal(id) {
+      if (modalHideTimers.has(id)) {
+        clearTimeout(modalHideTimers.get(id));
+        modalHideTimers.delete(id);
+      }
       if (id === 'modalCalibrate') { setTimeout(initCalibrateModal, 50); }
       if (id === 'modalProgress') populateProgressModal();
       if (id === 'modalDzikir') { initDzikir(); updateActiveNav('navDzikir'); }
@@ -2948,7 +2974,19 @@
       }
       setNavModalExpanded(id, false);
       if (id === 'modalDzikir' || id === 'modalPotret' || id === 'modalTentang') updateActiveNav('navHome');
-      setTimeout(() => { document.getElementById(id).classList.add('hidden'); }, 300);
+      if (modalHideTimers.has(id)) clearTimeout(modalHideTimers.get(id));
+      modalHideTimers.set(id, setTimeout(() => {
+        document.getElementById(id).classList.add('hidden');
+        modalHideTimers.delete(id);
+      }, 300));
+      if (id === 'modalHistory') setTimeout(focusTeacherHistoryTrigger, 320);
+      if (id === 'modalAlert') setTimeout(() => {
+        if (!document.getElementById('modalAlert').classList.contains('hidden')) return;
+        const previous = alertReturnFocus;
+        alertReturnFocus = null;
+        if (previous?.isConnected && !previous.disabled && previous.getClientRects().length > 0) previous.focus();
+        else focusTeacherHistoryTrigger();
+      }, 320);
     }
 
     function openAccountMenu() {
@@ -3026,6 +3064,7 @@
     }
 
     function showLoginScreen() {
+      resetTeacherViewForSession();
       document.getElementById('loginView').classList.remove('hidden');
       document.getElementById('loginView').classList.add('view-enter');
       document.getElementById('mainAppView').classList.add('hidden');
@@ -3168,6 +3207,7 @@
 
     // Dipanggil saat user auto-login (refresh halaman) - Data belum terambul
     function initApp() {
+      resetTeacherViewForSession();
       // #5 View transition: fade out login, slide in main
       const loginView = document.getElementById('loginView');
       loginView.classList.add('view-exit');
@@ -3236,6 +3276,7 @@
     }
 
     function initAppWithData(data) {
+      resetTeacherViewForSession();
       // #5 View transition
       const loginView = document.getElementById('loginView');
       loginView.classList.add('view-exit');
@@ -3299,11 +3340,8 @@
           return;
         }
         teacherDataCache = data;
-        const sel = document.getElementById('tcHalaqahSelect');
-        sel.innerHTML = '<option value="Semua">SEMUA KELAS</option>';
-        data.halaqahs.forEach(h => {
-          sel.innerHTML += `<option value="${h}">${h.toUpperCase()}</option>`;
-        });
+        populateTeacherHalaqahSelect(data.halaqahs);
+        markTeacherUpdated();
         filterTeacherView();
       }
     }
@@ -4306,24 +4344,100 @@
 
     let teacherDataCache = null;
     let filteredStudents = [];
+    let teacherLoadPending = false;
+    let teacherLoadToken = 0;
+    let teacherLoadOverlayActive = false;
+    let teacherReportPending = false;
 
-    function loadTeacherData() {
-      showLoading("MEMUAT DATA HALAQAH...");
-      gscript.getTeacherDashboardData(currentUser.id)
-        .then(data => {
-          if (!data || !Array.isArray(data.halaqahs) || !Array.isArray(data.students)) {
-            throw new Error('Format data dashboard guru tidak valid. Silakan muat ulang.');
+    function resetTeacherViewForSession() {
+      teacherLoadToken++;
+      if (teacherLoadOverlayActive || teacherSettingsPending || teacherReportPending) hideLoading();
+      teacherLoadPending = false;
+      teacherLoadOverlayActive = false;
+      teacherReportPending = false;
+      teacherSettingsPending = false;
+      document.getElementById('tcSaveStudentSettingsBtn').disabled = false;
+      ['modalHistory', 'modalWeeklyRange'].forEach(id => {
+        if (modalHideTimers.has(id)) {
+          clearTimeout(modalHideTimers.get(id));
+          modalHideTimers.delete(id);
+        }
+        document.getElementById(id).classList.add('hidden');
+        document.getElementById(id + 'Content').classList.add('translate-y-full');
+      });
+      teacherDataCache = null;
+      filteredStudents = [];
+      currentTeacherStudent = null;
+      currentTeacherFilter = 'Semua';
+      const refreshBtn = document.getElementById('tcRefreshBtn');
+      refreshBtn.disabled = false;
+      refreshBtn.removeAttribute('aria-busy');
+      document.getElementById('tcUpdatedAt').textContent = 'Data belum dimuat';
+      document.getElementById('tcStudentList').replaceChildren();
+      document.getElementById('tcHalaqahSelect').replaceChildren(new Option('Memuat…', 'Semua'));
+      document.getElementById('tcSearchInput').value = '';
+      document.getElementById('tcSortSelect').value = 'perhatian';
+      ['tcTotalStudents', 'tcStudentsDone', 'tcStudentsAtRisk', 'tcAvgRead', 'tcDonePct', 'tcTotalKhatam']
+        .forEach(id => { document.getElementById(id).textContent = '—'; });
+      ['Semua', 'Sudah', 'Belum', 'AtRisk', 'Udzur'].forEach(name => {
+        document.getElementById('chip-' + name).setAttribute('aria-pressed', name === 'Semua' ? 'true' : 'false');
+      });
+    }
+
+    function populateTeacherHalaqahSelect(halaqahs) {
+      const sel = document.getElementById('tcHalaqahSelect');
+      const previous = sel.value;
+      sel.replaceChildren(new Option('SEMUA KELAS', 'Semua'));
+      halaqahs.forEach(h => sel.add(new Option(String(h).toUpperCase(), String(h))));
+      sel.value = halaqahs.includes(previous) ? previous : 'Semua';
+    }
+
+    function markTeacherUpdated() {
+      const when = new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date());
+      document.getElementById('tcUpdatedAt').textContent = `Diperbarui ${when}`;
+    }
+
+    async function loadTeacherData(silent = false) {
+      if (silent && teacherLoadPending) return false;
+      const teacherId = currentUser?.id;
+      if (!teacherId || currentUser?.role !== 'guru') return false;
+      const requestToken = ++teacherLoadToken;
+      teacherLoadPending = true;
+      const refreshBtn = document.getElementById('tcRefreshBtn');
+      refreshBtn.disabled = true;
+      refreshBtn.setAttribute('aria-busy', 'true');
+      if (!silent) {
+        teacherLoadOverlayActive = true;
+        showLoading("MEMUAT DATA HALAQAH...");
+      }
+      try {
+        const data = await gscript.getTeacherDashboardData(teacherId);
+        if (!data || !Array.isArray(data.halaqahs) || !Array.isArray(data.students)) {
+          throw new Error('Format data dashboard guru tidak valid. Silakan muat ulang.');
+        }
+        if (requestToken !== teacherLoadToken || currentUser?.id !== teacherId || currentUser?.role !== 'guru') return false;
+        teacherDataCache = data;
+        populateTeacherHalaqahSelect(data.halaqahs);
+        markTeacherUpdated();
+        filterTeacherView();
+        if (silent) showToast('Data guru sudah diperbarui.', 'success');
+        return true;
+      } catch (err) {
+        if (requestToken !== teacherLoadToken || currentUser?.id !== teacherId || currentUser?.role !== 'guru') return false;
+        if (silent) showToast('Gagal memperbarui data. Data sebelumnya tetap ditampilkan.', 'error');
+        else onError(err);
+        return false;
+      } finally {
+        if (requestToken === teacherLoadToken) {
+          teacherLoadPending = false;
+          refreshBtn.disabled = false;
+          refreshBtn.removeAttribute('aria-busy');
+          if (!silent) {
+            teacherLoadOverlayActive = false;
+            hideLoading();
           }
-          teacherDataCache = data;
-          const sel = document.getElementById('tcHalaqahSelect');
-          sel.innerHTML = '<option value="Semua">SEMUA KELAS</option>';
-          data.halaqahs.forEach(h => {
-            sel.innerHTML += `<option value="${h}">${h.toUpperCase()}</option>`;
-          });
-          filterTeacherView();
-          hideLoading();
-        })
-        .catch(onError);
+        }
+      }
     }
     
     let currentTeacherStudent = null;
@@ -4336,7 +4450,6 @@
         const btn = document.getElementById('chip-' + c);
         if (!btn) return;
         const isActive = c === filterName;
-        btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
         btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
       });
       filterTeacherView();
@@ -4363,40 +4476,88 @@
         if (endInput && !endInput.value) {
           const future = new Date();
           future.setDate(future.getDate() + 7);
-          endInput.value = future.toISOString().split('T')[0];
+          endInput.value = getLocalDateString(future);
         }
       } else {
         dateDiv.classList.add('hidden');
       }
     }
 
+    let teacherSettingsPending = false;
     async function saveStudentSettings() {
-      if (!currentTeacherStudent) return;
+      if (!currentTeacherStudent || teacherSettingsPending) return;
+      const teacherUser = currentUser;
+      const student = currentTeacherStudent;
+      if (teacherUser?.role !== 'guru') return;
       
       const targetInput = document.getElementById('tcStudentTargetInput');
       const udzurSelect = document.getElementById('tcStudentUdzurSelect');
       const udzurEndInput = document.getElementById('tcStudentUdzurEndInput');
       
-      const newTarget = parseInt(targetInput.value) || 0;
+      const targetRaw = targetInput.value.trim();
+      const newTarget = Number(targetRaw);
+      if (!/^\d+$/.test(targetRaw) || !Number.isInteger(newTarget) || newTarget > 604) {
+        showToast('Target harus berupa bilangan bulat 0–604 halaman.', 'error');
+        targetInput.focus();
+        return;
+      }
       const newUdzurStatus = udzurSelect.value;
       const newUdzurEnd = newUdzurStatus ? udzurEndInput.value : null;
+      const udzurChanged = newUdzurStatus !== student.udzurStatus ||
+        (newUdzurStatus && newUdzurEnd !== String(student.udzurEnd || '').slice(0, 10));
+      if (udzurChanged && newUdzurStatus && (!newUdzurEnd || newUdzurEnd < getLocalDateString())) {
+        showToast('Pilih perkiraan akhir udzur hari ini atau sesudahnya.', 'error');
+        udzurEndInput.focus();
+        return;
+      }
       
+      teacherSettingsPending = true;
+      const saveBtn = document.getElementById('tcSaveStudentSettingsBtn');
+      saveBtn.disabled = true;
       showLoading("MENYIMPAN PERUBAHAN...");
+      let restoreFocus = false;
+      let targetSaved = false;
       try {
-        if (newTarget !== currentTeacherStudent.target) {
-          await gscript.teacherSetTarget(currentTeacherStudent.id, newTarget);
+        if (newTarget !== (Number(student.target) || 0)) {
+          await gscript.teacherSetTarget(student.id, newTarget);
+          if (currentUser !== teacherUser) return;
+          targetSaved = true;
+          student.target = newTarget;
         }
-        if (newUdzurStatus !== currentTeacherStudent.udzurStatus || (newUdzurStatus && newUdzurEnd !== currentTeacherStudent.udzurEnd)) {
-          await gscript.teacherSetUdzur(currentTeacherStudent.id, newUdzurStatus, newUdzurEnd);
+        if (udzurChanged) {
+          await gscript.teacherSetUdzur(student.id, newUdzurStatus, newUdzurEnd);
+          if (currentUser !== teacherUser) return;
         }
         
         showToast("✅ Pengaturan murid berhasil diperbarui!", "success");
         closeModal('modalHistory');
-        loadTeacherData();
+        await loadTeacherData();
+        if (currentUser !== teacherUser) return;
+        restoreFocus = true;
       } catch (err) {
-        customAlert('Gagal', err.message || err, 'error');
-        hideLoading();
+        if (currentUser !== teacherUser) return;
+        if (targetSaved) {
+          const refreshed = await loadTeacherData();
+          if (currentUser !== teacherUser) return;
+          if (!refreshed) filterTeacherView();
+          const detail = refreshed ? '' : ' Data belum berhasil dimuat ulang; tekan Perbarui data.';
+          showTeacherSettingsError('Tersimpan Sebagian', `Target tersimpan, tetapi status udzur gagal. ${err.message || err}${detail}`, 'warning');
+        } else {
+          showTeacherSettingsError('Gagal', err.message || err, 'error');
+        }
+      } finally {
+        if (currentUser === teacherUser) {
+          teacherSettingsPending = false;
+          saveBtn.disabled = false;
+          hideLoading();
+          if (restoreFocus) focusTeacherHistoryTrigger();
+        }
       }
+    }
+
+    function showTeacherSettingsError(title, message, type) {
+      closeModal('modalHistory');
+      customAlert(title, message, type);
     }
 
     function filterTeacherView() {
@@ -4461,78 +4622,88 @@
       const donePct = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
       const totalKhatam = filteredStudents.reduce((sum, s) => sum + (s.totalKhatam || 0), 0);
       
-      // 5. Update stats UI — honest copy: show — when no data
-      const hasStudents = filteredStudents.length > 0;
-      document.getElementById('tcTotalStudents').textContent = hasStudents ? String(totalCount) : '—';
-      document.getElementById('tcStudentsDone').textContent = hasStudents ? String(doneCount) : '—';
+      // 5. Data telah dimuat; nol berbeda dari placeholder sebelum pemuatan.
+      document.getElementById('tcTotalStudents').textContent = String(totalCount);
+      document.getElementById('tcStudentsDone').textContent = String(doneCount);
       const atRiskEl = document.getElementById('tcStudentsAtRisk');
-      if (atRiskEl) atRiskEl.textContent = hasStudents ? String(atRiskCount) : '—';
+      if (atRiskEl) atRiskEl.textContent = String(atRiskCount);
       const avgReadEl = document.getElementById('tcAvgRead');
-      if (avgReadEl) avgReadEl.textContent = hasStudents ? (avgRead + ' hal') : '—';
+      if (avgReadEl) avgReadEl.textContent = avgRead + ' hal';
       const donePctEl = document.getElementById('tcDonePct');
-      if (donePctEl) donePctEl.textContent = hasStudents ? (donePct + '%') : '—';
+      if (donePctEl) donePctEl.textContent = donePct + '%';
       const totalKhatamEl = document.getElementById('tcTotalKhatam');
-      if (totalKhatamEl) totalKhatamEl.textContent = hasStudents ? ('🏆 ' + totalKhatam) : '—';
+      if (totalKhatamEl) totalKhatamEl.textContent = '🏆 ' + totalKhatam;
 
       // 6. Render Student List — professional card: border + left-rule, no glass lift
+      const esc = (s) => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
       let html = '';
       if (list.length === 0) {
-        const hint = searchQuery ? ` untuk “${searchQuery}”` : (currentTeacherFilter !== 'Semua' ? ` pada filter ${currentTeacherFilter}` : '');
-        html = `<div class="border rounded-[var(--radius-lg)] bg-white py-10 px-6 text-center" style="border-color:var(--color-border)"><p class="text-sm font-semibold" style="color:var(--color-ink)">Belum ada murid yang cocok${hint}.</p><p class="text-xs mt-1" style="color:var(--color-muted)">Coba ubah kata kunci atau filter — <span aria-hidden="true">—</span></p></div>`;
+        const noAssignment = teacherDataCache.halaqahs.length === 0;
+        const noStudents = filteredStudents.length === 0;
+        const title = noAssignment ? 'Belum ada halaqah yang ditugaskan.'
+          : noStudents ? 'Belum ada murid di halaqah ini.'
+          : searchQuery ? `Tidak ada nama yang cocok untuk “${esc(searchQuery)}”.`
+          : 'Tidak ada murid pada filter ini.';
+        const detail = noAssignment ? 'Hubungi admin untuk menambahkan penugasan guru.'
+          : noStudents ? 'Pilih halaqah lain atau perbarui data.'
+          : 'Coba ubah kata kunci atau filter.';
+        html = `<div class="border rounded-[var(--radius-lg)] bg-white py-10 px-6 text-center" style="border-color:var(--color-border)"><p class="text-sm font-semibold" style="color:var(--color-ink)">${title}</p><p class="text-xs mt-1" style="color:var(--color-muted)">${detail}</p></div>`;
       } else {
         const atRiskGroup = list.filter(s => s.isAtRisk);
         const otherGroup = list.filter(s => !s.isAtRisk);
-
-        const esc = (s) => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
         const renderStudentCard = (st) => {
           const isUdzur = st.udzurStatus !== '';
           const leftRule = isUdzur ? 'border-left-color:var(--color-amber);border-left-width:3px' : (st.isAtRisk ? 'border-left-color:var(--color-danger);border-left-width:3px' : 'border-left-color:transparent;border-left-width:3px');
           const iconUdzur = st.udzurStatus === 'Haid' ? '🌸' : (st.udzurStatus === 'Sakit' ? '🤒' : (st.udzurStatus === 'Safar' ? '✈️' : '⏳'));
-          const udzurBadge = isUdzur ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full ml-2 align-middle border" style="background:oklch(0.97 0.04 350);color:oklch(0.55 0.18 350);border-color:oklch(0.92 0.06 350)" title="Selesai otomatis pd ${esc(formatDateID(st.udzurEnd))}">${esc(st.udzurStatus)} ${iconUdzur}</span>` : '';
-          const warningBadge = st.isAtRisk ? `<i class="fa-solid fa-triangle-exclamation ml-2" style="color:var(--color-amber)" title="Belum setor ≥ 3 hari" aria-hidden="true"></i>` : '';
+          const udzurTitle = st.udzurEnd ? `Perkiraan akhir ${formatDateID(st.udzurEnd)}` : 'Status udzur aktif';
+          const udzurBadge = isUdzur ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full ml-2 align-middle border" style="background:oklch(0.97 0.04 350);color:oklch(0.55 0.18 350);border-color:oklch(0.92 0.06 350)" title="${esc(udzurTitle)}">${esc(st.udzurStatus)} ${iconUdzur}</span>` : '';
+          const riskTitle = Number(st.daysSinceLastRead) >= 999 ? 'Belum ada catatan bacaan terbaru' : 'Belum setor ≥ 3 hari';
+          const warningBadge = st.isAtRisk ? `<i class="fa-solid fa-triangle-exclamation ml-2" style="color:var(--color-amber)" title="${riskTitle}" aria-hidden="true"></i>` : '';
           const khatamBadge = st.totalKhatam > 0 ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full ml-2 align-middle border" style="background:oklch(0.97 0.06 75);color:oklch(0.55 0.12 75);border-color:oklch(0.92 0.08 75)">🏆 ×${st.totalKhatam}</span>` : '';
 
           let waBtn = '';
           if (st.wa) {
             let phone = String(st.wa).replace(/\D/g, '');
             if (phone.startsWith('0')) phone = '62' + phone.substring(1);
-            let waMsg = `Assalamu'alaikum ${esc(st.name)}, `;
-            if (st.isAtRisk) waMsg += `sudah ${st.daysSinceLastRead} hari tidak mencatat tilawah harian di Khatamku. `;
+            let waMsg = `Assalamu'alaikum ${st.name}, `;
+            if (st.isAtRisk) waMsg += Number(st.daysSinceLastRead) >= 999
+              ? 'belum terlihat setoran terbaru di KhatamKu. '
+              : `sudah ${st.daysSinceLastRead} hari tidak mencatat tilawah harian di KhatamKu. `;
             waMsg += `Terakhir kamu berada di halaman ${st.lastPage}. Yuk setor target harianmu (${st.target || 0} hal) hari ini. Semangat!`;
             let msg = encodeURIComponent(waMsg);
-            waBtn = `<a href="https://wa.me/${phone}?text=${msg}" target="_blank" rel="noopener" onclick="event.stopPropagation()" aria-label="Kirim WA ke ${esc(st.name)}" class="tc-wa w-9 h-9 rounded-full border bg-white flex items-center justify-center shrink-0" style="border-color:var(--color-border);color:var(--color-success)"><i class="fa-brands fa-whatsapp text-base" aria-hidden="true"></i></a>`;
+            waBtn = `<a href="https://wa.me/${phone}?text=${msg}" target="_blank" rel="noopener" aria-label="Kirim WA ke ${esc(st.name)}" class="tc-wa w-11 h-11 rounded-full border bg-white flex items-center justify-center shrink-0" style="border-color:var(--color-border);color:var(--color-success)"><i class="fa-brands fa-whatsapp text-base" aria-hidden="true"></i></a>`;
           } else {
-            waBtn = `<button onclick="event.stopPropagation(); customAlert('Data Tidak Lengkap', 'Nomor WA belum terdaftar di database.', 'warning')" aria-label="WA belum terdaftar untuk ${esc(st.name)}" class="tc-wa w-9 h-9 rounded-full border bg-white flex items-center justify-center shrink-0" style="border-color:var(--color-border);color:oklch(0.75 0.02 260)"><i class="fa-brands fa-whatsapp text-base" aria-hidden="true"></i></button>`;
+            waBtn = `<button type="button" onclick="customAlert('Data Tidak Lengkap', 'Nomor WA belum terdaftar di database.', 'warning')" aria-label="WA belum terdaftar untuk ${esc(st.name)}" class="tc-wa w-11 h-11 rounded-full border bg-white flex items-center justify-center shrink-0" style="border-color:var(--color-border);color:oklch(0.75 0.02 260)"><i class="fa-brands fa-whatsapp text-base" aria-hidden="true"></i></button>`;
           }
 
           let alertStatus = '';
           let progressPct = 0;
           if (st.target > 0) progressPct = Math.min(100, Math.round(((st.todayRead || 0) / st.target) * 100));
-          if (isUdzur) {
-            alertStatus = `<span class="flex items-center gap-1" style="color:oklch(0.55 0.18 350)"><i class="fa-solid fa-bed text-[11px]" aria-hidden="true"></i> Udzur (${esc(st.udzurStatus)})</span>`;
-          } else if (st.hasReadToday) {
+          if (st.hasReadToday) {
             alertStatus = `<span class="flex items-center gap-1" style="color:var(--color-success)"><i class="fa-solid fa-circle-check text-[11px]" aria-hidden="true"></i> ${st.todayRead}/${st.target || 0} hal (${progressPct}%)</span>`;
+          } else if (isUdzur) {
+            alertStatus = `<span class="flex items-center gap-1" style="color:oklch(0.55 0.18 350)"><i class="fa-solid fa-bed text-[11px]" aria-hidden="true"></i> Udzur (${esc(st.udzurStatus)})</span>`;
           } else {
             alertStatus = `<span class="flex items-center gap-1" style="color:var(--color-muted)"><i class="fa-solid fa-circle-xmark text-[11px]" aria-hidden="true"></i> Belum Setor (0/${st.target || 0} hal)</span>`;
           }
 
           return `
-          <div class="tc-card bg-white border rounded-[var(--radius-lg)] p-4 flex items-center justify-between cursor-pointer" style="border-color:var(--color-border);${leftRule}" role="button" tabindex="0" aria-label="Buka riwayat ${esc(st.name)}" onclick="openHistoryModal('${esc(st.id)}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openHistoryModal('${esc(st.id)}')}">
-            <div class="flex-1 min-w-0">
+          <div class="tc-card bg-white border rounded-[var(--radius-lg)] p-4 flex items-center justify-between" style="border-color:var(--color-border);${leftRule}">
+            <button type="button" class="tc-history flex-1 min-w-0 text-left bg-transparent rounded-xl cursor-pointer" style="min-height:44px" data-student-id="${esc(st.id)}" aria-label="Buka riwayat ${esc(st.name)}">
               <p class="tc-name font-semibold text-sm leading-tight" style="color:var(--color-ink)">${esc(st.name)}${warningBadge}${udzurBadge}${khatamBadge}</p>
               <div class="flex items-center gap-2 text-[11px] font-semibold flex-wrap mt-1">
                 <span class="px-2 py-0.5 rounded-full border text-[11px] tabular-nums" style="background:oklch(0.97 0.02 240);color:var(--color-accent);border-color:oklch(0.92 0.06 240)">Hal ${st.lastPage}</span>
                 ${alertStatus}
               </div>
-            </div>
+            </button>
             <div class="shrink-0 ml-3">
               ${waBtn}
             </div>
           </div>`;
         };
 
-        if (atRiskGroup.length > 0 && (sortOption === 'perhatian' || currentTeacherFilter === 'Semua')) {
+        if (atRiskGroup.length > 0 && sortOption === 'perhatian') {
           html += `<div class="flex items-center gap-3 mb-2 mt-1"><h4 class="text-[10px] font-bold tracking-[0.14em] uppercase shrink-0" style="color:var(--color-danger)"><i class="fa-solid fa-triangle-exclamation mr-1" aria-hidden="true"></i> Perlu Perhatian (${atRiskGroup.length})</h4><span class="h-px flex-1" style="background:var(--color-border)" aria-hidden="true"></span></div>`;
           html += `<div class="space-y-3">`;
           atRiskGroup.forEach(st => { html += renderStudentCard(st); });
@@ -4550,7 +4721,11 @@
         }
       }
 
-      document.getElementById('tcStudentList').innerHTML = html;
+      const studentList = document.getElementById('tcStudentList');
+      studentList.innerHTML = html;
+      studentList.querySelectorAll('.tc-history').forEach(btn => {
+        btn.addEventListener('click', () => openHistoryModal(btn.dataset.studentId));
+      });
     }
 
     function generateGroupReport() {
@@ -4564,13 +4739,16 @@
       const udzurList = [];
       
       filteredStudents.forEach(st => {
-        if (st.udzurStatus) {
-          udzurList.push(`${st.name} (${st.udzurStatus})`);
-        } else if (st.hasReadToday) {
+        if (st.hasReadToday) {
           const tgtStr = st.target > 0 ? ` [${st.todayRead || 0}/${st.target} hal]` : '';
-          doneList.push(`${st.name} (Hal ${st.lastPage}${tgtStr})`);
+          const udzurStr = st.udzurStatus ? ` · Udzur ${st.udzurStatus}` : '';
+          doneList.push(`${st.name} (Hal ${st.lastPage}${tgtStr}${udzurStr})`);
+        } else if (st.udzurStatus) {
+          udzurList.push(`${st.name} (${st.udzurStatus})`);
         } else {
-          const atRiskStr = st.isAtRisk ? ` ⚠️ ${st.daysSinceLastRead} hari` : '';
+          const atRiskStr = st.isAtRisk
+            ? (Number(st.daysSinceLastRead) >= 999 ? ' ⚠️ Belum ada setoran terbaru' : ` ⚠️ ${st.daysSinceLastRead} hari`)
+            : '';
           notDoneList.push(`${st.name}${atRiskStr}`);
         }
       });
@@ -4632,7 +4810,8 @@
     }
 
     async function confirmWeeklyRangeReport() {
-      if (!teacherDataCache || !filteredStudents) return;
+      if (!teacherDataCache || teacherReportPending || currentUser?.role !== 'guru') return;
+      const teacherUser = currentUser;
       const fromVal = document.getElementById('tcRangeFrom').value;
       const toVal = document.getElementById('tcRangeTo').value;
       const errEl = document.getElementById('tcRangeError');
@@ -4653,14 +4832,20 @@
         errEl.classList.remove('hidden');
         return;
       }
+      if ((Date.parse(toVal) - Date.parse(fromVal)) / 86400000 + 1 > 366) {
+        errEl.textContent = 'Rentang maksimal 366 hari.';
+        errEl.classList.remove('hidden');
+        return;
+      }
       errEl.classList.add('hidden');
 
       const selectedHalaqah = document.getElementById('tcHalaqahSelect').value;
+      teacherReportPending = true;
       showLoading('Menyusun rekap...');
       try {
         const res = await gscript.teacherReportRange(fromVal, toVal);
-        hideLoading();
-        if (!res || !res.students) throw new Error('Data rekap kosong.');
+        if (currentUser !== teacherUser) return;
+        if (!res || !Array.isArray(res.students)) throw new Error('Data rekap kosong.');
 
         let students = res.students;
         if (selectedHalaqah !== 'Semua') {
@@ -4685,16 +4870,23 @@
 
         report += `\nJazakumullah khairan atas istiqomahnya! 🌟✨`;
 
+        if (currentUser !== teacherUser) return;
         await navigator.clipboard.writeText(report);
+        if (currentUser !== teacherUser) return;
         showToast("✅ Rekap rentang berhasil disalin!", 'success');
         closeModal('modalWeeklyRange');
       } catch (err) {
-        hideLoading();
+        if (currentUser !== teacherUser) return;
         const msg = (err && err.message) ? err.message : String(err);
         if (msg.includes('does not exist') || msg.includes('Could not find the function')) {
           customAlert('Belum Terpasang', 'Jalankan patch_teacher_report_range.sql di Supabase SQL Editor terlebih dahulu.', 'warning');
         } else {
           customAlert('Gagal', msg, 'error');
+        }
+      } finally {
+        if (currentUser === teacherUser) {
+          teacherReportPending = false;
+          hideLoading();
         }
       }
     }
@@ -4744,7 +4936,38 @@
       
       document.getElementById('histList').innerHTML = html;
       openModal('modalHistory');
+      requestAnimationFrame(() => document.getElementById('tcHistoryCloseBtn').focus());
     }
+
+    function focusTeacherHistoryTrigger() {
+      if (currentUser?.role !== 'guru') return;
+      if (document.getElementById('mainAppView').classList.contains('hidden')) return;
+      if (document.getElementById('teacherView').classList.contains('hidden')) return;
+      if (!document.getElementById('modalHistory').classList.contains('hidden')) return;
+      if (document.getElementById('loadingOverlay').style.display !== 'none') return;
+      if (document.querySelector('.modal-overlay:not(.hidden)')) return;
+      const id = currentTeacherStudent?.id;
+      const card = Array.from(document.querySelectorAll('.tc-history')).find(btn => btn.dataset.studentId === id);
+      (card || document.getElementById('tcSearchInput')).focus();
+    }
+
+    document.getElementById('modalHistory').addEventListener('keydown', event => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeModal('modalHistory');
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const modal = document.getElementById('modalHistory');
+      const focusable = Array.from(modal.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), a[href]'))
+        .filter(el => el.getClientRects().length > 0);
+      if (!focusable.length) return;
+      if (event.shiftKey && document.activeElement === focusable[0]) {
+        event.preventDefault(); focusable[focusable.length - 1].focus();
+      } else if (!event.shiftKey && document.activeElement === focusable[focusable.length - 1]) {
+        event.preventDefault(); focusable[0].focus();
+      }
+    });
 
     function populateProgressModal() {
       const startPage = appProfile ? (appProfile.lastPageRead || 0) : 0;
