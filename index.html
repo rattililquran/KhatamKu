@@ -288,6 +288,14 @@
       border: 1px solid rgba(255, 255, 255, 1);
       box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.1);
     }
+    #modalProgressContent {
+      max-height: calc(100vh - 1rem);
+      max-height: calc(100dvh - 1rem);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: max(2rem, env(safe-area-inset-bottom));
+    }
 
     /* ===== Dzikir & Doa ===== */
     @font-face {
@@ -587,13 +595,13 @@
           <div class="skeleton h-8 w-36"></div>
           <div class="skeleton h-9 w-24 rounded-xl"></div>
         </div>
+        <div class="skeleton h-72 rounded-[1.75rem] mb-2"></div>
+        <div class="skeleton h-4 w-56 rounded-xl mb-6"></div>
         <div class="skeleton h-8 w-40 rounded-xl mb-3"></div>
-        <div class="grid grid-cols-2 gap-4 mb-5">
+        <div class="grid grid-cols-2 gap-4 mb-8">
           <div class="skeleton h-28 rounded-3xl"></div>
           <div class="skeleton h-28 rounded-3xl"></div>
         </div>
-        <div class="skeleton h-52 rounded-[1.75rem] mb-2"></div>
-        <div class="skeleton h-4 w-56 rounded-xl mb-8"></div>
         <div class="skeleton h-8 w-36 mb-6"></div>
         <div class="space-y-4 mb-8">
           <div class="skeleton h-36 rounded-[2rem]"></div>
@@ -612,28 +620,6 @@
         <button class="text-emerald-600 hover:text-emerald-700 transition-colors font-bold text-sm bg-white px-4 py-2 rounded-xl border border-emerald-100 shadow-sm" onclick="openRiwayatModal()"><i class="fa-solid fa-clock-rotate-left mr-1"></i> Riwayat</button>
       </div>
 
-      <!-- Progress khatam ke-X -->
-      <h3 class="font-bold text-[12px] text-slate-500 mb-3 tracking-widest uppercase">Progress Khatam Ke-<span id="uiKhatamCycle" class="font-black text-sky-600">1</span></h3>
-      <div class="grid grid-cols-2 gap-4 mb-5">
-        <!-- Card Aksi: Udzur -->
-        <button id="btnToggleUdzur" onclick="openModal('modalUdzur')" class="glass-card-dark p-5 rounded-3xl relative overflow-hidden text-left w-full transition-all">
-          <div class="absolute -right-2 -bottom-2 opacity-10 text-6xl"><i class="fa-solid fa-bed"></i></div>
-          <div class="text-sky-200 mb-2 text-xl"><i class="fa-solid fa-bed"></i></div>
-          <div class="text-lg font-black text-white mb-1 tracking-tight">Udzur</div>
-          <div class="text-[11px] font-semibold text-sky-100 uppercase tracking-wider">Syar'i</div>
-        </button>
-        <!-- Card Aksi: Target -->
-        <button onclick="openModal('modalTarget')" class="glass-card-dark p-5 rounded-3xl relative overflow-hidden text-left w-full transition-all">
-          <div class="absolute -right-2 -bottom-2 opacity-10 text-6xl"><i class="fa-solid fa-bullseye"></i></div>
-          <div class="text-sky-200 mb-2 text-xl"><i class="fa-solid fa-bullseye"></i></div>
-          <div class="text-lg font-black text-white mb-1 tracking-tight">Target</div>
-          <div class="text-[11px] font-semibold text-sky-100 uppercase tracking-wider">Target Saya</div>
-        </button>
-      </div>
-      <!-- Hidden: preserve JS references -->
-      <span id="uiTotalProgressPct" class="hidden"></span>
-      <span id="uiDaysRemaining" class="hidden"></span>
-
       <!-- Gabungan: Posisi Bacaan + Progress Hari Ini -->
       <div class="relative overflow-hidden rounded-[1.75rem] shadow-lg mb-2" style="background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);">
         <!-- Decorative circles -->
@@ -641,9 +627,9 @@
         <div class="absolute -bottom-5 -left-5 w-24 h-24 bg-black/10 rounded-full"></div>
         <div class="relative z-10 p-5">
           <!-- Posisi Bacaan Terakhir -->
-          <div class="flex items-center justify-between mb-2">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
             <p class="text-[11px] font-black text-white uppercase tracking-widest">📖 Posisi Bacaan Terakhir</p>
-            <div class="flex items-center gap-1.5">
+            <div class="flex shrink-0 items-center gap-1.5">
               <button
                 onclick="openModal('modalCalibrate')"
                 class="flex items-center gap-1 text-[10px] font-bold text-white/70 hover:text-white bg-white/10 hover:bg-sky-500/40 border border-white/20 hover:border-sky-300/50 px-2.5 py-1 rounded-lg transition-all duration-200"
@@ -686,11 +672,33 @@
               </div>
             </div>
           </div>
-          <button id="btnLanjutkanBacaan" class="w-full py-3.5 rounded-2xl bg-red-500 hover:bg-red-600 border border-red-400/60 font-extrabold text-white text-sm tracking-widest transition-all shadow-sm" onclick="handleLanjutkanBacaan()">📖 LANJUTKAN BACAAN</button>
-          <button id="btnCatatManual" class="w-full mt-2.5 py-3 rounded-2xl bg-white/15 hover:bg-white/25 border border-white/40 font-extrabold text-white text-sm tracking-widest transition-all flex items-center justify-center gap-2" onclick="handleCatatManual()"><i class="fa-solid fa-pen-to-square text-xs"></i> CATAT MANUAL</button>
+          <button id="btnLanjutkanBacaan" class="w-full py-3.5 rounded-2xl bg-red-500 hover:bg-red-600 border border-red-400/60 font-extrabold text-white text-sm tracking-widest transition-all shadow-sm" onclick="handleLanjutkanBacaan()">📖 BACA MUSHAF DIGITAL</button>
+          <button id="btnCatatManual" class="w-full mt-2.5 py-3 rounded-2xl bg-white/15 hover:bg-white/25 border border-white/40 font-extrabold text-white text-sm tracking-widest transition-all flex items-center justify-center gap-2" onclick="handleCatatManual()"><i class="fa-solid fa-pen-to-square text-xs"></i> CATAT MUSHAF FISIK</button>
         </div>
       </div>
-      <p class="text-[11px] text-slate-400 font-medium mb-8 flex items-center gap-1.5 ml-2"><i class="fa-regular fa-clock"></i> Target harian akan direset setiap pukul 00:00 WIB</p>
+      <p class="text-[11px] text-slate-400 font-medium mb-6 flex items-center gap-1.5 ml-2"><i class="fa-regular fa-clock"></i> Target harian akan direset setiap pukul 00:00 WIB</p>
+
+      <!-- Progress khatam ke-X dan pengaturan pendukung -->
+      <h3 class="font-bold text-[12px] text-slate-500 mb-3 tracking-widest uppercase">Progress Khatam Ke-<span id="uiKhatamCycle" class="font-black text-sky-600">1</span></h3>
+      <div class="grid grid-cols-2 gap-4 mb-8">
+        <!-- Card Aksi: Udzur -->
+        <button id="btnToggleUdzur" onclick="openModal('modalUdzur')" class="glass-card-dark p-5 rounded-3xl relative overflow-hidden text-left w-full transition-all">
+          <div class="absolute -right-2 -bottom-2 opacity-10 text-6xl"><i class="fa-solid fa-bed"></i></div>
+          <div class="text-sky-200 mb-2 text-xl"><i class="fa-solid fa-bed"></i></div>
+          <div class="text-lg font-black text-white mb-1 tracking-tight">Udzur</div>
+          <div class="text-[11px] font-semibold text-sky-100 uppercase tracking-wider">Syar'i</div>
+        </button>
+        <!-- Card Aksi: Target -->
+        <button onclick="openModal('modalTarget')" class="glass-card-dark p-5 rounded-3xl relative overflow-hidden text-left w-full transition-all">
+          <div class="absolute -right-2 -bottom-2 opacity-10 text-6xl"><i class="fa-solid fa-bullseye"></i></div>
+          <div class="text-sky-200 mb-2 text-xl"><i class="fa-solid fa-bullseye"></i></div>
+          <div class="text-lg font-black text-white mb-1 tracking-tight">Target</div>
+          <div class="text-[11px] font-semibold text-sky-100 uppercase tracking-wider">Target Saya</div>
+        </button>
+      </div>
+      <!-- Hidden: preserve JS references -->
+      <span id="uiTotalProgressPct" class="hidden"></span>
+      <span id="uiDaysRemaining" class="hidden"></span>
 
       <!-- Hidden: preserve JS references -->
       <span id="uiKhatamCount" class="hidden">0</span>
@@ -1354,9 +1362,12 @@
 
   <!-- Modal: Update Progress (Sistem Halaman Terakhir) -->
   <div id="modalProgress" class="fixed inset-0 z-50 modal-overlay hidden flex items-end justify-center sm:items-center">
-    <div class="modal-content w-full max-w-md rounded-t-[2.5rem] sm:rounded-3xl p-8 transform transition-transform translate-y-full text-slate-800" id="modalProgressContent">
+    <div class="modal-content w-full max-w-md rounded-t-[2.5rem] sm:rounded-3xl p-5 sm:p-8 transform transition-transform translate-y-full text-slate-800" id="modalProgressContent">
       <div class="flex justify-between items-center mb-5 border-b border-slate-100 pb-5">
-        <h3 class="text-2xl font-black tracking-tight">Lanjutkan Bacaan</h3>
+        <div>
+          <h3 class="text-2xl font-black tracking-tight">Catat Bacaan</h3>
+          <p class="text-xs font-medium text-slate-500 mt-0.5">Untuk bacaan dari mushaf fisik</p>
+        </div>
         <button onclick="closeModal('modalProgress')" class="text-slate-400 bg-slate-100 hover:bg-slate-200 w-10 h-10 rounded-full flex items-center justify-center transition-colors shadow-inner"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
@@ -4930,9 +4941,9 @@
           btnUdzur.className = 'glass-card-dark p-5 rounded-3xl relative overflow-hidden text-left w-full transition-all';
           btnUdzur.style.background = '';
           btnUdzur.onclick = () => openModal('modalUdzur');
-          // Tombol Lanjutkan: aktifkan kembali (cek target dulu)
+          // Tombol mushaf digital: aktifkan kembali setelah udzur berakhir
           if (btnLanjut) {
-            btnLanjut.textContent = '📖 LANJUTKAN BACAAN';
+            btnLanjut.textContent = '📖 BACA MUSHAF DIGITAL';
             btnLanjut.className = 'w-full py-3.5 rounded-2xl bg-red-500 hover:bg-red-600 border border-red-400/60 font-extrabold text-white text-sm tracking-widest transition-all shadow-sm';
             btnLanjut.onclick = () => handleLanjutkanBacaan();
           }
@@ -6378,7 +6389,7 @@
     }
 
     // ================================================================
-    // FITUR 1: handleLanjutkanBacaan — cek target sebelum buka modal
+    // FITUR 1: lanjutkan membaca di mushaf digital
     // ================================================================
     function handleLanjutkanBacaan() {
       // Buka mushaf DIGITAL langsung di halaman lanjutan (halaman terakhir + 1)

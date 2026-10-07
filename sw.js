@@ -1,7 +1,7 @@
 // sw.js — KhatamKu Service Worker
 // Strategi: Cache-first untuk aset statis, Network-first untuk API
 
-const CACHE_NAME = 'khatamku-v29';
+const CACHE_NAME = 'khatamku-v30';
 const BASE = '/KhatamKu';
 
 // Aset yang di-cache saat install (app shell)
