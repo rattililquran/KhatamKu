@@ -372,7 +372,7 @@ function getBk(){ try{return JSON.parse(localStorage.getItem(bkKey())||"[]");}ca
 async function hasSession(){ try{ return !!(window.sb && (await sb.auth.getSession()).data.session); }catch(_){ return false; } }
 async function initBookmarks(){
   if(!(await hasSession()) || !window.gscript) return;
-  try{ (await gscript.listBookmarks()||[]).forEach(b=> bkMap[`${b.surah_id}:${b.ayat}`]=b.id); }catch(_){}
+  (await gscript.listBookmarks()||[]).forEach(b=> bkMap[`${b.surah_id}:${b.ayat}`]=b.id);
 }
 function refreshBk(){
   if(!curAyat) return;
@@ -387,7 +387,7 @@ async function toggleBookmark(){
       if(key in bkMap){ await gscript.deleteBookmark(bkMap[key]); delete bkMap[key]; }
       else{ const row = await gscript.addBookmark(curAyat.s, curAyat.a); bkMap[key] = row.id; }
       refreshBk(); return;
-    }catch(e){ /* jatuh ke localStorage */ }
+    }catch(e){ toast("Bookmark gagal disimpan ke akun. Coba lagi saat koneksi pulih."); return; }
   }
   let bk = getBk(); const i = bk.findIndex(b=>b.v===key);
   if(i>=0) bk.splice(i,1); else bk.push({v:key,s:curAyat.s,a:curAyat.a});
@@ -407,7 +407,7 @@ async function loadIndex(){
 }
 async function getAllBookmarks(){
   if(window.gscript && await hasSession()){
-    try{ return (await gscript.listBookmarks()||[]).map(b=>({s:b.surah_id,a:b.ayat,id:b.id})); }catch(_){}
+    return (await gscript.listBookmarks()||[]).map(b=>({s:b.surah_id,a:b.ayat,id:b.id}));
   }
   return getBk().map(b=>({s:b.s,a:b.a}));
 }
@@ -416,7 +416,9 @@ async function openBkPanel(){
   syncBackdrop();
   const list = document.getElementById("bkList");
   list.innerHTML = '<div class="bk-empty">Memuat…</div>';
-  const items = await getAllBookmarks();
+  let items;
+  try{ items = await getAllBookmarks(); }
+  catch(_){ list.innerHTML = '<div class="bk-empty">Bookmark gagal dimuat. Periksa koneksi lalu buka panel ini lagi.</div>'; return; }
   if(!items.length){ list.innerHTML = '<div class="bk-empty">Belum ada bookmark. Ketuk ★ pada ayat untuk menyimpan.</div>'; return; }
   list.innerHTML = "";
   for(const it of items){
@@ -434,7 +436,8 @@ function hideBk(){ document.getElementById("bkPanel").classList.remove("show"); 
 async function removeBk(it){
   const key = it.s+":"+it.a;
   if(window.gscript && await hasSession() && it.id!=null){
-    try{ await gscript.deleteBookmark(it.id); delete bkMap[key]; return; }catch(_){}
+    try{ await gscript.deleteBookmark(it.id); delete bkMap[key]; return; }
+    catch(_){ toast("Bookmark gagal dihapus dari akun. Coba lagi saat koneksi pulih."); return; }
   }
   let bk = getBk(); const i = bk.findIndex(b=>b.v===key);
   if(i>=0){ bk.splice(i,1); localStorage.setItem(bkKey(), JSON.stringify(bk)); }
@@ -542,10 +545,10 @@ async function markRead(){
     "Ya Allah, rahmatilah aku dengan Al-Qur'an.");
   if(!ok) return;
   const btn=document.getElementById("markBtn"); btn.disabled=true;
-  if(!pendingProgressRequest || pendingProgressRequest.page!==page){
-    pendingProgressRequest={page,id:crypto.randomUUID()};
-  }
   try{
+    if(!pendingProgressRequest || pendingProgressRequest.page!==page){
+      pendingProgressRequest={page,id:gscript.createRequestId()};
+    }
     const r = await gscript.saveProgressUpdate(null, {lastPageInput: page, requestId:pendingProgressRequest.id});
     pendingProgressRequest=null;
     if(r.isKhatamNow){
@@ -562,15 +565,28 @@ async function markRead(){
 }
 
 // ── Daftar surat & pencarian ──
-let SURAHS=null, SEARCH=null, _searchT=null;
-async function loadSurahs(){ if(!SURAHS) SURAHS = await (await fetch("quran/surah_index.json")).json(); return SURAHS; }
-async function loadSearch(){ if(!SEARCH) SEARCH = await (await fetch("quran/search.json")).json(); return SEARCH; }
-async function openNav(){ document.getElementById("navPanel").classList.add("show"); syncBackdrop(); await loadSurahs(); doSearch(document.getElementById("q").value||""); }
+let SURAHS=null, SEARCH=null, _searchT=null, _searchToken=0;
+async function loadSurahs(){
+  if(!SURAHS){ const r=await fetch("quran/surah_index.json"); if(!r.ok) throw new Error("Daftar surat gagal dimuat."); SURAHS=await r.json(); }
+  return SURAHS;
+}
+async function loadSearch(){
+  if(!SEARCH){ const r=await fetch("quran/search.json"); if(!r.ok) throw new Error("Indeks pencarian gagal dimuat."); SEARCH=await r.json(); }
+  return SEARCH;
+}
+async function openNav(){
+  document.getElementById("navPanel").classList.add("show"); syncBackdrop();
+  const list=document.getElementById("navList"); list.innerHTML='<div class="bk-empty">Memuat…</div>';
+  try{ await loadSurahs(); doSearch(document.getElementById("q").value||""); }
+  catch(_){ list.innerHTML='<div class="bk-empty">Daftar surat gagal dimuat. Periksa koneksi lalu coba lagi.</div>'; }
+}
 function hideNav(){ document.getElementById("navPanel").classList.remove("show"); syncBackdrop(); }
 function gotoSurah(pg){ hideNav(); go(pg); }
 function esc(s){ return (s||"").replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])); }
 
 function doSearch(qraw){
+  clearTimeout(_searchT);
+  const searchToken=++_searchToken;
   const q=(qraw||"").trim().toLowerCase();
   const list=document.getElementById("navList"); list.innerHTML="";
   const m=q.match(/^(\d{1,3})[:\s.](\d{1,3})$/);      // a) referensi langsung s:a
@@ -592,9 +608,10 @@ function doSearch(qraw){
     const h=document.createElement("div"); h.className="sec"; h.textContent="Dalam Terjemah";
     const holder=document.createElement("div"); list.appendChild(h); list.appendChild(holder);
     holder.innerHTML='<div class="bk-empty">mencari…</div>';
-    clearTimeout(_searchT);
     _searchT=setTimeout(async()=>{
-      await loadSearch();
+      try{ await loadSearch(); }
+      catch(_){ if(searchToken===_searchToken && holder.isConnected) holder.innerHTML='<div class="bk-empty">Pencarian gagal dimuat. Periksa koneksi lalu coba lagi.</div>'; return; }
+      if(searchToken!==_searchToken || !holder.isConnected) return;
       const hits=[]; for(const it of SEARCH){ if(it.t.toLowerCase().includes(q)){ hits.push(it); if(hits.length>=40) break; } }
       holder.innerHTML="";
       if(!hits.length){ holder.innerHTML='<div class="bk-empty">Tak ada ayat cocok.</div>'; return; }
@@ -631,7 +648,7 @@ window.addEventListener("resize", ()=>{ clearTimeout(_rz); _rz=setTimeout(()=>{ 
 
 document.getElementById("jump").addEventListener("change",e=>{ const p=parseInt(e.target.value); if(p) go(p); });
 go(page);
-initBookmarks();
+initBookmarks().catch(()=>toast("Bookmark akun belum dapat disinkronkan. Periksa koneksi."));
 loadIndex().catch(()=>{});
 checkUdzur();
 // immersive (fullscreen fokus) sebagai default; kontrol tampil sebentar lalu sembunyi

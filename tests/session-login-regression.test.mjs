@@ -14,6 +14,9 @@ async function loadApi(seed = {}) {
   let signOutCalls = 0;
   let capturedOptions;
   const rpcCalls = [];
+  const cryptoApi = seed.legacyCrypto
+    ? { getRandomValues: bytes => bytes.fill(0) }
+    : { randomUUID: () => '20000000-0000-4000-8000-000000000001' };
   const fakeSb = {
     functions: { invoke: async () => ({ data: {
       access_token: 'access', refresh_token: 'refresh', user: { id: 'u1', role: 'murid' }, dashboardData: null,
@@ -33,10 +36,10 @@ async function loadApi(seed = {}) {
     removeItem: key => map.delete(key),
   });
   const context = {
-    window: { supabase: { createClient: (_url, _key, options) => { capturedOptions = options; return fakeSb; } } },
+    window: { crypto: cryptoApi, supabase: { createClient: (_url, _key, options) => { capturedOptions = options; return fakeSb; } } },
     localStorage: makeStorage(local),
     sessionStorage: makeStorage(session),
-    crypto: { randomUUID: () => '20000000-0000-4000-8000-000000000001' },
+    crypto: cryptoApi,
     console,
   };
   vm.runInNewContext(`${source}\nglobalThis.api = gscript;`, context);
@@ -96,4 +99,10 @@ test('progress RPC always receives an idempotency UUID', async () => {
     p_date: null,
     p_request_id: '20000000-0000-4000-8000-000000000001',
   });
+});
+
+test('progress request IDs stay valid UUIDs on browsers without randomUUID', async () => {
+  const { api } = await loadApi({ legacyCrypto: true });
+
+  assert.equal(api.createRequestId(), '00000000-0000-4000-8000-000000000000');
 });

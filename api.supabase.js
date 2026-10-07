@@ -57,6 +57,21 @@ async function rpc(fn, args = {}) {
   return data;
 }
 
+function createRequestId() {
+  if (window.crypto && typeof window.crypto.randomUUID === "function") {
+    return window.crypto.randomUUID();
+  }
+  if (!window.crypto || typeof window.crypto.getRandomValues !== "function") {
+    throw new Error("Browser ini tidak mendukung ID aman untuk pencatatan. Perbarui browser lalu coba lagi.");
+  }
+  const bytes = new Uint8Array(16);
+  window.crypto.getRandomValues(bytes);
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
 // ── AUTH via Edge Function `auth` ───────────────────────────
 async function invokeAuth(payload) {
   const { data, error } = await sb.functions.invoke("auth", { body: payload });
@@ -117,8 +132,9 @@ const gscript = {
       p_start: parseInt(p.startPage) || 0,
       p_last: parseInt(p.lastPageInput) || 0,
       p_date: p.date || null,
-      p_request_id: p.requestId || crypto.randomUUID(),
+      p_request_id: p.requestId || createRequestId(),
     }),
+  createRequestId,
 
   saveUserTarget: (_userId, t) =>
     rpc("app_save_target", { p_daily: parseInt(t.dailyTargetPages) || 0 }),
