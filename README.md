@@ -8,6 +8,12 @@ Frontend statis untuk aplikasi pelacak bacaan Al-Qur'an.
 - `../supabase/` berisi migrasi SQL dan Edge Functions. Folder backend ini berada di luar repository Git frontend; perubahan di sana tidak ikut dalam commit dari `github/`.
 - Jalankan perintah Supabase dari root workspace `khatamku/`, yaitu direktori yang berisi folder `supabase/`. Jika dijalankan dari dalam `supabase/`, CLI mencari path fungsi yang keliru.
 
+## Konten Potret
+
+- Naskah bawaan berada di [`potret-content.js`](potret-content.js), dengan sumber bernomor yang dapat dibuka dari detail artikel.
+- Gunakan [`POTRET-EDITORIAL.md`](POTRET-EDITORIAL.md) saat menambah atau menyunting artikel agar dalil, status riwayat, dan analisis tetap terpisah dan dapat dilacak.
+- Baris `public.konten` bernama `potret_<id>` dapat menggantikan satu artikel bawaan dengan objek JSON ber-ID sama. Artikel lain tetap memakai naskah lokal. `Potret.txt` adalah arsip Apps Script dan tidak dimuat situs.
+
 ## Pemeriksaan frontend
 
 ```sh

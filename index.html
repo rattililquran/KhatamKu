@@ -25,6 +25,7 @@
   <!-- API adapter: Supabase (pengganti Google Apps Script) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="api.supabase.js"></script>
+  <script src="potret-content.js"></script>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -2245,8 +2246,9 @@
         </p>
         <div class="text-[14px] text-slate-600 leading-relaxed font-medium whitespace-pre-wrap" id="potretDetailIsi"></div>
         <div id="potretDetailReferensi" class="mt-6 pt-5 border-t border-slate-100 hidden">
-          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Referensi</p>
-          <p class="text-xs text-slate-500 italic font-medium" id="potretDetailRefText"></p>
+          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Sumber &amp; status riwayat</p>
+          <p class="text-[11px] text-slate-400 mb-3">Nomor sumber mengikuti penanda dalam artikel. Buka tautan untuk memeriksa teks asal.</p>
+          <div class="space-y-3" id="potretDetailRefText"></div>
         </div>
       </div>
     </div>
@@ -2544,158 +2546,25 @@
     }
 
     // ===== Potret: Load & Tampilkan =====
-    let potretData = []; // Data dari spreadsheet
+    let potretData = []; // Data dari Supabase, atau naskah lokal saat server kosong
     let potretLoaded = false;
     let currentPotretFilter = 'Semua';
 
-    // Data dummy fallback (jika spreadsheet belum dikonfigurasi)
-    const POTRET_DUMMY = [
-      {
-        id: 'p1',
-        judul: 'Adab Membaca Al-Quran yang Perlu Diketahui',
-        kategori: 'Panduan',
-        penulis: 'Tim Rattilil Quran',
-        tanggal: '2026-01-10',
-        ringkasan: 'Panduan lengkap adab sebelum dan saat membaca Al-Quran agar bacaan lebih berkah dan khusyuk.',
-        isi: `Membaca Al-Quran bukan sekadar melafazkan huruf-hurufnya, tetapi merupakan ibadah yang memerlukan adab dan persiapan batin yang baik.
-
-1. BERSUCI TERLEBIH DAHULU
-Sebelum membaca Al-Quran, pastikan kamu dalam keadaan suci dari hadats besar maupun kecil. Berwudhu adalah sunnah yang sangat dianjurkan.
-
-2. MEMILIH TEMPAT YANG BERSIH DAN TENANG
-Carilah tempat yang tenang, bersih, dan bebas dari gangguan. Lingkungan yang kondusif membantu konsentrasi dan kekhusyukan.
-
-3. MENGHADAP KIBLAT
-Disunnahkan untuk menghadap kiblat saat membaca Al-Quran sebagai bentuk ta'zhim (pengagungan) kepada Kalamullah.
-
-4. MEMBACA TA'AWWUDZ DAN BASMALAH
-Mulailah dengan membaca: "A'ûdzu billâhi minasy syaithânir rajîm" kemudian "Bismillâhir rahmânir rahîm" sebelum memulai bacaan.
-
-5. MEMBACA DENGAN TARTIL
-Allah ﷻ berfirman dalam QS. Al-Muzzammil: 4, "Rattil-il Qur'âna tartîlâ" — bacalah Al-Quran dengan tartil (perlahan dan jelas). Tartil lebih utama daripada membaca cepat tetapi tidak memerhatikan makhraj dan tajwid.
-
-6. TADABBUR (MERENUNGI MAKNANYA)
-Berusahalah untuk merenungi makna setiap ayat yang dibaca. Inilah tujuan utama Al-Quran diturunkan. Jika ada ayat tentang azab, berhentilah sejenak dan berlindung kepada Allah; jika ada ayat tentang rahmat, berhentilah dan mohonlah rahmat-Nya.`,
-        referensi: 'QS. Al-Muzzammil: 4 | Shahih Muslim no. 798 | Al-Tibyan fi Adabi Hamalatil Quran - Imam Nawawi'
-      },
-      {
-        id: 'p2',
-        judul: 'Abdullah ibn Mas\'ud: Sahabat yang Bacaannya Paling Dicintai Nabi',
-        kategori: 'Kisah Sahabat',
-        penulis: 'Tim Rattilil Quran',
-        tanggal: '2026-01-20',
-        ringkasan: 'Kisah mengharukan bagaimana Abdullah ibn Mas\'ud membaca Al-Quran hingga membuat Nabi ﷺ menitikkan air mata.',
-        isi: `Abdullah ibn Mas'ud radhiyallahu 'anhu adalah salah satu sahabat Nabi ﷺ yang paling awal masuk Islam dan dikenal memiliki hafalan Al-Quran yang luar biasa.
-
-Suatu hari, Nabi ﷺ berkata kepadanya, "Bacakanlah Al-Quran untukku, wahai Ibnu Mas'ud." Abdullah pun heran, "Ya Rasulallah, bagaimana aku membacakan Al-Quran kepadamu, sedangkan Al-Quran diturunkan kepadamu?"
-
-Nabi ﷺ menjawab, "Aku senang mendengarnya dari orang lain."
-
-Maka Abdullah ibn Mas'ud pun mulai membaca surah An-Nisa'. Ketika sampai pada ayat 41 yang berbunyi:
-
-"Maka bagaimanakah (keadaan orang kafir nanti), apabila Kami mendatangkan seseorang saksi (Rasul) dari tiap-tiap umat dan Kami mendatangkan kamu (Muhammad) sebagai saksi atas mereka itu (sebagai umatmu)."
-
-Nabi ﷺ berkata, "Cukup, cukup." Abdullah pun menoleh dan melihat kedua mata Rasulullah ﷺ bercucuran air mata.
-
-Pelajaran dari kisah ini:
-• Al-Quran yang dibaca dengan tartil dan penuh penghayatan mampu menyentuh hati siapapun, bahkan Nabi ﷺ sendiri.
-• Mendengarkan bacaan Al-Quran dari orang lain adalah sunnah yang dicontohkan Nabi ﷺ.
-• Menghayati makna Al-Quran adalah kunci agar hati menjadi lembut.`,
-        referensi: 'HR. Bukhari no. 5055 | HR. Muslim no. 800'
-      },
-      {
-        id: 'p3',
-        judul: 'Imam Asy-Syafi\'i: Khatam Dua Kali Sehari di Bulan Ramadhan',
-        kategori: 'Kisah Ulama',
-        penulis: 'Tim Rattilil Quran',
-        tanggal: '2026-02-05',
-        ringkasan: 'Kesungguhan Imam Asy-Syafi\'i rahimahullah dalam membaca Al-Quran di bulan Ramadhan yang luar biasa.',
-        isi: `Imam Muhammad ibn Idris Asy-Syafi'i rahimahullah adalah salah satu imam besar dalam sejarah Islam. Selain dikenal sebagai ulama fiqih yang luar biasa, beliau juga seorang ahli Al-Quran yang luar biasa dedikasinya.
-
-Ar-Rabi' ibn Sulaiman, murid setia Imam Asy-Syafi'i, meriwayatkan:
-
-"Imam Asy-Syafi'i mengkhatamkan Al-Quran sebanyak enam puluh kali di bulan Ramadhan, dan itu semua dilakukan dalam shalat."
-
-Artinya, beliau khatam Al-Quran dua kali sehari — sekali di siang hari dan sekali di malam hari — sepanjang bulan Ramadhan!
-
-Bagaimana beliau bisa mencapai hal ini?
-
-Imam Asy-Syafi'i mengatur waktunya dengan sangat disiplin. Beliau membagi hari menjadi tiga bagian: sepertiga untuk menulis ilmu, sepertiga untuk ibadah, dan sepertiga untuk beristirahat. Namun di bulan Ramadhan, porsi untuk Al-Quran ditingkatkan drastis.
-
-Beliau berkata, "Seandainya manusia mau merenungi surah Al-Quran ini (Al-Ashr), niscaya ia mencukupi mereka."
-
-Pelajaran:
-• Kesibukan bukan halangan untuk memperbanyak tilawah.
-• Konsistensi setiap hari jauh lebih baik daripada banyak sekaligus tapi tidak rutin.
-• Ramadhan adalah momentum emas untuk melipatgandakan tilawah Al-Quran.`,
-        referensi: 'Manaqib Asy-Syafi\'i karya Al-Baihaqi | Siyar A\'lam An-Nubala karya Adz-Dzahabi'
-      },
-      {
-        id: 'p4',
-        judul: 'Keutamaan Membaca Al-Quran Setiap Hari',
-        kategori: 'Panduan',
-        penulis: 'Tim Rattilil Quran',
-        tanggal: '2026-02-15',
-        ringkasan: 'Dalil-dalil shahih tentang keutamaan konsisten membaca Al-Quran setiap hari, meski hanya sedikit.',
-        isi: `Banyak dari kita yang bertanya: "Apakah lebih baik membaca Al-Quran sedikit setiap hari, atau banyak sekaligus tapi tidak rutin?"
-
-Jawabannya ada dalam sabda Nabi ﷺ:
-
-"Amalan yang paling dicintai Allah adalah amalan yang dilakukan secara terus-menerus meskipun sedikit." (HR. Bukhari dan Muslim)
-
-INI YANG PERLU KAMU TAHU TENTANG MEMBACA QURAN SETIAP HARI:
-
-🌟 1 HURUF = 10 KEBAIKAN
-Nabi ﷺ bersabda: "Barangsiapa membaca satu huruf dari Kitabullah (Al-Quran), maka baginya satu kebaikan, dan satu kebaikan itu dibalas sepuluh kali lipatnya." (HR. Tirmidzi)
-
-📖 AL-QURAN AKAN MEMBERI SYAFA'AT
-Nabi ﷺ bersabda: "Bacalah Al-Quran, karena sesungguhnya ia akan datang pada hari Kiamat sebagai pemberi syafa'at bagi para pembacanya." (HR. Muslim)
-
-🏆 DERAJAT TERGANTUNG BACAAN
-"Akan dikatakan kepada pembaca Al-Quran: Bacalah dan naiklah, bacalah dengan tartil sebagaimana kamu membacanya dengan tartil di dunia, karena sesungguhnya tempatmu (di surga) adalah di akhir ayat yang kamu baca." (HR. Abu Dawud, Tirmidzi)
-
-TIPS AGAR KONSISTEN:
-• Jadikan tilawah sebagai rutinitas, bukan pilihan — misalnya setelah Subuh atau Isya.
-• Mulailah dengan target kecil: 2-5 halaman per hari. Bertahap lebih baik daripada langsung banyak lalu berhenti.
-• Gunakan KhatamKu untuk mencatat dan memantau progresmu setiap hari! 📲`,
-        referensi: 'HR. Bukhari no. 6464 | HR. Muslim no. 782 | HR. Tirmidzi no. 2910 | HR. Abu Dawud no. 1464'
-      },
-      {
-        id: 'p5',
-        judul: 'Utsman ibn Affan: Tidak Tidur Sebelum Khatam',
-        kategori: 'Kisah Sahabat',
-        penulis: 'Tim Rattilil Quran',
-        tanggal: '2026-03-01',
-        ringkasan: 'Kisah luar biasa Sayyidina Utsman ibn Affan yang sering mengkhatamkan Al-Quran dalam satu malam shalat.',
-        isi: `Utsman ibn Affan radhiyallahu 'anhu, khalifah ketiga umat Islam, adalah sosok yang sangat dekat dengan Al-Quran. Beliau termasuk orang yang paling sering khatam Al-Quran di antara para sahabat.
-
-Suatu hal yang sangat terkenal dari beliau adalah bahwa beliau sering mengkhatamkan Al-Quran seluruhnya dalam satu rakaat shalat witir di malam hari.
-
-Imam Nawawi dalam kitab At-Tibyan menjelaskan: "Utsman ibn Affan biasa mengkhatamkan Al-Quran dalam satu rakaat, dan ini adalah sebuah kekhususan bagi orang-orang yang telah mencapai tingkat hafalan dan kualitas bacaan yang tinggi."
-
-MUSHAF UTSMANI — WARISAN TERBESAR
-
-Selain tilawahnya, warisan terbesar Utsman ibn Affan untuk dunia Islam adalah musyawarah dan penyusunan standarisasi penulisan Al-Quran (Mushaf Utsmani) yang hingga kini menjadi acuan seluruh mushaf di dunia.
-
-Beliau pernah berkata: "Seandainya hati kita bersih, niscaya kita tidak akan pernah kenyang dari membaca Kalamullah."
-
-Makna dari perkataan ini sangat dalam: jiwa yang bersih selalu haus akan Al-Quran. Maka jika kita merasa malas membaca Al-Quran, itu adalah sinyal untuk memperbaiki hati kita.
-
-Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka bumi. Amin.`,
-        referensi: 'At-Tibyan fi Adabi Hamalatil Quran - Imam Nawawi | Siyar A\'lam An-Nubala - Adz-Dzahabi'
-      }
-    ];
+    // Naskah editorial lokal dapat diperbarui per artikel melalui tabel konten.
+    const POTRET_LOCAL = window.POTRET_ARTICLES || [];
 
     function loadPotretData() {
-      // Coba load dari server Apps Script, fallback ke dummy jika gagal / offline
+      // Baris Supabase menggantikan artikel lokal dengan ID sama; artikel lain tetap tersedia.
       gscript.getPotretContent()
         .then(data => {
-          potretData = (data && data.length > 0) ? data : POTRET_DUMMY;
+          const articles = new Map(POTRET_LOCAL.map(article => [article.id, article]));
+          if (Array.isArray(data)) data.forEach(article => articles.set(article.id, article));
+          potretData = [...articles.values()].filter(article => article.aktif !== false);
           potretLoaded = true;
           renderPotretList(potretData, currentPotretFilter);
         })
         .catch(() => {
-          potretData = POTRET_DUMMY;
+          potretData = POTRET_LOCAL;
           potretLoaded = true;
           renderPotretList(potretData, currentPotretFilter);
         });
@@ -2744,33 +2613,47 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
         'Kisah Ulama': { bg: 'bg-emerald-50', border: 'border-emerald-100', badge: 'bg-emerald-100 text-emerald-700', icon: 'fa-graduation-cap', iconBg: 'bg-emerald-500' },
       };
 
-      let html = '<div id="potretSkeleton" class="hidden"></div>';
-      filtered.forEach(p => {
+      const cards = filtered.map(p => {
         const c = kategoriColors[p.kategori] || kategoriColors['Panduan'];
-        const tanggal = p.tanggal ? new Date(p.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
-        html += `
-        <div onclick="openPotretDetail('${p.id}')" class="glass-card rounded-[1.75rem] p-5 cursor-pointer border ${c.border} ${c.bg} hover:shadow-md transition-all">
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = `glass-card block w-full text-left rounded-[1.75rem] p-5 cursor-pointer border ${c.border} ${c.bg} hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-500 transition-all`;
+        // Template ini hanya memuat kelas dari daftar kategori tetap; seluruh data artikel memakai textContent.
+        card.innerHTML = `
           <div class="flex items-start gap-4">
             <div class="w-12 h-12 ${c.iconBg} rounded-2xl flex items-center justify-center shrink-0 shadow-sm">
               <i class="fa-solid ${c.icon} text-white text-lg"></i>
             </div>
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2 mb-2">
-                <span class="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full ${c.badge}">${p.kategori}</span>
+                <span class="potret-card-kategori text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full ${c.badge}"></span>
               </div>
-              <h4 class="font-black text-slate-800 text-sm leading-snug mb-2 line-clamp-2">${p.judul}</h4>
-              <p class="text-[12px] text-slate-500 font-medium leading-relaxed line-clamp-2">${p.ringkasan}</p>
+              <h4 class="potret-card-judul font-black text-slate-800 text-sm leading-snug mb-2 line-clamp-2"></h4>
+              <p class="potret-card-ringkasan text-[12px] text-slate-500 font-medium leading-relaxed line-clamp-2"></p>
               <div class="flex items-center gap-3 mt-3 text-[10px] text-slate-400 font-semibold">
-                <span><i class="fa-regular fa-calendar mr-1 text-sky-400"></i>${tanggal}</span>
+                <span><i class="fa-regular fa-calendar mr-1 text-sky-400"></i><span class="potret-card-tanggal"></span></span>
                 <span>·</span>
-                <span><i class="fa-regular fa-user mr-1 text-sky-400"></i>${p.penulis}</span>
+                <span><i class="fa-regular fa-user mr-1 text-sky-400"></i><span class="potret-card-penulis"></span></span>
               </div>
             </div>
             <i class="fa-solid fa-chevron-right text-slate-300 text-xs shrink-0 mt-2"></i>
-          </div>
-        </div>`;
+          </div>`;
+        card.querySelector('.potret-card-kategori').textContent = p.kategori;
+        card.querySelector('.potret-card-judul').textContent = p.judul;
+        card.querySelector('.potret-card-ringkasan').textContent = p.ringkasan;
+        card.querySelector('.potret-card-tanggal').textContent = formatPotretDate(p.tanggal, 'short');
+        card.querySelector('.potret-card-penulis').textContent = p.penulis;
+        card.addEventListener('click', () => openPotretDetail(p.id));
+        return card;
       });
-      container.innerHTML = html;
+      container.replaceChildren(...cards);
+    }
+
+    function formatPotretDate(value, month) {
+      if (!value) return '';
+      const date = new Date(`${value}T00:00:00`);
+      if (Number.isNaN(date.getTime())) return '';
+      return date.toLocaleDateString('id-ID', { day: 'numeric', month, year: 'numeric' });
     }
 
     function openPotretDetail(id) {
@@ -2782,14 +2665,46 @@ Semoga Allah ﷻ menjadikan kita termasuk Ahlul Quran — keluarga Allah di muka
       document.getElementById('potretDetailIsi').textContent = p.isi;
       document.getElementById('potretDetailPenulis').textContent = p.penulis;
 
-      const tanggal = p.tanggal ? new Date(p.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
-      document.getElementById('potretDetailTanggal').textContent = tanggal;
+      document.getElementById('potretDetailTanggal').textContent = formatPotretDate(p.tanggal, 'long');
 
       const refDiv = document.getElementById('potretDetailReferensi');
-      const refText = document.getElementById('potretDetailRefText');
-      if (p.referensi) {
+      const refList = document.getElementById('potretDetailRefText');
+      refList.replaceChildren();
+      if (Array.isArray(p.sumber) && p.sumber.length) {
+        p.sumber.forEach((source, index) => {
+          if (!source || !source.sitasi) return;
+          const item = document.createElement('div');
+          const label = document.createElement('p');
+          label.className = 'text-[12px] font-semibold leading-relaxed text-slate-700';
+          label.textContent = `[${source.nomor || index + 1}] ${source.sitasi}`;
+          item.appendChild(label);
+          if (source.status) {
+            const status = document.createElement('p');
+            status.className = 'text-[11px] text-slate-500 mt-0.5';
+            status.textContent = source.status;
+            item.appendChild(status);
+          }
+          try {
+            const url = new URL(source.url);
+            if (url.protocol === 'https:') {
+              const link = document.createElement('a');
+              link.className = 'inline-block text-[11px] font-semibold text-sky-600 hover:underline mt-1 break-all';
+              link.href = url.href;
+              link.target = '_blank';
+              link.rel = 'noopener noreferrer';
+              link.textContent = 'Buka sumber ↗';
+              item.appendChild(link);
+            }
+          } catch (_) { /* Sumber tanpa URL tetap ditampilkan sebagai sitasi. */ }
+          refList.appendChild(item);
+        });
         refDiv.classList.remove('hidden');
-        refText.textContent = p.referensi;
+      } else if (p.referensi) {
+        const item = document.createElement('p');
+        item.className = 'text-xs text-slate-500 font-medium';
+        item.textContent = p.referensi;
+        refList.appendChild(item);
+        refDiv.classList.remove('hidden');
       } else {
         refDiv.classList.add('hidden');
       }

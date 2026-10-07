@@ -186,7 +186,23 @@ const gscript = {
   getPotretContent: async () => {
     const { data, error } = await sb.from("konten").select("kunci, nilai").like("kunci", "potret_%");
     if (error) throw new Error(error.message);
-    return Object.fromEntries((data || []).map((r) => [r.kunci, r.nilai]));
+    return (data || [])
+      .filter((row) => typeof row.kunci === "string" && /^potret_[a-z0-9_-]+$/i.test(row.kunci))
+      .map((row) => {
+        try {
+          const article = JSON.parse(row.nilai);
+          const required = ["judul", "kategori", "penulis", "tanggal", "ringkasan", "isi"];
+          if (!article || Array.isArray(article) || typeof article !== "object" ||
+              required.some((field) => typeof article[field] !== "string" || !article[field].trim())) return null;
+          if (!["Panduan", "Kisah Sahabat", "Kisah Ulama"].includes(article.kategori)) return null;
+          if (!/^\d{4}-\d{2}-\d{2}$/.test(article.tanggal)) return null;
+          return { ...article, id: row.kunci.slice("potret_".length) };
+        } catch (_) {
+          return null;
+        }
+      })
+      .filter(Boolean)
+      .sort((a, b) => a.id.localeCompare(b.id, "id", { numeric: true }));
   },
 
   // ── GURU ──────────────────────────────────────────────────
