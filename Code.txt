@@ -109,9 +109,9 @@ function createTentangSheet(ss) {
   sheet.appendRow(['tentang_rattil',
     'Rattilil Quran adalah program tahsin dan tilawah Al-Quran yang berfokus pada kualitas bacaan dan konsistensi khatam. Program ini hadir untuk membimbing para santri agar mencintai Al-Quran dengan tartil, tadabbur, dan penuh keistiqomahan. "Rattil-il Qur\'ana tartila" - bacalah Al-Quran dengan tartil (QS. Al-Muzzammil: 4).',
     'Deskripsi tentang program Rattilil Quran']);
-  sheet.appendRow(['wa_link', 'https://wa.me/6281234567890', 'Link WhatsApp Rattil (format: https://wa.me/62xxx tanpa spasi atau tanda hubung)']);
+  sheet.appendRow(['wa_link', 'https://wa.me/6282316993233', 'Link WhatsApp Rattil (format: https://wa.me/62xxx tanpa spasi atau tanda hubung)']);
   sheet.appendRow(['ig_link', 'https://instagram.com/rattililquran', 'Link Instagram Rattil (isi dengan URL lengkap)']);
-  sheet.appendRow(['yt_link', 'https://youtube.com/@rattililquran', 'Link YouTube Rattil (isi dengan URL lengkap)']);
+  sheet.appendRow(['yt_link', 'https://youtube.com/@rattililquranindonesia', 'Link YouTube Rattil (isi dengan URL lengkap)']);
   sheet.appendRow(['footer_text', 'Dibuat dengan ❤️ untuk para pecinta Al-Quran oleh Rattilil Quran © 2026', 'Teks footer di halaman Tentang']);
 
   return sheet;

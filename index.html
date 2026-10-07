@@ -2150,16 +2150,16 @@
   </div>
 
   <!-- Modal: Tentang KhatamKu & Rattilil Qur'an -->
-  <div id="modalTentang" class="fixed inset-0 z-50 modal-overlay hidden flex flex-col justify-end sm:justify-center items-center" role="dialog" aria-modal="true" aria-label="Tentang KhatamKu">
+  <div id="modalTentang" class="fixed inset-0 z-50 modal-overlay hidden flex flex-col justify-end sm:justify-center items-center" role="dialog" aria-modal="true" aria-labelledby="tentangDialogTitle">
     <div class="modal-content w-full max-w-md h-[88vh] sm:h-[85vh] rounded-t-[2.5rem] sm:rounded-3xl p-0 flex flex-col transform transition-transform translate-y-full text-slate-800 overflow-hidden" id="modalTentangContent">
       
       <!-- Header fixed -->
       <div class="flex justify-between items-center px-7 pt-7 pb-5 shrink-0 border-b border-slate-100/80">
         <div>
-          <h3 class="text-2xl font-black tracking-tight">Tentang</h3>
+          <h3 class="text-2xl font-black tracking-tight" id="tentangDialogTitle">Tentang</h3>
           <p class="text-[10px] text-slate-400 font-semibold tracking-widest uppercase mt-0.5">KhatamKu & Rattilil Qur'an</p>
         </div>
-        <button onclick="closeModal('modalTentang')" class="text-slate-400 bg-slate-100 hover:bg-slate-200 w-10 h-10 rounded-full flex items-center justify-center transition-colors shadow-inner"><i class="fa-solid fa-xmark"></i></button>
+        <button type="button" onclick="closeModal('modalTentang')" aria-label="Tutup Tentang" class="text-slate-400 bg-slate-100 hover:bg-slate-200 w-11 h-11 rounded-full flex items-center justify-center transition-colors shadow-inner focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
       </div>
 
       <!-- Scrollable Content -->
@@ -2375,21 +2375,24 @@
     let currentUser = null;
     let appProfile = null;
     let todayProgressCount = 0;
-    let tentangData = {}; // Data halaman Tentang dari spreadsheet
+    let tentangData = {}; // Data halaman Tentang dari tabel konten
 
     // ===== Tentang: Load & Tampilkan =====
     function loadTentangData() {
       gscript.getTentangContent()
-        .then(data => { tentangData = data; })
+        .then(data => {
+          tentangData = data || {};
+          const modal = document.getElementById('modalTentang');
+          if (modal && !modal.classList.contains('hidden')) renderTentangContent();
+        })
         .catch(() => {}); // Silent fail, pakai default
     }
 
-    function openTentangModal() {
-      // Isi konten dari data spreadsheet (atau fallback ke teks default)
+    function renderTentangContent() {
       document.getElementById('tentangJudul').textContent = tentangData.judul_app || 'KhatamKu';
-      document.getElementById('tentangVersi').textContent = 'v' + (tentangData.versi_app || '1.0.0');
+      document.getElementById('tentangVersi').textContent = 'v' + (tentangData.versi_app || '2.0.0');
       document.getElementById('tentangDeskApp').textContent = tentangData.deskripsi_app ||
-        'KhatamKu adalah aplikasi pelacak bacaan Al-Quran berbasis Google Sheets.';
+        'KhatamKu membantu santri dan guru mencatat serta memantau progres tilawah dengan mudah.';
       document.getElementById('tentangDeskRattil').textContent = tentangData.tentang_rattil ||
         'Rattilil Quran adalah program tahsin dan tilawah Al-Quran.';
       document.getElementById('tentangFooter').textContent = tentangData.footer_text ||
@@ -2399,9 +2402,26 @@
       const wa = document.getElementById('tentangWA');
       const ig = document.getElementById('tentangIG');
       const yt = document.getElementById('tentangYT');
-      if (wa) wa.href = tentangData.wa_link || '#';
-      if (ig) ig.href = tentangData.ig_link || '#';
-      if (yt) yt.href = tentangData.yt_link || '#';
+      setTentangSocialLink(wa, tentangData.wa_link);
+      setTentangSocialLink(ig, tentangData.ig_link);
+      setTentangSocialLink(yt, tentangData.yt_link);
+    }
+
+    function setTentangSocialLink(link, value) {
+      if (!link) return;
+      let href = '';
+      try {
+        const parsed = new URL(String(value || ''), window.location.href);
+        if (parsed.protocol === 'https:') href = parsed.href;
+      } catch (_) {}
+      link.hidden = !href;
+      link.style.display = href ? '' : 'none';
+      if (href) link.href = href;
+      else link.removeAttribute('href');
+    }
+
+    function openTentangModal() {
+      renderTentangContent();
 
       openModal('modalTentang');
       updateActiveNav('navTentang');
