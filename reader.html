@@ -105,8 +105,7 @@ body.reader-focus .focus-reveal{display:inline-flex}
 #bottombar{position:sticky;z-index:7;bottom:0;margin-top:auto;padding:12px clamp(14px,3vw,36px) max(12px,env(safe-area-inset-bottom));border-top:1px solid var(--color-rule);background:color-mix(in oklch,var(--color-canvas) 96%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
 .bottom-inner{width:min(100%,1160px);margin-inline:auto;display:grid;grid-template-columns:minmax(220px,1fr) auto;align-items:center;gap:clamp(12px,3vw,32px)}
 .scrubber{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:12px;min-width:0}
-.scrub-head{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:5px;color:var(--color-muted);font-size:10px;letter-spacing:.06em;text-transform:uppercase}
-.scrub-head output{color:var(--color-ink);font-size:11px;font-variant-numeric:tabular-nums;letter-spacing:0;white-space:nowrap}
+.scrub-head{grid-column:1/-1;display:flex;align-items:center;justify-content:flex-start;gap:10px;margin-bottom:5px;color:var(--color-muted);font-size:10px;letter-spacing:.06em;text-transform:uppercase}
 .jump-field{display:inline-flex;align-items:center;gap:5px;color:var(--color-muted);font-size:10px;letter-spacing:0;text-transform:none;white-space:nowrap}
 .jump{width:44px;height:28px;padding:3px 5px;border:1px solid var(--color-rule);border-radius:8px;background:var(--color-canvas-raised);color:var(--color-ink);text-align:center;font-size:12px;font-variant-numeric:tabular-nums}
 .page-slider{grid-column:1;width:100%;height:18px;margin:0;appearance:none;-webkit-appearance:none;background:transparent;direction:rtl;cursor:pointer;touch-action:pan-x}
@@ -330,7 +329,7 @@ body.reader-focus .focus-reveal{display:inline-flex}
 <div id="bottombar">
   <div class="bottom-inner">
     <div class="scrubber">
-      <div class="scrub-head"><span>Posisi halaman</span><output id="currentPageOutput">003 / 604</output></div>
+      <div class="scrub-head"><span>Posisi halaman</span></div>
       <input class="page-slider" id="pageSlider" type="range" min="1" max="604" value="3" aria-label="Geser untuk memilih halaman mushaf">
       <label class="jump-field" for="jump">Buka halaman <input class="jump" id="jump" type="number" min="1" max="604" inputmode="numeric" aria-label="Buka halaman mushaf"> / 604</label>
     </div>
@@ -429,6 +428,7 @@ body.reader-focus .focus-reveal{display:inline-flex}
 const FONT_BASE = "https://static.qurancdn.com/fonts/quran/hafs/v2/woff2"; // CORS * → aman
 const BASMALAH = "ﱁﱂﱃﱄ"; // glyph basmalah dari font halaman 1 (QS 1:1, tanpa penanda ayat)
 const LAST_PAGE_KEY = "khatamku_reader_last_page";
+const LAST_POSITION_KEY = "khatamku_reader_last_position";
 const AYAH_NOTES_KEY = "khatamku_ayah_notes";
 const READING_PLAN_KEY = "khatamku_reading_plan";
 const pageParams = new URLSearchParams(location.search);
@@ -436,6 +436,11 @@ const requestedPage = Number.parseInt(pageParams.get("p"),10);
 const hasExplicitPage = pageParams.has("p") && Number.isFinite(requestedPage);
 let lastReadPage = 0;
 try{ const stored=Number(localStorage.getItem(LAST_PAGE_KEY)); if(Number.isInteger(stored)&&stored>=1&&stored<=604) lastReadPage=stored; }catch(_){}
+let lastReadingPosition=null;
+try{
+  const saved=JSON.parse(localStorage.getItem(LAST_POSITION_KEY)||"null");
+  if(saved&&Number.isInteger(saved.page)&&saved.page>=1&&saved.page<=604&&typeof saved.v==="string"&&/^\d{1,3}:\d{1,3}$/.test(saved.v)) lastReadingPosition={page:saved.page,v:saved.v};
+}catch(_){}
 let page = hasExplicitPage ? Math.min(604,Math.max(1,requestedPage)) : (lastReadPage||3);
 const resumedFromLastPage = !hasExplicitPage && lastReadPage>0;
 let resumeNoticeShown=false;
@@ -494,12 +499,43 @@ async function loadSurah(s){
   if(!r.ok) throw new Error("teks surah belum tersedia");
   const d = await r.json(); surahCache[s] = d; return d;
 }
+function restoreReadingPosition(position){
+  const stage=document.querySelector(".stage"), box=document.getElementById("mushaf");
+  const word=Array.from(box.querySelectorAll(".w")).find(item=>item.dataset.v===position.v);
+  const line=word&&word.closest(".line");
+  if(!line) return false;
+  const stageTop=stage.getBoundingClientRect().top+stage.clientTop;
+  stage.scrollTop=Math.max(0,stage.scrollTop+line.getBoundingClientRect().top-stageTop);
+  return true;
+}
+function saveReadingPosition(){
+  if(renderedPage!==page) return;
+  const stage=document.querySelector(".stage"), stageRect=stage.getBoundingClientRect();
+  const clipTop=stageRect.top+stage.clientTop, clipBottom=clipTop+stage.clientHeight;
+  const line=Array.from(document.querySelectorAll("#mushaf .line")).find(item=>{
+    const rect=item.getBoundingClientRect(); return rect.bottom>clipTop&&rect.top<clipBottom;
+  });
+  const word=line&&line.querySelector(".w");
+  if(!word||!word.dataset.v) return;
+  const position={page,v:word.dataset.v};
+  lastReadingPosition=position;
+  try{ localStorage.setItem(LAST_POSITION_KEY,JSON.stringify(position)); }catch(_){}
+}
+let positionSaveTimer=null;
+function scheduleReadingPositionSave(){
+  clearTimeout(positionSaveTimer);
+  positionSaveTimer=setTimeout(saveReadingPosition,140);
+}
 let _goToken = 0;   // versi request aktif → cegah respons lambat menimpa halaman yang lebih baru
 async function go(p){
   if(p<1||p>604) return false;
   const myToken = ++_goToken;
   const stale = () => myToken !== _goToken;
-  page = p; hideSheet(); updateNav();
+  const initialNavigation=renderedPage===null;
+  const resumePosition=initialNavigation&&lastReadingPosition&&lastReadingPosition.page===p?lastReadingPosition:null;
+  const stage=document.querySelector(".stage");
+  page = p; renderedPage=null; hideSheet(); updateNav();
+  if(!resumePosition) stage.scrollTop=0;
   try{ history.replaceState(null,"","?p="+p); }catch(_){}   // simpan posisi → refresh tetap di halaman ini
   const box = document.getElementById("mushaf");
   const cached = !!pageCache[p];
@@ -559,6 +595,8 @@ async function go(p){
   document.getElementById("pageInfo").textContent = "Halaman "+p+" · Juz "+(d.juz||"-");
   fitPage();
   renderedPage = p;
+  const restoredPosition=resumePosition&&restoreReadingPosition(resumePosition);
+  if(!restoredPosition) stage.scrollTop=0;
   lastReadPage=p;
   try{ localStorage.setItem(LAST_PAGE_KEY,String(p)); }catch(_){}
   if(readingPlan && p>readingPlan.highestPage){
@@ -566,9 +604,10 @@ async function go(p){
     try{ localStorage.setItem(READING_PLAN_KEY,JSON.stringify(readingPlan)); }catch(_){}
   }
   updateNav();
-  if(resumedFromLastPage && !resumeNoticeShown){ toast("Dilanjutkan dari halaman "+p+"."); resumeNoticeShown=true; }
+  if(initialNavigation&&restoredPosition&&!resumeNoticeShown){ toast("Dilanjutkan dari QS "+resumePosition.v+"."); resumeNoticeShown=true; }
+  else if(resumedFromLastPage && !resumeNoticeShown){ toast("Dilanjutkan dari halaman "+p+"."); resumeNoticeShown=true; }
   if(document.getElementById("settingsPanel").classList.contains("show")) renderReadingPlan();
-  requestAnimationFrame(()=> box.classList.remove("fade"));
+  requestAnimationFrame(()=>{ box.classList.remove("fade"); saveReadingPosition(); });
   prefetchAdjacent(p);
   return true;
 }
@@ -579,8 +618,6 @@ function updateNav(){
   const progress=((page-1)/603)*100;
   if(slider){ slider.value=page; slider.style.setProperty("--progress",progress+"%"); }
   document.documentElement.style.setProperty("--progress",progress+"%");
-  const label=String(page).padStart(3,"0")+" / 604";
-  document.getElementById("currentPageOutput").textContent=label;
   document.getElementById("jump").value=page;
   document.getElementById("railPage").textContent=String(page).padStart(3,"0");
   document.getElementById("railJuz").textContent="Juz "+currentJuz;
@@ -878,6 +915,11 @@ function toggleFS(){
 // Gestur: ketuk ayat → terjemah · tekan lama di ponsel → terjemah · geser → ganti halaman
 function setupGestures(){
   const stage=document.querySelector(".stage");
+  stage.addEventListener("scroll",scheduleReadingPositionSave,{passive:true});
+  window.addEventListener("pagehide",()=>{
+    clearTimeout(positionSaveTimer);
+    saveReadingPosition();
+  });
   stage.addEventListener("contextmenu", e=>e.preventDefault());   // cegah popup copy saat tekan lama
   let sx=0,sy=0,st=0,moved=false,longFired=false,lpTimer=null,lpWord=null,suppress=false,multiTouch=false;
   const LP=500, MOVE=12, SWIPE=55;
@@ -1103,7 +1145,7 @@ document.getElementById("jump").addEventListener("change",e=>{
 document.getElementById("pageSlider").addEventListener("input",e=>{
   const p=Number(e.target.value), progress=((p-1)/603)*100;
   e.target.style.setProperty("--progress",progress+"%");
-  document.getElementById("currentPageOutput").textContent=String(p).padStart(3,"0")+" / 604";
+  document.getElementById("jump").value=p;
 });
 document.getElementById("pageSlider").addEventListener("change",e=>go(Number(e.target.value)));
 applyReaderPreferences();
