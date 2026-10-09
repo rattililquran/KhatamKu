@@ -105,7 +105,6 @@ body.reader-focus .focus-reveal{display:inline-flex}
 #bottombar{position:sticky;z-index:7;bottom:0;margin-top:auto;padding:12px clamp(14px,3vw,36px) max(12px,env(safe-area-inset-bottom));border-top:1px solid var(--color-rule);background:color-mix(in oklch,var(--color-canvas) 96%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
 .bottom-inner{width:min(100%,1160px);margin-inline:auto;display:grid;grid-template-columns:minmax(220px,1fr) auto;align-items:center;gap:clamp(12px,3vw,32px)}
 .scrubber{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:12px;min-width:0}
-.scrub-head{grid-column:1/-1;display:flex;align-items:center;justify-content:flex-start;gap:10px;margin-bottom:5px;color:var(--color-muted);font-size:10px;letter-spacing:.06em;text-transform:uppercase}
 .jump-field{display:inline-flex;align-items:center;gap:5px;color:var(--color-muted);font-size:10px;letter-spacing:0;text-transform:none;white-space:nowrap}
 .jump{width:44px;height:28px;padding:3px 5px;border:1px solid var(--color-rule);border-radius:8px;background:var(--color-canvas-raised);color:var(--color-ink);text-align:center;font-size:12px;font-variant-numeric:tabular-nums}
 .page-slider{grid-column:1;width:100%;height:18px;margin:0;appearance:none;-webkit-appearance:none;background:transparent;direction:rtl;cursor:pointer;touch-action:pan-x}
@@ -244,7 +243,6 @@ body.reader-focus .focus-reveal{display:inline-flex}
   #bottombar{padding:9px 12px max(10px,env(safe-area-inset-bottom))}
   .bottom-inner{grid-template-columns:minmax(0,1fr);gap:8px}
   .scrubber{grid-template-columns:minmax(0,1fr) auto;column-gap:9px}
-  .scrub-head{margin-bottom:2px}
   .page-slider{height:16px}
   .footer-controls{display:grid;grid-template-columns:minmax(0,1fr) minmax(116px,1.2fr) minmax(0,1fr);gap:6px;direction:ltr}
   .footer-button{min-height:42px;gap:5px;padding:0 7px;font-size:10px}
@@ -263,7 +261,6 @@ body.reader-focus .focus-reveal{display:inline-flex}
   .mushaf{padding-inline:13px}
   .footer-button{gap:3px;padding-inline:5px;font-size:9px}
   .footer-button.primary{font-size:10px}
-  .scrub-head{font-size:9px}
   .jump-field{font-size:9px}
   .jump{width:40px}
 }
@@ -272,7 +269,6 @@ body.reader-focus .focus-reveal{display:inline-flex}
   #bottombar{padding:6px 12px max(6px,env(safe-area-inset-bottom))}
   .bottom-inner{grid-template-columns:minmax(0,1fr) auto;gap:12px}
   .scrubber{column-gap:8px}
-  .scrub-head{margin-bottom:0;font-size:9px}
   .page-slider{height:14px}
   .jump{height:26px}
   .footer-controls{display:flex;gap:6px}
@@ -329,7 +325,6 @@ body.reader-focus .focus-reveal{display:inline-flex}
 <div id="bottombar">
   <div class="bottom-inner">
     <div class="scrubber">
-      <div class="scrub-head"><span>Posisi halaman</span></div>
       <input class="page-slider" id="pageSlider" type="range" min="1" max="604" value="3" aria-label="Geser untuk memilih halaman mushaf">
       <label class="jump-field" for="jump">Buka halaman <input class="jump" id="jump" type="number" min="1" max="604" inputmode="numeric" aria-label="Buka halaman mushaf"> / 604</label>
     </div>
