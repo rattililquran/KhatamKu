@@ -266,6 +266,18 @@ button:disabled{opacity:.55;cursor:not-allowed}
   .jump-field{font-size:9px}
   .jump{width:40px}
 }
+/* Keep more of the mushaf visible in short, wide viewports (landscape phones). */
+@media(max-height:520px) and (min-width:640px){
+  #bottombar{padding:6px 12px max(6px,env(safe-area-inset-bottom))}
+  .bottom-inner{grid-template-columns:minmax(0,1fr) auto;gap:12px}
+  .scrubber{column-gap:8px}
+  .scrub-head{margin-bottom:0;font-size:9px}
+  .page-slider{height:14px}
+  .jump{height:26px}
+  .footer-controls{display:flex;gap:6px}
+  .footer-button{min-height:38px;gap:5px;padding-inline:8px;font-size:10px}
+  .footer-button.primary{min-width:128px;padding-inline:8px;font-size:10px}
+}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 </style>
 <!-- Supabase adapter: sesi login dari index.html menular (same-origin, storageKey khatamku_auth) -->
