@@ -192,6 +192,8 @@
     /* Masthead frost on scroll */
     .teacher-masthead { position: sticky; top: 0; z-index: 5; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); background: color-mix(in oklch, var(--color-paper) 88%, transparent); border-bottom: 1px solid transparent; margin: -6px calc(0px - clamp(1rem, 4vw, 1.5rem)) 20px; padding: 10px clamp(1rem, 4vw, 1.5rem); }
     .teacher-masthead.is-scrolled { border-bottom-color: var(--color-border); box-shadow: 0 4px 16px -12px rgba(15,23,42,0.08); }
+    #appTopNav.app-top-nav--teacher { max-width: 760px; }
+    #appTopNav.app-top-nav--admin { max-width: 672px; }
     @media (max-width: 480px) {
       .teacher-masthead { align-items: stretch; flex-direction: column; }
       .teacher-halaqah-controls, #tcHalaqahSelect { width: 100%; }
@@ -3294,9 +3296,16 @@
       openModal('modalRegisterError');
     }
 
+    function setTopNavLayout(role) {
+      const topNav = document.getElementById('appTopNav');
+      topNav.classList.toggle('app-top-nav--teacher', role === 'guru');
+      topNav.classList.toggle('app-top-nav--admin', role === 'admin');
+    }
+
     // Dipanggil saat user auto-login (refresh halaman) - Data belum terambul
     function initApp() {
       resetTeacherViewForSession();
+      setTopNavLayout(currentUser?.role);
       // #5 View transition: fade out login, slide in main
       const loginView = document.getElementById('loginView');
       loginView.classList.add('view-exit');
@@ -3366,6 +3375,7 @@
 
     function initAppWithData(data) {
       resetTeacherViewForSession();
+      setTopNavLayout(currentUser?.role);
       // #5 View transition
       const loginView = document.getElementById('loginView');
       loginView.classList.add('view-exit');
