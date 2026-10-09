@@ -1,7 +1,7 @@
 // sw.js — KhatamKu Service Worker
 // Strategi: Cache-first untuk aset statis, Network-first untuk API
 
-const CACHE_NAME = 'khatamku-v34';
+const CACHE_NAME = 'khatamku-v35';
 const BASE = '/KhatamKu';
 
 // Aset yang di-cache saat install (app shell)
@@ -64,7 +64,24 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Aset lokal (HTML, JS, ikon) → Cache-first
+  // Halaman dan kode aplikasi harus mengecek jaringan lebih dulu agar rilis
+  // baru tidak tertahan cache lama. Cache tetap dipakai sebagai fallback offline.
+  if (event.request.mode === 'navigate' || /\.(?:html|js|css)$/.test(url.pathname)) {
+    event.respondWith(
+      fetch(event.request)
+        .then(res => {
+          if (!res.ok) return res;
+          return caches.open(CACHE_NAME)
+            .then(cache => cache.put(event.request, res.clone()))
+            .then(() => res);
+        })
+        .catch(err => caches.match(event.request, { ignoreSearch: event.request.mode === 'navigate' })
+          .then(cached => cached || Promise.reject(err)))
+    );
+    return;
+  }
+
+  // Aset lokal lain (data, ikon, font) → Cache-first untuk dukungan offline.
   event.respondWith(
     caches.match(event.request).then(cached => {
       if (cached) return cached;
