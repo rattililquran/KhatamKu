@@ -2,158 +2,271 @@
 <html lang="id">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#10221d">
 <title>Mushaf Madinah — KhatamKu</title>
 <style>
-:root{--ink:#2c2117;--cream:#fbf5e6;--frame:#b08d4f;--gold:#c9a44c;--bg:#20242a;}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;}
-body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:#e8e8e8;
-  min-height:100vh;display:flex;flex-direction:column;}
-/* ── top bar ── */
-.bar{display:flex;align-items:center;gap:8px;padding:12px 14px;background:rgba(25,28,33,.9);
-  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-  position:sticky;top:0;z-index:5;border-bottom:1px solid #2c313a;}
-.bar .back{background:#2b313a;border:0;color:#cfd3d8;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;
-  transition:background .15s,transform .1s;}
-.bar .back:active{background:#353c46;transform:scale(.94);}
-.bar .info{flex:1;text-align:center;min-width:0;}
-.bar .info b{font-size:14px;font-weight:800;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.bar .info span{font-size:11px;color:#9aa0a8;}
-.bar .jump{width:52px;background:#2b313a;border:1px solid #3a4048;color:#e8e8e8;border-radius:9px;
-  padding:6px 4px;text-align:center;font-weight:700;font-size:13px;transition:border-color .15s;}
-.bar .jump:focus{outline:none;border-color:var(--gold);}
-.bar .bkbtn{background:#2b313a;border:0;color:var(--gold);width:36px;height:36px;border-radius:10px;font-size:16px;cursor:pointer;
-  transition:background .15s,transform .1s;flex:0 0 auto;}
-.bar .bkbtn:active{background:#353c46;transform:scale(.94);}
-.bk-item{display:flex;align-items:center;gap:10px;padding:12px 10px;margin:0 -4px 2px;border-radius:12px;cursor:pointer;
-  transition:background .12s;}
-.bk-item:active{background:#262b32;}
-.bk-item .n{background:var(--gold);color:#1a1206;font-weight:800;font-size:11px;padding:3px 9px;border-radius:20px;white-space:nowrap;}
-.bk-item .t{flex:1;font-size:14px;color:#e8e8e8;min-width:0;}
-.bk-item .t small{color:#9aa0a8;display:block;font-size:12px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.bk-item .del{background:none;border:0;color:#7a828c;font-size:16px;cursor:pointer;padding:6px;border-radius:8px;transition:background .12s,color .12s;}
-.bk-item .del:active{background:#3a4048;color:#e0837e;}
-.bk-empty{color:#8a8f96;text-align:center;padding:30px;font-size:14px;}
-/* mark-read + toast + panel cari */
-.markbar{padding:8px 14px 4px;background:#191c21;}
-.markbar button{width:100%;padding:13px;border:0;border-radius:13px;background:var(--gold);color:#1a1206;font-weight:800;font-size:14px;cursor:pointer;
-  transition:transform .1s,filter .12s;}
-.markbar button:active:not(:disabled){transform:scale(.98);filter:brightness(.94);}
-.markbar button:disabled{opacity:.4;}
-.toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%) translateY(16px);opacity:0;
-  background:#111418;color:#fff;padding:12px 18px;border-radius:12px;font-size:13px;z-index:60;
-  transition:all .25s;max-width:88%;text-align:center;pointer-events:none;border:1px solid #3a4048;}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-.qbox{width:100%;background:#2b313a;border:1px solid #3a4048;color:#e8e8e8;border-radius:12px;padding:11px 14px;font-size:14px;margin:6px 0 10px;
-  transition:border-color .15s,background .15s;}
-.qbox:focus{outline:none;border-color:var(--gold);background:#2f3540;}
-.qbox::placeholder{color:#7a828c;}
-.nav-item{padding:11px 10px;margin:0 -4px 2px;border-radius:12px;cursor:pointer;display:flex;align-items:center;gap:10px;
-  transition:background .12s;}
-.nav-item:active{background:#262b32;}
-.nav-item .num{background:#2b313a;color:var(--gold);font-weight:800;font-size:12px;min-width:34px;text-align:center;padding:5px 0;border-radius:8px;flex:0 0 auto;}
-.nav-item .t{flex:1;font-size:14px;min-width:0;}
-.nav-item .t small{color:#9aa0a8;display:block;font-size:12px;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.sec{color:var(--gold);font-size:11px;text-transform:uppercase;letter-spacing:.06em;margin:16px 4px 6px;font-weight:800;}
-/* ── halaman mushaf ── */
-.stage{flex:1;display:flex;align-items:flex-start;justify-content:center;padding:14px 12px;
-  overflow-y:auto;-webkit-overflow-scrolling:touch;}
-/* immersive default: chrome tersembunyi; muncul sebagai overlay saat .controls (ketuk sekali) */
-.bar,#bottombar{transition:transform .25s ease;}
-.fsbtn{background:#2b313a;border:0;color:var(--gold);width:36px;height:36px;border-radius:10px;font-size:15px;cursor:pointer;}
-body.immersive .bar{position:fixed;top:0;left:0;right:0;z-index:30;transform:translateY(-105%);box-shadow:0 4px 16px rgba(0,0,0,.4);}
-body.immersive #bottombar{position:fixed;left:0;right:0;bottom:0;z-index:30;transform:translateY(105%);box-shadow:0 -4px 16px rgba(0,0,0,.4);}
-body.immersive.controls .bar{transform:translateY(0);}
-body.immersive.controls #bottombar{transform:translateY(0);}
-body.immersive .stage{padding:16px 12px;}
-.taphint{position:fixed;left:50%;bottom:78px;transform:translateX(-50%) translateY(12px);z-index:45;pointer-events:none;
-  background:rgba(20,24,30,.96);color:#fff;padding:12px 18px;border-radius:14px;font-size:13px;line-height:1.7;
-  max-width:90%;text-align:center;border:1px solid var(--gold);box-shadow:0 8px 26px rgba(0,0,0,.55);
-  opacity:0;transition:opacity .35s ease,transform .35s ease;}
-.taphint.show{opacity:1;transform:translateX(-50%) translateY(0);}
-/* modal konfirmasi + doa */
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
-  z-index:70;display:flex;align-items:center;justify-content:center;padding:20px;
-  opacity:0;pointer-events:none;transition:opacity .2s ease;}
-.modal.show{opacity:1;pointer-events:auto;}
-.modal .box{background:#20242a;border:1px solid #3a4048;border-radius:20px;padding:24px 22px;max-width:400px;width:100%;
-  text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.5);position:relative;overflow:hidden;
-  transform:scale(.92) translateY(8px);transition:transform .25s cubic-bezier(.22,.9,.35,1);}
-.modal.show .box{transform:scale(1) translateY(0);}
-.modal .box::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;
-  background:linear-gradient(90deg,transparent,var(--gold),transparent);}
-.modal .box h3{font-size:16px;font-weight:800;color:var(--gold);margin-bottom:8px;}
-.modal .box p{font-size:14px;color:#dfe3e8;margin-bottom:8px;line-height:1.5;}
-.modal .box .ar{direction:rtl;font-size:22px;color:#f3ede0;line-height:2;margin:14px 0 8px;-webkit-font-smoothing:antialiased;
-  background:rgba(201,164,76,.08);border-radius:12px;padding:10px 8px;}
-.modal .box .tr{font-size:12px;color:#9aa0a8;font-style:italic;margin-bottom:18px;}
-.modal .box .btns{display:flex;gap:10px;}
-.modal .box .btns button{flex:1;padding:13px;border:0;border-radius:13px;font-weight:800;font-size:14px;cursor:pointer;
-  transition:transform .1s,filter .12s;}
-.modal .box .btns button:active{transform:scale(.96);filter:brightness(.92);}
-.modal .box .btns .ok{background:var(--gold);color:#1a1206;}
-.modal .box .btns .no{background:#2b313a;color:#cfd3d8;}
-.mushaf{width:100%;max-width:520px;background:var(--cream);color:var(--ink);border-radius:8px;
-  padding:20px 16px;box-shadow:0 10px 30px rgba(0,0,0,.45);
-  border:1px solid var(--frame);outline:3px double var(--frame);outline-offset:4px;
-  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
-  opacity:1;transition:opacity .16s ease;}
-.mushaf.fade{opacity:0;}
-@font-face{font-family:'surahname';src:url(fonts/surah-name/surah-name-v2.woff2) format('woff2');font-display:block;}
-.surah-head{text-align:center;margin:10px 0 4px;padding:5px 10px;
-  border-top:2px solid var(--frame);border-bottom:2px solid var(--frame);background:rgba(176,141,79,.12);
-  display:flex;flex-direction:column;align-items:center;gap:0;}
-.surah-head .sglyph{font-family:'surahname';font-feature-settings:"liga" 1;font-size:38px;line-height:1.15;color:#5a4416;
-  -webkit-font-smoothing:antialiased;}
-.surah-head .slat{font-size:10px;font-weight:700;color:#8a6a2a;letter-spacing:.08em;text-transform:uppercase;}
-.basmalah{text-align:center;direction:rtl;font-size:23px;color:var(--ink);padding:2px 0 8px;
-  -webkit-font-smoothing:antialiased;}
-.line{display:flex;justify-content:space-between;align-items:center;direction:rtl;
-  padding:3px 0;min-height:1.6em;font-size:27px;line-height:2;
-  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
-.w{line-height:2;color:var(--ink);cursor:pointer;white-space:nowrap;font-weight:400;
-  border-radius:4px;padding:0 1px;transition:background .12s;}
-.w.end{color:#9a7a2e;}
-.w.active{background:rgba(201,164,76,.4);}
-.loading,.err{color:#8a8f96;text-align:center;padding:40px;font-size:14px;}
-/* ── nav bawah ── */
-.nav{display:flex;gap:10px;padding:12px 14px calc(12px + env(safe-area-inset-bottom, 0px));background:#191c21;border-top:1px solid #2c313a;
-  position:sticky;bottom:0;}
-.nav button{flex:1;padding:13px;border:0;border-radius:13px;background:#2b313a;color:#e8e8e8;
-  font-weight:700;font-size:14px;cursor:pointer;transition:transform .1s,filter .12s;}
-.nav button:active:not(:disabled){transform:scale(.97);filter:brightness(.92);}
-.nav button:disabled{opacity:.35;}
-.nav .g{background:var(--gold);color:#1a1206;}
-/* ── backdrop di belakang panel/sheet ── */
-.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);
-  z-index:19;opacity:0;pointer-events:none;transition:opacity .25s ease;}
-.backdrop.show{opacity:1;pointer-events:auto;}
-/* ── bottom sheet ── */
-.sheet{position:fixed;left:0;right:0;bottom:0;background:#20242a;border-top:2px solid var(--gold);
-  border-radius:20px 20px 0 0;padding:10px 18px calc(28px + env(safe-area-inset-bottom, 0px));max-height:70vh;overflow:auto;z-index:20;
-  transform:translateY(102%);transition:transform .28s cubic-bezier(.22,.9,.35,1);box-shadow:0 -10px 30px rgba(0,0,0,.5);}
-.sheet.show{transform:translateY(0);}
-.sheet .handle{width:38px;height:4px;background:#3a4048;border-radius:4px;margin:2px auto 12px;}
-.sheet .row{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
-.sheet .tag{background:var(--gold);color:#1a1206;font-weight:800;font-size:12px;padding:4px 12px;border-radius:20px;letter-spacing:.02em;}
-.sheet .bk{background:#2b313a;border:0;color:#c9a44c;font-size:17px;width:34px;height:34px;border-radius:50%;cursor:pointer;flex:0 0 auto;
-  transition:background .12s,transform .1s;}
-.sheet .bk:active{background:#353c46;transform:scale(.92);}
-.sheet .ar{font-size:26px;line-height:2;text-align:right;direction:rtl;color:#f3ede0;margin:10px 0;}
-.sheet h3{font-size:12px;margin:14px 0 5px;color:var(--gold);text-transform:uppercase;letter-spacing:.06em;font-weight:800;}
-.sheet .lt{font-size:12px;color:#9aa0a8;font-style:italic;}
-.sheet p{font-size:14px;color:#dfe3e8;line-height:1.6;}
-.sheet .tafsir{font-size:13px;color:#c3c8ce;line-height:1.75;}
-.close{background:#3a4048;border:0;color:#cfd3d8;width:30px;height:30px;border-radius:50%;font-size:16px;cursor:pointer;flex:0 0 auto;
-  transition:background .12s,transform .1s;}
-.close:active{background:#454c56;transform:scale(.92);}
-button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
-@media(max-width:390px){
-  .bar{gap:6px;padding:10px 8px;}
-  .bar .back,.bar .bkbtn,.fsbtn{width:40px;height:40px;}
-  .bar .jump{height:40px;}
+/* Hallmark · macrostructure: Workbench · genre: editorial · theme: Almanac
+ * nav: N3 side-rail · footer: reader control strip · audience: Quran readers
+ * action: focused tilawah · tone: luxury · contrast: pass (40–41)
+ * responsive: 320 / 375 / 414 / 768 px · slop: pass (34, 42, 47–49)
+ * Hallmark · pre-emit critique: P5 H5 E4 S5 R5 V4
+ */
+:root{
+  color-scheme:dark;
+  --color-canvas:oklch(0.18 0.025 160);
+  --color-canvas-raised:oklch(0.23 0.027 160);
+  --color-canvas-deep:oklch(0.14 0.022 160);
+  --color-ink:oklch(0.94 0.018 92);
+  --color-muted:oklch(0.73 0.025 145);
+  --color-rule:oklch(0.37 0.03 155);
+  --color-accent:oklch(0.76 0.12 78);
+  --color-accent-ink:oklch(0.2 0.025 160);
+  --color-focus:oklch(0.82 0.13 82);
+  --color-danger:oklch(0.72 0.14 25);
+  --color-shadow:oklch(0.05 0.01 160);
+  --color-page:oklch(0.96 0.025 87);
+  --color-page-soft:oklch(0.925 0.03 83);
+  --color-page-ink:oklch(0.29 0.035 68);
+  --color-page-muted:oklch(0.49 0.045 70);
+  --color-page-rule:oklch(0.72 0.09 76);
+  --font-ui:system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-surah-name:"surahname",serif;
+  --quran-size:28px;
+  --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;
+  --radius-sm:10px;--radius-md:15px;--radius-lg:22px;
+  --ease-out:cubic-bezier(.2,.8,.2,1);
 }
-.sheet .bk,.sheet .close{width:40px;height:40px;}
+:root[data-reading-theme="night"]{
+  --color-page:oklch(0.235 0.024 160);
+  --color-page-soft:oklch(0.285 0.028 158);
+  --color-page-ink:oklch(0.92 0.018 88);
+  --color-page-muted:oklch(0.74 0.04 82);
+  --color-page-rule:oklch(0.48 0.075 78);
+}
+:root[data-reading-theme="sepia"]{
+  --color-page:oklch(0.9 0.045 78);
+  --color-page-soft:oklch(0.85 0.052 72);
+  --color-page-ink:oklch(0.3 0.05 54);
+  --color-page-muted:oklch(0.47 0.055 58);
+  --color-page-rule:oklch(0.67 0.105 72);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{overflow-x:clip;min-height:100%;scrollbar-gutter:stable}
+html{background:var(--color-canvas)}
+body{margin:0;min-height:100vh;min-height:100svh;display:flex;flex-direction:column;background:var(--color-canvas);color:var(--color-ink);font-family:var(--font-ui);-webkit-font-smoothing:antialiased}
+button,input{font:inherit}
+button{color:inherit}
+button:focus-visible,input:focus-visible{outline:2px solid var(--color-focus);outline-offset:3px}
+button:disabled{opacity:.55;cursor:not-allowed}
+.visually-hidden{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+/* The masthead stays quiet so the page itself remains the focal point. */
+.bar{position:sticky;top:0;z-index:8;padding: max(10px,env(safe-area-inset-top)) clamp(14px,3vw,36px) 10px;background:color-mix(in oklch,var(--color-canvas) 94%,transparent);border-bottom:1px solid var(--color-rule);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.bar-inner{width:min(100%,1360px);margin-inline:auto;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:clamp(12px,2vw,28px);min-height:52px}
+.brand-lockup{display:flex;align-items:center;gap:10px;min-width:0;text-decoration:none;color:var(--color-ink)}
+.back{display:grid;place-items:center;width:40px;height:40px;flex:0 0 40px;border:1px solid var(--color-rule);border-radius:50%;background:var(--color-canvas-raised);color:var(--color-ink);cursor:pointer;transition:background .18s ease,border-color .18s ease,transform .18s ease}
+.back svg,.icon-button svg,.nav-item svg,.footer-button svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.brand-mark{display:grid;place-items:center;width:32px;height:32px;border:1px solid color-mix(in oklch,var(--color-accent) 55%,var(--color-rule));border-radius:50%;color:var(--color-accent);font-size:17px;line-height:1}
+.brand-name{font-size:13px;line-height:1.15;font-weight:700;letter-spacing:.015em;white-space:nowrap}
+.brand-caption{display:block;margin-top:3px;color:var(--color-muted);font-size:10px;letter-spacing:.04em;white-space:nowrap}
+.now-reading{min-width:0;text-align:center}
+.now-reading b{display:block;overflow:hidden;color:var(--color-ink);font-size:14px;font-weight:650;line-height:1.3;text-overflow:ellipsis;white-space:nowrap}
+.now-reading span{display:block;margin-top:3px;color:var(--color-muted);font-size:11px;line-height:1.3}
+.top-actions{display:flex;align-items:center;gap:6px}
+.icon-button{display:grid;place-items:center;width:40px;height:40px;flex:0 0 40px;border:1px solid transparent;border-radius:50%;background:transparent;color:var(--color-muted);cursor:pointer;transition:background .18s ease,color .18s ease,border-color .18s ease,transform .18s ease}
+@media(hover:hover) and (pointer:fine){.back:hover,.icon-button:hover{border-color:var(--color-rule);background:var(--color-canvas-raised);color:var(--color-accent)}.footer-button:hover{filter:brightness(1.08)}}
+.back:active,.icon-button:active,.footer-button:active:not(:disabled){transform:scale(.96)}
+/* Reference-book side rail on wide screens; collapses away on touch widths. */
+.stage{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:clamp(18px,3vw,38px) clamp(14px,3vw,36px) clamp(24px,4vw,48px)}
+.reader-layout{width:min(100%,1160px);margin-inline:auto;display:grid;grid-template-columns:minmax(0,720px);justify-content:center;align-items:start;gap:clamp(24px,4vw,60px)}
+.reader-rail{display:none}
+.reader-main{min-width:0;width:100%;max-width:720px;margin-inline:auto}
+.page-meta{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 2px 12px;color:var(--color-muted);font-size:11px;letter-spacing:.025em}
+.page-meta span{white-space:nowrap}
+.page-meta .page-context{overflow:hidden;text-overflow:ellipsis}
+.mushaf{position:relative;isolation:isolate;width:100%;max-width:720px;min-height:440px;margin-inline:auto;padding:clamp(22px,4.1vw,46px) clamp(18px,4.7vw,54px);overflow:hidden;border:1px solid var(--color-page-rule);border-radius:4px;background:var(--color-page);color:var(--color-page-ink);box-shadow:0 24px 70px color-mix(in oklch,var(--color-shadow) 72%,transparent),0 2px 5px color-mix(in oklch,var(--color-shadow) 25%,transparent);user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;opacity:1;transition:background .24s ease,color .24s ease,opacity .16s ease}
+.mushaf::before{position:absolute;z-index:1;inset:10px;pointer-events:none;border:1px solid color-mix(in oklch,var(--color-page-rule) 42%,transparent);content:""}
+.mushaf.fade{opacity:0}
+@font-face{font-family:'surahname';src:url(fonts/surah-name/surah-name-v2.woff2) format('woff2');font-display:block}
+.surah-head{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:2px;margin:10px 0 7px;padding:7px 10px;border-top:1px solid var(--color-page-rule);border-bottom:1px solid var(--color-page-rule);background:var(--color-page-soft);text-align:center}
+.surah-head .sglyph{font-family:var(--font-surah-name);font-feature-settings:"liga" 1;font-size:clamp(30px,4vw,40px);line-height:1.2;color:var(--color-page-ink);-webkit-font-smoothing:antialiased}
+.surah-head .slat{color:var(--color-page-muted);font-size:9px;font-weight:700;letter-spacing:.11em;text-transform:uppercase}
+.basmalah{position:relative;z-index:2;padding:3px 0 9px;color:var(--color-page-ink);direction:rtl;text-align:center;font-size:23px;-webkit-font-smoothing:antialiased}
+.line{position:relative;z-index:2;display:flex;justify-content:space-between;align-items:center;min-height:1.6em;padding:3px 0;direction:rtl;font-size:var(--quran-size);line-height:2;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased}
+.w{padding:0 1px;border-radius:4px;color:var(--color-page-ink);cursor:pointer;font-weight:400;line-height:2;white-space:nowrap;transition:background .14s ease,color .14s ease}
+.w.end{color:var(--color-page-muted)}
+.w.active{background:color-mix(in oklch,var(--color-accent) 42%,transparent);color:var(--color-page-ink)}
+.loading,.err{padding:48px 18px;color:var(--color-page-muted);font-size:14px;text-align:center}
+/* Reading position and page controls */
+#bottombar{position:sticky;z-index:7;bottom:0;margin-top:auto;padding:12px clamp(14px,3vw,36px) max(12px,env(safe-area-inset-bottom));border-top:1px solid var(--color-rule);background:color-mix(in oklch,var(--color-canvas) 96%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.bottom-inner{width:min(100%,1160px);margin-inline:auto;display:grid;grid-template-columns:minmax(220px,1fr) auto;align-items:center;gap:clamp(12px,3vw,32px)}
+.scrubber{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:12px;min-width:0}
+.scrub-head{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:5px;color:var(--color-muted);font-size:10px;letter-spacing:.06em;text-transform:uppercase}
+.scrub-head output{color:var(--color-ink);font-size:11px;font-variant-numeric:tabular-nums;letter-spacing:0;white-space:nowrap}
+.jump-field{display:inline-flex;align-items:center;gap:5px;color:var(--color-muted);font-size:10px;letter-spacing:0;text-transform:none;white-space:nowrap}
+.jump{width:44px;height:28px;padding:3px 5px;border:1px solid var(--color-rule);border-radius:8px;background:var(--color-canvas-raised);color:var(--color-ink);text-align:center;font-size:12px;font-variant-numeric:tabular-nums}
+.page-slider{grid-column:1;width:100%;height:18px;margin:0;appearance:none;-webkit-appearance:none;background:transparent;direction:rtl;cursor:pointer;touch-action:pan-x}
+.page-slider::-webkit-slider-runnable-track{height:3px;border-radius:99px;background:linear-gradient(to left,var(--color-accent) 0%,var(--color-accent) var(--progress,0%),var(--color-rule) var(--progress,0%),var(--color-rule) 100%)}
+.page-slider::-moz-range-track{height:3px;border-radius:99px;background:var(--color-rule)}
+.page-slider::-moz-range-progress{height:3px;border-radius:99px;background:var(--color-accent)}
+.page-slider::-webkit-slider-thumb{width:14px;height:14px;margin-top:-5.5px;appearance:none;-webkit-appearance:none;border:3px solid var(--color-canvas);border-radius:50%;background:var(--color-accent);box-shadow:0 0 0 1px var(--color-accent)}
+.page-slider::-moz-range-thumb{width:10px;height:10px;border:3px solid var(--color-canvas);border-radius:50%;background:var(--color-accent);box-shadow:0 0 0 1px var(--color-accent)}
+.footer-controls{display:flex;align-items:center;gap:8px;direction:ltr}
+.footer-controls #next{order:1}.footer-controls #markBtn{order:2}.footer-controls #prev{order:3}
+.footer-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 14px;border:1px solid var(--color-rule);border-radius:var(--radius-sm);background:var(--color-canvas-raised);color:var(--color-ink);direction:rtl;font-size:12px;font-weight:620;white-space:nowrap;cursor:pointer;transition:filter .16s ease,transform .16s ease,background .16s ease}
+.footer-button svg{width:16px;height:16px;flex:0 0 auto}
+.footer-button.primary{min-width:142px;border-color:var(--color-accent);background:var(--color-accent);color:var(--color-accent-ink)}
+.footer-button:disabled{filter:saturate(.45)}
+/* Sheets share one visual language and remain comfortable on touch screens. */
+.backdrop{position:fixed;z-index:19;inset:0;pointer-events:none;background:color-mix(in oklch,var(--color-shadow) 68%,transparent);opacity:0;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);transition:opacity .22s ease}
+.backdrop.show{pointer-events:auto;opacity:1}
+.sheet{position:fixed;z-index:20;left:50%;bottom:0;width:min(100%,600px);max-height:min(78vh,620px);max-height:min(78svh,620px);overflow:auto;padding:10px 20px max(22px,env(safe-area-inset-bottom));border:1px solid var(--color-rule);border-bottom:0;border-radius:var(--radius-lg) var(--radius-lg) 0 0;background:var(--color-canvas-raised);box-shadow:0 -24px 70px color-mix(in oklch,var(--color-shadow) 62%,transparent);transform:translate(-50%,105%);visibility:hidden;transition:transform .32s var(--ease-out),visibility .32s;overscroll-behavior:contain}
+.sheet.show{transform:translate(-50%,0);visibility:visible;transition:transform .32s var(--ease-out),visibility 0s}
+.sheet .handle{width:38px;height:4px;margin:2px auto 15px;border-radius:4px;background:var(--color-muted);opacity:.55}
+.sheet .row{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.sheet .tag{color:var(--color-accent);font-size:11px;font-weight:750;letter-spacing:.12em;text-transform:uppercase}
+.sheet .bk,.sheet .close{display:grid;place-items:center;width:40px;height:40px;flex:0 0 40px;border:1px solid var(--color-rule);border-radius:50%;background:transparent;color:var(--color-muted);font-size:18px;cursor:pointer;transition:background .16s ease,color .16s ease}
+.sheet .bk{color:var(--color-accent)}
+.sheet .bk:active,.sheet .close:active{background:var(--color-canvas);color:var(--color-ink)}
+.sheet .ar{margin:13px 0;color:var(--color-ink);direction:rtl;text-align:right;font-size:27px;line-height:2}
+.sheet .lt{color:var(--color-muted);font-size:12px}
+.sheet h3{margin:18px 0 7px;color:var(--color-accent);font-size:10px;font-weight:750;letter-spacing:.12em;text-transform:uppercase}
+.sheet p{color:var(--color-ink);font-size:14px;line-height:1.7}
+.sheet .tafsir{color:var(--color-muted);font-size:13px;line-height:1.8}
+.qbox{width:100%;min-height:46px;margin:3px 0 14px;padding:10px 13px;border:1px solid var(--color-rule);border-radius:var(--radius-sm);background:var(--color-canvas);color:var(--color-ink);font-size:14px;outline:2px solid transparent;outline-offset:1px}
+.qbox::placeholder{color:var(--color-muted)}
+.qbox:focus-visible{outline-color:var(--color-focus)}
+.nav-item{display:flex;align-items:center;gap:12px;min-height:54px;margin:0 -5px 2px;padding:9px 8px;border-radius:12px;color:var(--color-ink);cursor:pointer;transition:background .14s ease}
+.nav-item:active{background:var(--color-canvas)}
+.nav-item .num{display:grid;place-items:center;min-width:36px;height:36px;padding:0 6px;border:1px solid var(--color-rule);border-radius:50%;color:var(--color-accent);font-size:11px;font-weight:750;flex:0 0 auto}
+.nav-item .t{min-width:0;flex:1;font-size:13px}
+.nav-item .t small{display:block;overflow:hidden;margin-top:3px;color:var(--color-muted);font-size:11px;text-overflow:ellipsis;white-space:nowrap}
+.sec{margin:18px 0 7px;color:var(--color-accent);font-size:10px;font-weight:750;letter-spacing:.12em;text-transform:uppercase}
+.bk-item{display:flex;align-items:center;gap:10px;margin:0 -5px 2px;padding:10px 6px;border-radius:12px;cursor:pointer;transition:background .14s ease}
+.bk-item:active{background:var(--color-canvas)}
+.bk-item .n{padding:5px 9px;border-radius:999px;background:var(--color-accent);color:var(--color-accent-ink);font-size:10px;font-weight:800;white-space:nowrap}
+.bk-item .t{min-width:0;flex:1;color:var(--color-ink);font-size:13px}
+.bk-item .t small{display:block;overflow:hidden;margin-top:3px;color:var(--color-muted);font-size:11px;text-overflow:ellipsis;white-space:nowrap}
+.bk-item .del{width:38px;height:38px;border:1px solid transparent;border-radius:50%;background:transparent;color:var(--color-muted);font-size:15px;cursor:pointer}
+.bk-empty{padding:36px 15px;color:var(--color-muted);font-size:13px;line-height:1.6;text-align:center}
+.settings-intro{margin:-3px 0 18px;color:var(--color-muted);font-size:12px;line-height:1.6}
+.setting-label{margin:18px 0 9px;color:var(--color-muted);font-size:10px;font-weight:750;letter-spacing:.1em;text-transform:uppercase}
+.theme-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.theme-choice{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:9px;min-height:72px;padding:10px;border:1px solid var(--color-rule);border-radius:12px;background:var(--color-canvas);color:var(--color-ink);font-size:11px;font-weight:650;white-space:nowrap;cursor:pointer;transition:border-color .16s ease,background .16s ease}
+.theme-choice[aria-pressed="true"]{border-color:var(--color-accent);background:color-mix(in oklch,var(--color-accent) 10%,var(--color-canvas))}
+.theme-swatch{display:flex;align-items:center;gap:4px;width:42px;height:20px;padding:3px;border:1px solid color-mix(in oklch,var(--color-accent) 36%,var(--color-rule));border-radius:7px;background:var(--color-canvas)}
+.theme-swatch i{display:block;width:11px;height:12px;border-radius:3px;background:var(--color-page)}
+.theme-swatch i:last-child{width:17px;background:var(--color-page-ink)}
+.theme-choice[data-theme-choice="night"] .theme-swatch{background:oklch(0.2 0.02 160)}
+.theme-choice[data-theme-choice="night"] .theme-swatch i{background:oklch(0.25 0.025 160)}
+.theme-choice[data-theme-choice="night"] .theme-swatch i:last-child{background:oklch(0.92 0.018 88)}
+.theme-choice[data-theme-choice="sepia"] .theme-swatch{background:oklch(0.38 0.04 65)}
+.theme-choice[data-theme-choice="sepia"] .theme-swatch i{background:oklch(0.9 0.045 78)}
+.theme-choice[data-theme-choice="sepia"] .theme-swatch i:last-child{background:oklch(0.3 0.05 54)}
+.type-controls{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 13px;border:1px solid var(--color-rule);border-radius:12px;background:var(--color-canvas)}
+.type-controls p{margin:0;color:var(--color-ink);font-size:13px;font-weight:620}
+.type-controls small{display:block;margin-top:4px;color:var(--color-muted);font-size:10px;font-weight:450}
+.type-stepper{display:flex;align-items:center;gap:8px}
+.type-stepper button{width:40px;height:40px;border:1px solid var(--color-rule);border-radius:50%;background:var(--color-canvas-raised);color:var(--color-ink);font-size:20px;cursor:pointer}
+.type-stepper button:disabled{opacity:.5;cursor:not-allowed}
+.type-stepper output{min-width:42px;color:var(--color-ink);font-size:11px;font-variant-numeric:tabular-nums;text-align:center}
+.settings-secondary{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:15px;padding-top:14px;border-top:1px solid var(--color-rule)}
+.settings-secondary p{margin:0;color:var(--color-muted);font-size:11px}
+.settings-secondary button{min-height:40px;padding:0 12px;border:1px solid var(--color-rule);border-radius:var(--radius-sm);background:transparent;color:var(--color-ink);font-size:11px;white-space:nowrap;cursor:pointer}
+.note-editor{margin:20px 0;padding:14px;border:1px solid var(--color-rule);border-radius:14px;background:color-mix(in oklch,var(--color-canvas) 72%,transparent)}
+.note-editor label,.plan-card>label{display:block;margin-bottom:9px;color:var(--color-accent);font-size:10px;font-weight:750;letter-spacing:.1em;text-transform:uppercase}
+.note-editor label span{color:var(--color-muted);font-size:9px;font-weight:500;letter-spacing:0;text-transform:none}
+.note-editor textarea{display:block;width:100%;min-height:88px;resize:vertical;padding:11px 12px;border:1px solid var(--color-rule);border-radius:10px;background:var(--color-canvas);color:var(--color-ink);font:12px/1.65 var(--font-ui)}
+.note-editor textarea::placeholder{color:var(--color-muted)}
+.note-actions,.plan-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:10px}
+.note-actions button,.plan-actions button{min-height:40px;padding:0 12px;border:1px solid var(--color-rule);border-radius:var(--radius-sm);background:transparent;color:var(--color-ink);font-size:11px;font-weight:650;cursor:pointer}
+.note-actions .note-save,.plan-actions .plan-save{border-color:var(--color-accent);background:var(--color-accent);color:var(--color-accent-ink)}
+.plan-card{padding:14px;border:1px solid var(--color-rule);border-radius:14px;background:color-mix(in oklch,var(--color-canvas) 72%,transparent)}
+.plan-card>label{margin:0 0 8px}
+.plan-card input{width:100%;min-height:42px;padding:8px 11px;border:1px solid var(--color-rule);border-radius:10px;background:var(--color-canvas);color:var(--color-ink);font-size:12px;color-scheme:dark}
+.plan-summary{margin:12px 0 0;padding:11px 12px;border-radius:10px;background:color-mix(in oklch,var(--color-accent) 10%,var(--color-canvas));color:var(--color-ink);font-size:12px;line-height:1.65}
+.plan-caption{margin:9px 0 0!important;color:var(--color-muted)!important;font-size:10px!important;line-height:1.6!important}
+.plan-actions{justify-content:space-between}
+.note-open{display:flex;align-items:center;gap:10px;min-width:0;flex:1;padding:0;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer}
+.note-open .note-title{min-width:0;flex:1;color:var(--color-ink);font-size:13px}
+.note-open small{display:block;overflow:hidden;margin-top:3px;color:var(--color-muted);font-size:11px;text-overflow:ellipsis;white-space:nowrap}
+/* Compact confirmation modal used by progress tracking. */
+.modal{position:fixed;z-index:70;inset:0;display:flex;align-items:center;justify-content:center;padding:18px;background:color-mix(in oklch,var(--color-shadow) 78%,transparent);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;pointer-events:none;visibility:hidden;transition:opacity .2s ease,visibility .2s}
+.modal.show{opacity:1;pointer-events:auto;visibility:visible;transition:opacity .2s ease,visibility 0s}
+.modal .box{position:relative;width:min(100%,430px);padding:25px 22px;border:1px solid var(--color-rule);border-radius:var(--radius-lg);background:var(--color-canvas-raised);box-shadow:0 20px 65px color-mix(in oklch,var(--color-shadow) 70%,transparent);text-align:center;transform:translateY(10px) scale(.98);transition:transform .22s var(--ease-out)}
+.modal.show .box{transform:translateY(0) scale(1)}
+.modal .box h3{margin:0 0 8px;color:var(--color-accent);font-size:16px;font-weight:720}
+.modal .box p{margin:0 0 8px;color:var(--color-ink);font-size:13px;line-height:1.6}
+.modal .box .ar{margin:12px 0;padding:10px 8px;border-radius:12px;background:color-mix(in oklch,var(--color-accent) 10%,var(--color-canvas));color:var(--color-ink);direction:rtl;font-size:23px;line-height:2}
+.modal .box .tr{margin:0 0 16px;color:var(--color-muted);font-size:12px}
+.modal .box .btns{display:flex;gap:9px}
+.modal .box .btns button{min-height:46px;flex:1;border:1px solid var(--color-rule);border-radius:var(--radius-sm);font-size:13px;font-weight:700;white-space:nowrap;cursor:pointer}
+.modal .box .btns .ok{border-color:var(--color-accent);background:var(--color-accent);color:var(--color-accent-ink)}
+.modal .box .btns .no{background:var(--color-canvas);color:var(--color-ink)}
+.toast{position:fixed;z-index:80;left:50%;bottom:calc(150px + env(safe-area-inset-bottom));width:max-content;max-width:calc(100% - 28px);padding:12px 16px;border:1px solid var(--color-rule);border-radius:12px;background:var(--color-canvas-deep);color:var(--color-ink);font-size:12px;line-height:1.5;text-align:center;box-shadow:0 12px 32px color-mix(in oklch,var(--color-shadow) 54%,transparent);opacity:0;pointer-events:none;transform:translate(-50%,10px);transition:opacity .2s ease,transform .2s ease}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.taphint{position:fixed;z-index:45;left:50%;bottom:calc(170px + env(safe-area-inset-bottom));width:max-content;max-width:calc(100% - 32px);padding:10px 14px;border:1px solid var(--color-rule);border-radius:12px;background:var(--color-canvas-deep);color:var(--color-ink);font-size:11px;line-height:1.5;text-align:center;opacity:0;pointer-events:none;transform:translate(-50%,10px);transition:opacity .22s ease,transform .22s ease}
+.taphint.show{opacity:1;transform:translate(-50%,0)}
+@media(min-width:64rem){
+  .reader-layout{grid-template-columns:minmax(150px,190px) minmax(0,720px)}
+  .reader-rail{position:sticky;top:96px;display:block;padding-top:26px}
+  .rail-label{margin:0 0 11px;color:var(--color-muted);font-size:10px;font-weight:750;letter-spacing:.12em;text-transform:uppercase}
+  .rail-page{margin:0;color:var(--color-ink);font-size:clamp(38px,4vw,54px);font-weight:520;letter-spacing:-.06em;line-height:1;font-variant-numeric:tabular-nums}
+  .rail-caption{margin:7px 0 0;color:var(--color-muted);font-size:12px}
+  .rail-progress{height:2px;margin:19px 0 13px;background:var(--color-rule)}
+  .rail-progress span{display:block;width:var(--progress,0%);height:100%;background:var(--color-accent);transition:width .25s ease}
+  .rail-juz{display:inline-flex;align-items:center;min-height:30px;padding:0 10px;border:1px solid var(--color-rule);border-radius:999px;color:var(--color-accent);font-size:10px;letter-spacing:.04em}
+  .rail-note{max-width:160px;margin:22px 0 0;color:var(--color-muted);font-size:11px;line-height:1.75}
+  .page-meta{margin-bottom:14px}
+}
+@media(max-width:63.99rem){
+  .reader-rail{display:none}
+  .reader-layout{grid-template-columns:minmax(0,720px)}
+}
+@media(max-width:47.99rem){
+  .bar{padding-inline:12px}
+  .bar-inner{gap:7px;min-height:48px}
+  .brand-lockup{gap:7px}
+  .brand-mark{display:none}
+  .brand-name{font-size:11px}
+  .brand-caption{display:none}
+  .now-reading b{font-size:12px}
+  .now-reading span{display:none}
+  .top-actions{gap:1px}
+  .icon-button{width:38px;height:40px;flex-basis:38px}
+  .stage{padding:13px 10px 22px}
+  .page-meta{margin-inline:2px;margin-bottom:9px;font-size:10px}
+  .mushaf{min-height:360px;padding:25px 17px;border-radius:3px}
+  .mushaf::before{inset:8px}
+  .line{padding:2px 0}
+  #bottombar{padding:9px 12px max(10px,env(safe-area-inset-bottom))}
+  .bottom-inner{grid-template-columns:minmax(0,1fr);gap:8px}
+  .scrubber{grid-template-columns:minmax(0,1fr) auto;column-gap:9px}
+  .scrub-head{margin-bottom:2px}
+  .page-slider{height:16px}
+  .footer-controls{display:grid;grid-template-columns:minmax(0,1fr) minmax(116px,1.2fr) minmax(0,1fr);gap:6px;direction:ltr}
+  .footer-button{min-height:42px;gap:5px;padding:0 7px;font-size:10px}
+  .footer-button.primary{min-width:0;padding-inline:8px;font-size:11px}
+  .footer-button svg{width:15px;height:15px}
+  .toast{bottom:calc(122px + env(safe-area-inset-bottom))}
+  .taphint{bottom:calc(130px + env(safe-area-inset-bottom))}
+}
+@media(max-width:359px){
+  .bar{padding-inline:9px}
+  .bar-inner{gap:4px}
+  .brand-name{max-width:42px;overflow:hidden;text-overflow:clip}
+  .back{width:36px;height:36px;flex-basis:36px}
+  .icon-button{width:35px;height:38px;flex-basis:35px}
+  .top-actions{gap:0}
+  .now-reading b{font-size:11px}
+  .mushaf{padding-inline:13px}
+  .footer-button{gap:3px;padding-inline:5px;font-size:9px}
+  .footer-button.primary{font-size:10px}
+  .scrub-head{font-size:9px}
+  .jump-field{font-size:9px}
+  .jump{width:40px}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 </style>
 <!-- Supabase adapter: sesi login dari index.html menular (same-origin, storageKey khatamku_auth) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -161,27 +274,54 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 </head>
 <body>
 <div class="bar">
-  <button class="back" aria-label="Kembali ke beranda" onclick="history.length>1?history.back():location.href='index.html'">‹</button>
-  <div class="info"><b id="surahName">Mushaf Madinah</b><span id="pageInfo">memuat…</span></div>
-  <button class="bkbtn" onclick="openNav()" title="Daftar surat & cari" aria-label="Daftar surat dan cari ayat">📚</button>
-  <button class="bkbtn" onclick="openBkPanel()" title="Daftar bookmark" aria-label="Daftar bookmark">🔖</button>
-  <button class="fsbtn" onclick="toggleFS()" title="Layar penuh / fokus baca" aria-label="Aktifkan atau keluar dari layar penuh">⛶</button>
-  <input class="jump" id="jump" type="number" min="1" max="604" placeholder="Hal" title="Loncat ke halaman" aria-label="Loncat ke halaman mushaf">
+  <div class="bar-inner">
+    <div class="brand-lockup">
+      <button class="back" aria-label="Kembali ke beranda" onclick="history.length>1?history.back():location.href='index.html'"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button>
+      <span class="brand-mark" aria-hidden="true">۞</span>
+      <span><span class="brand-name">KhatamKu</span><span class="brand-caption">Mushaf Madinah</span></span>
+    </div>
+    <div class="now-reading" aria-live="polite"><b id="surahName">Mushaf Madinah</b><span id="surahArabic"></span></div>
+    <div class="top-actions">
+      <button class="icon-button" onclick="openNav()" title="Daftar surat dan pencarian" aria-label="Daftar surat dan cari ayat"><svg viewBox="0 0 24 24"><path d="M4 5.5h6v13H4zM14 5.5h6v13h-6zM6.5 8.5h1M16.5 8.5h1M6.5 11.5h1M16.5 11.5h1"/></svg></button>
+      <button class="icon-button" onclick="openBkPanel()" title="Daftar bookmark" aria-label="Daftar bookmark"><svg viewBox="0 0 24 24"><path d="M6.5 4.5h11v16l-5.5-3.7-5.5 3.7z"/></svg></button>
+      <button class="icon-button" onclick="openNotesPanel()" title="Catatan ayat" aria-label="Daftar catatan ayat"><svg viewBox="0 0 24 24"><path d="M5 4.5h9l5 5v10H5zM14 4.5v5h5M8 14h8M8 17h5"/></svg></button>
+      <button class="icon-button" onclick="openSettings()" title="Pengaturan mushaf" aria-label="Pengaturan tampilan mushaf"><svg viewBox="0 0 24 24"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"/><path d="m19.4 13.5 1.1.8-1.1 1.9-1.3-.5a7.8 7.8 0 0 1-1.5.9l-.2 1.4h-2.2l-.4-1.3a7.7 7.7 0 0 1-1.7 0l-.7 1.1-1.9-1.1.5-1.3a7.8 7.8 0 0 1-.9-1.5l-1.4-.2v-2.2l1.3-.4a7.7 7.7 0 0 1 0-1.7l-1.1-.7 1.1-1.9 1.3.5a7.8 7.8 0 0 1 1.5-.9l.2-1.4h2.2l.4 1.3a7.7 7.7 0 0 1 1.7 0l.7-1.1 1.9 1.1-.5 1.3a7.8 7.8 0 0 1 .9 1.5l1.4.2v2.2l-1.3.4a7.7 7.7 0 0 1 0 1.7Z"/></svg></button>
+    </div>
+  </div>
 </div>
 
-<div class="stage"><div id="mushaf" class="mushaf"><div class="loading">Memuat mushaf…</div></div></div>
+<div class="stage"><div class="reader-layout">
+  <aside class="reader-rail" aria-label="Ringkasan posisi bacaan">
+    <p class="rail-label">Posisi bacaan</p><p class="rail-page" id="railPage">003</p>
+    <p class="rail-caption" id="railCaption">dari 604 halaman</p>
+    <div class="rail-progress" aria-hidden="true"><span id="railProgress"></span></div>
+    <span class="rail-juz" id="railJuz">Juz 1</span>
+    <p class="rail-note">Lanjutkan dengan tenang. Setiap ayat adalah langkah menuju khatam.</p>
+  </aside>
+  <main class="reader-main" aria-label="Halaman mushaf">
+    <div class="page-meta"><span id="pageInfo" aria-live="polite">Memuat halaman…</span><span class="page-context">Mushaf Madinah <span aria-hidden="true">·</span> 15 baris</span></div>
+    <div id="mushaf" class="mushaf" aria-label="Teks Al-Qur'an"><div class="loading">Memuat mushaf…</div></div>
+  </main>
+</div></div>
 
 <div id="bottombar">
-  <div class="markbar"><button id="markBtn" onclick="markRead()">✓ Tandai sudah dibaca sampai halaman ini</button></div>
-  <div class="nav">
-    <button id="next" class="g" onclick="go(page+1)">← Selanjutnya</button>
-    <button id="prev" onclick="go(page-1)">Sebelumnya →</button>
+  <div class="bottom-inner">
+    <div class="scrubber">
+      <div class="scrub-head"><span>Posisi halaman</span><output id="currentPageOutput">003 / 604</output></div>
+      <input class="page-slider" id="pageSlider" type="range" min="1" max="604" value="3" aria-label="Geser untuk memilih halaman mushaf">
+      <label class="jump-field" for="jump">Buka halaman <input class="jump" id="jump" type="number" min="1" max="604" inputmode="numeric" aria-label="Buka halaman mushaf"> / 604</label>
+    </div>
+    <div class="footer-controls">
+      <button id="prev" class="footer-button" onclick="go(page-1)" aria-label="Halaman sebelumnya"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg><span>Sebelumnya</span></button>
+      <button id="markBtn" class="footer-button primary" onclick="markRead()"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.2 4.2L19 7"/></svg><span>Catat bacaan</span></button>
+      <button id="next" class="footer-button" onclick="go(page+1)" aria-label="Halaman berikutnya"><span>Berikutnya</span><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button>
+    </div>
   </div>
 </div>
 <div id="toast" class="toast"></div>
-<div id="tapHint" class="taphint">👆 Ketuk: menu &nbsp;·&nbsp; ✋ Tekan lama: terjemah &nbsp;·&nbsp; 👉 Geser: ganti halaman &nbsp;·&nbsp; 🤏 Cubit: perbesar</div>
+<div id="tapHint" class="taphint">Ketuk ayat untuk arti · geser atau gunakan tombol untuk berpindah halaman · tahan ayat di ponsel untuk membuka arti</div>
 
-<div id="confirmModal" class="modal"><div class="box">
+<div id="confirmModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="cmTitle"><div class="box">
   <h3 id="cmTitle">Tandai Bacaan</h3>
   <p id="cmMsg"></p>
   <div class="ar" id="cmAr"></div>
@@ -192,9 +332,9 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
   </div>
 </div></div>
 
-<div id="backdrop" class="backdrop"></div>
+<div id="backdrop" class="backdrop" aria-hidden="true"></div>
 
-<div id="sheet" class="sheet">
+<div id="sheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="s-ayat">
   <div class="handle"></div>
   <div class="row"><span class="tag" id="s-ayat">QS</span>
     <span style="flex:1"></span>
@@ -204,31 +344,103 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
   <div class="ar" id="s-ar"></div>
   <p class="lt" id="s-lt"></p>
   <h3>Terjemah (Kemenag)</h3><p id="s-id"></p>
+  <div class="note-editor">
+    <label for="ayahNote">Catatan pribadi <span id="noteStatus">· tersimpan di perangkat ini</span></label>
+    <textarea id="ayahNote" maxlength="2000" rows="3" placeholder="Tulis renungan atau pengingat untuk ayat ini…"></textarea>
+    <div class="note-actions"><button type="button" class="note-delete" onclick="deleteAyahNote()">Hapus</button><button type="button" class="note-save" onclick="saveAyahNote()">Simpan catatan</button></div>
+  </div>
   <h3>Tafsir (Kemenag)</h3><p class="tafsir" id="s-tf"></p>
 </div>
 
-<div id="bkPanel" class="sheet">
+<div id="bkPanel" class="sheet" role="dialog" aria-modal="true" aria-labelledby="bkPanelTitle">
   <div class="handle"></div>
-  <div class="row"><span class="tag">🔖 Bookmark</span>
+  <div class="row"><span class="tag" id="bkPanelTitle">Bookmark tersimpan</span>
     <button class="close" onclick="hideBk()" style="margin-left:auto" aria-label="Tutup daftar bookmark">×</button></div>
   <div id="bkList"><div class="bk-empty">Memuat…</div></div>
 </div>
 
-<div id="navPanel" class="sheet">
+<div id="navPanel" class="sheet" role="dialog" aria-modal="true" aria-labelledby="navPanelTitle">
   <div class="handle"></div>
-  <div class="row"><span class="tag">📚 Daftar &amp; Cari</span>
+  <div class="row"><span class="tag" id="navPanelTitle">Daftar surat &amp; cari</span>
     <button class="close" onclick="hideNav()" style="margin-left:auto" aria-label="Tutup daftar surat dan pencarian">×</button></div>
   <input id="q" class="qbox" placeholder="Cari surat, kata dalam terjemah, atau ketik 2:255…" oninput="doSearch(this.value)">
   <div id="navList"></div>
 </div>
 
+<div id="notesPanel" class="sheet" role="dialog" aria-modal="true" aria-labelledby="notesPanelTitle">
+  <div class="handle"></div>
+  <div class="row"><span class="tag" id="notesPanelTitle">Catatan ayat</span>
+    <button class="close" onclick="hideNotesPanel()" style="margin-left:auto" aria-label="Tutup daftar catatan">×</button></div>
+  <p class="settings-intro">Renungan dan pengingat yang kamu simpan pada ayat.</p>
+  <div id="notesList"><div class="bk-empty">Memuat catatan…</div></div>
+</div>
+
+<div id="settingsPanel" class="sheet" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+  <div class="handle"></div>
+  <div class="row"><span class="tag" id="settingsTitle">Tampilan mushaf</span><button class="close" onclick="hideSettings()" style="margin-left:auto" aria-label="Tutup pengaturan tampilan">×</button></div>
+  <p class="settings-intro">Atur suasana dan ukuran huruf agar nyaman untuk tilawah. Pilihan ini tersimpan di perangkat ini.</p>
+  <p class="setting-label" id="themeLabel">Warna halaman</p>
+  <div class="theme-options" role="group" aria-labelledby="themeLabel">
+    <button class="theme-choice" data-theme-choice="paper" aria-pressed="true" onclick="setReaderTheme('paper')"><span class="theme-swatch" aria-hidden="true"><i></i><i></i></span><span>Kertas</span></button>
+    <button class="theme-choice" data-theme-choice="sepia" aria-pressed="false" onclick="setReaderTheme('sepia')"><span class="theme-swatch" aria-hidden="true"><i></i><i></i></span><span>Sepia</span></button>
+    <button class="theme-choice" data-theme-choice="night" aria-pressed="false" onclick="setReaderTheme('night')"><span class="theme-swatch" aria-hidden="true"><i></i><i></i></span><span>Malam</span></button>
+  </div>
+  <p class="setting-label" id="fontSizeLabel">Ukuran huruf Arab</p>
+  <div class="type-controls" role="group" aria-labelledby="fontSizeLabel">
+    <p>Huruf mushaf<small>Sesuaikan dengan kenyamanan membaca</small></p>
+    <div class="type-stepper"><button id="fontSmaller" onclick="adjustReaderFont(-2)" aria-label="Perkecil huruf Arab">−</button><output id="fontSizeOutput">28 px</output><button id="fontLarger" onclick="adjustReaderFont(2)" aria-label="Perbesar huruf Arab">+</button></div>
+  </div>
+  <div class="settings-secondary"><p>Gunakan seluruh layar untuk fokus membaca.</p><button id="settingsFullscreen" onclick="toggleFS()">Layar penuh</button></div>
+  <p class="setting-label" id="planLabel">Rencana khatam</p>
+  <div class="plan-card" aria-labelledby="planLabel">
+    <label for="planTargetDate">Target selesai membaca</label>
+    <input id="planTargetDate" type="date" onchange="renderReadingPlan()">
+    <p id="planSummary" class="plan-summary" aria-live="polite">Pilih tanggal untuk melihat target halaman harian.</p>
+    <p class="plan-caption">Rencana dimulai dari halaman mushaf saat disimpan. Posisi diperbarui saat halaman dibuka.</p>
+    <div class="plan-actions"><button type="button" id="clearPlanBtn" onclick="clearReadingPlan()">Hapus rencana</button><button type="button" class="plan-save" onclick="saveReadingPlan()">Simpan target</button></div>
+  </div>
+</div>
+
 <script>
 const FONT_BASE = "https://static.qurancdn.com/fonts/quran/hafs/v2/woff2"; // CORS * → aman
 const BASMALAH = "ﱁﱂﱃﱄ"; // glyph basmalah dari font halaman 1 (QS 1:1, tanpa penanda ayat)
-let page = parseInt(new URLSearchParams(location.search).get("p")) || 3;
+const LAST_PAGE_KEY = "khatamku_reader_last_page";
+const AYAH_NOTES_KEY = "khatamku_ayah_notes";
+const READING_PLAN_KEY = "khatamku_reading_plan";
+const pageParams = new URLSearchParams(location.search);
+const requestedPage = Number.parseInt(pageParams.get("p"),10);
+const hasExplicitPage = pageParams.has("p") && Number.isFinite(requestedPage);
+let lastReadPage = 0;
+try{ const stored=Number(localStorage.getItem(LAST_PAGE_KEY)); if(Number.isInteger(stored)&&stored>=1&&stored<=604) lastReadPage=stored; }catch(_){}
+let page = hasExplicitPage ? Math.min(604,Math.max(1,requestedPage)) : (lastReadPage||3);
+const resumedFromLastPage = !hasExplicitPage && lastReadPage>0;
+let resumeNoticeShown=false;
 let renderedPage = null;
 const surahCache = {}, fontLoaded = new Set(), pageCache = {};
 let curAyat = null;
+let currentJuz = 1;
+const READER_PREFS_KEY = "khatamku_reader_prefs";
+const readerPrefs = {theme:"paper",fontSize:28};
+let ayahNotes={};
+let readingPlan=null;
+try{
+  const saved=JSON.parse(localStorage.getItem(AYAH_NOTES_KEY)||"{}");
+  if(saved&&typeof saved==="object"&&!Array.isArray(saved)){
+    Object.entries(saved).forEach(([key,value])=>{ if(/^\d{1,3}:\d{1,3}$/.test(key)&&typeof value==="string") ayahNotes[key]=value.slice(0,2000); });
+  }
+}catch(_){}
+try{
+  const saved=JSON.parse(localStorage.getItem(READING_PLAN_KEY)||"null");
+  if(saved&&Number.isFinite(dateOrdinal(saved.targetDate))&&Number.isInteger(saved.startPage)&&saved.startPage>=1&&saved.startPage<=604){
+    const highestPage=Number.isInteger(saved.highestPage)?Math.min(604,Math.max(saved.startPage-1,saved.highestPage)):saved.startPage-1;
+    readingPlan={...saved,highestPage};
+  }
+}catch(_){}
+try{
+  const saved=JSON.parse(localStorage.getItem(READER_PREFS_KEY)||"{}");
+  if(["paper","sepia","night"].includes(saved.theme)) readerPrefs.theme=saved.theme;
+  if(Number.isFinite(saved.fontSize)) readerPrefs.fontSize=Math.min(40,Math.max(20,Math.round(saved.fontSize/2)*2));
+}catch(_){}
 
 async function fetchPageData(p){
   if(pageCache[p]) return pageCache[p];
@@ -263,7 +475,7 @@ async function go(p){
   if(p<1||p>604) return false;
   const myToken = ++_goToken;
   const stale = () => myToken !== _goToken;
-  page = p; hideSheet();
+  page = p; hideSheet(); updateNav();
   try{ history.replaceState(null,"","?p="+p); }catch(_){}   // simpan posisi → refresh tetap di halaman ini
   const box = document.getElementById("mushaf");
   const cached = !!pageCache[p];
@@ -273,7 +485,6 @@ async function go(p){
     if(stale()) return false;
     box.innerHTML = '<div class="loading">Memuat halaman '+p+'…</div>';
   }
-  document.getElementById("jump").value = p;
   let d;
   try{ d = await fetchPageData(p); }
   catch(e){ if(stale()) return false; box.classList.remove("fade"); box.innerHTML = '<div class="err">Halaman '+p+' belum diunduh (ingest berjalan). Coba lagi sebentar.</div>'; updateNav(); return false; }
@@ -286,6 +497,8 @@ async function go(p){
   for(const s of d.surahs){ try{ names[s] = await loadSurah(s); }catch(_){ names[s] = {nama:"Surah "+s, nama_arab:""}; } }
   if(stale()) return false;
   document.getElementById("surahName").textContent = "QS " + (names[d.surahs[0]] && names[d.surahs[0]].nama || d.surahs[0]);
+  document.getElementById("surahArabic").textContent = names[d.surahs[0]] && names[d.surahs[0]].nama_arab || "";
+  currentJuz = Number(d.juz)||1;
 
   // baris pertama tiap surah (min line di mana S:1 muncul) → sisipkan banner+basmalah sebelumnya
   const startAtLine = {}; const seen = {};
@@ -300,7 +513,9 @@ async function go(p){
     if(S!==undefined){                                 // banner untuk SEMUA surah (termasuk Al-Fatihah)
       const su = names[S] || {};
       const b = document.createElement("div"); b.className="surah-head";
-      b.innerHTML = `<span class="sglyph">s${String(S).padStart(3,"0")}</span><span class="slat">${su.nama||("Surah "+S)}</span>`;
+      const glyph=document.createElement("span"); glyph.className="sglyph"; glyph.textContent=`s${String(S).padStart(3,"0")}`;
+      const latin=document.createElement("span"); latin.className="slat"; latin.textContent=su.nama||("Surah "+S);
+      b.append(glyph,latin);
       box.appendChild(b);
       if(S!==9 && S!==1){                               // basmalah kecuali At-Taubah(9) & Al-Fatihah(1: basmalah=ayat 1)
         ensureFont(1);
@@ -320,7 +535,15 @@ async function go(p){
   document.getElementById("pageInfo").textContent = "Halaman "+p+" · Juz "+(d.juz||"-");
   fitPage();
   renderedPage = p;
+  lastReadPage=p;
+  try{ localStorage.setItem(LAST_PAGE_KEY,String(p)); }catch(_){}
+  if(readingPlan && p>readingPlan.highestPage){
+    readingPlan={...readingPlan,highestPage:p};
+    try{ localStorage.setItem(READING_PLAN_KEY,JSON.stringify(readingPlan)); }catch(_){}
+  }
   updateNav();
+  if(resumedFromLastPage && !resumeNoticeShown){ toast("Dilanjutkan dari halaman "+p+"."); resumeNoticeShown=true; }
+  if(document.getElementById("settingsPanel").classList.contains("show")) renderReadingPlan();
   requestAnimationFrame(()=> box.classList.remove("fade"));
   prefetchAdjacent(p);
   return true;
@@ -328,13 +551,100 @@ async function go(p){
 function updateNav(){
   document.getElementById("prev").disabled = page<=1;
   document.getElementById("next").disabled = page>=604;
+  const slider=document.getElementById("pageSlider");
+  const progress=((page-1)/603)*100;
+  if(slider){ slider.value=page; slider.style.setProperty("--progress",progress+"%"); }
+  document.documentElement.style.setProperty("--progress",progress+"%");
+  const label=String(page).padStart(3,"0")+" / 604";
+  document.getElementById("currentPageOutput").textContent=label;
+  document.getElementById("jump").value=page;
+  document.getElementById("railPage").textContent=String(page).padStart(3,"0");
+  document.getElementById("railJuz").textContent="Juz "+currentJuz;
+  document.getElementById("railCaption").textContent="dari 604 halaman · "+Math.round(progress)+"%";
 }
 // ── backdrop dim di belakang sheet/panel ──
 function syncBackdrop(){
-  const any = ["sheet","bkPanel","navPanel"].some(id=>document.getElementById(id).classList.contains("show"));
+  const any = ["sheet","bkPanel","navPanel","notesPanel","settingsPanel"].some(id=>document.getElementById(id).classList.contains("show"));
   document.getElementById("backdrop").classList.toggle("show", any);
 }
-document.getElementById("backdrop").addEventListener("click", ()=>{ hideSheet(); hideBk(); hideNav(); });
+document.getElementById("backdrop").addEventListener("click", ()=>{ hideSheet(); hideBk(); hideNav(); hideNotesPanel(); hideSettings(); });
+
+function persistReaderPrefs(){ try{ localStorage.setItem(READER_PREFS_KEY,JSON.stringify(readerPrefs)); }catch(_){} }
+function localDateValue(date=new Date()){
+  const offset=date.getTimezoneOffset()*60000;
+  return new Date(date.getTime()-offset).toISOString().slice(0,10);
+}
+function dateOrdinal(value){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(value)) return NaN;
+  const [year,month,day]=value.split("-").map(Number);
+  const stamp=Date.UTC(year,month-1,day), check=new Date(stamp);
+  if(check.getUTCFullYear()!==year||check.getUTCMonth()!==month-1||check.getUTCDate()!==day) return NaN;
+  return stamp/86400000;
+}
+function defaultPlanTarget(){
+  const date=new Date(); date.setDate(date.getDate()+30); return localDateValue(date);
+}
+function renderReadingPlan(){
+  const input=document.getElementById("planTargetDate");
+  const summary=document.getElementById("planSummary");
+  const target=input.value;
+  if(!target){ summary.textContent="Pilih tanggal untuk melihat target halaman harian."; return; }
+  const daysRemaining=dateOrdinal(target)-dateOrdinal(localDateValue())+1;
+  if(!Number.isFinite(daysRemaining)){ summary.textContent="Tanggal target tidak valid."; return; }
+  if(daysRemaining<1){ summary.textContent="Pilih hari ini atau tanggal yang akan datang."; return; }
+  const startPage=readingPlan ? readingPlan.startPage : page;
+  const total=Math.max(0,605-startPage);
+  const highWater=readingPlan ? readingPlan.highestPage : lastReadPage;
+  const completed=highWater>=startPage ? Math.min(total,highWater-startPage+1) : 0;
+  const remaining=total-completed;
+  if(remaining===0){ summary.textContent="Alhamdulillah, target bacaan ini sudah tercapai."; return; }
+  const perDay=Math.ceil(remaining/daysRemaining);
+  const nextPage=Math.max(startPage,highWater>=startPage?highWater+1:startPage);
+  const endPage=Math.min(604,nextPage+perDay-1);
+  summary.textContent=completed+" dari "+total+" halaman rencana · "+remaining+" halaman tersisa dalam "+daysRemaining+" hari. Target sekitar "+perDay+" halaman per hari (hari ini: "+nextPage+"–"+endPage+").";
+}
+function saveReadingPlan(){
+  const targetDate=document.getElementById("planTargetDate").value;
+  if(!targetDate){ toast("Pilih tanggal target khatam."); return; }
+  const targetOrdinal=dateOrdinal(targetDate);
+  if(!Number.isFinite(targetOrdinal)){ toast("Tanggal target tidak valid."); return; }
+  if(targetOrdinal<dateOrdinal(localDateValue())){ toast("Tanggal target harus hari ini atau setelahnya."); return; }
+  const next={targetDate,startPage:page,highestPage:page,savedAt:localDateValue()};
+  try{
+    localStorage.setItem(READING_PLAN_KEY,JSON.stringify(next));
+    readingPlan=next; renderReadingPlan(); toast("Rencana khatam tersimpan di perangkat ini.");
+  }catch(_){ toast("Rencana tidak dapat disimpan. Periksa ruang penyimpanan perangkat."); }
+}
+function clearReadingPlan(){
+  try{ localStorage.removeItem(READING_PLAN_KEY); readingPlan=null; document.getElementById("planTargetDate").value=""; renderReadingPlan(); toast("Rencana khatam dihapus."); }
+  catch(_){ toast("Rencana tidak dapat dihapus. Coba lagi."); }
+}
+function applyReaderPreferences(){
+  document.documentElement.dataset.readingTheme=readerPrefs.theme;
+  document.documentElement.style.setProperty("--quran-size",readerPrefs.fontSize+"px");
+  document.querySelectorAll("[data-theme-choice]").forEach(button=>button.setAttribute("aria-pressed",String(button.dataset.themeChoice===readerPrefs.theme)));
+  document.getElementById("fontSizeOutput").textContent=readerPrefs.fontSize+" px";
+  document.getElementById("fontSmaller").disabled=readerPrefs.fontSize<=20;
+  document.getElementById("fontLarger").disabled=readerPrefs.fontSize>=40;
+  if(renderedPage!==null) requestAnimationFrame(fitPage);
+}
+function openSettings(){
+  hideSheet(); hideBk(); hideNav(); hideNotesPanel();
+  const target=document.getElementById("planTargetDate");
+  if(!target.value) target.value=readingPlan?.targetDate||defaultPlanTarget();
+  renderReadingPlan();
+  applyReaderPreferences();
+  document.getElementById("settingsPanel").classList.add("show"); syncBackdrop();
+}
+function hideSettings(){ document.getElementById("settingsPanel").classList.remove("show"); syncBackdrop(); }
+function setReaderTheme(theme){
+  if(!["paper","sepia","night"].includes(theme)) return;
+  readerPrefs.theme=theme; persistReaderPrefs(); applyReaderPreferences();
+}
+function adjustReaderFont(delta){
+  readerPrefs.fontSize=Math.min(40,Math.max(20,readerPrefs.fontSize+delta));
+  persistReaderPrefs(); applyReaderPreferences();
+}
 
 let _ayatLoadToken = 0;
 async function openAyat(vk){
@@ -344,6 +654,8 @@ async function openAyat(vk){
   document.querySelectorAll(`.w[data-v="${vk}"]`).forEach(e=>e.classList.add("active"));
   curAyat = {s,a,vk};
   document.getElementById("s-ayat").textContent = "QS " + vk;
+  document.getElementById("ayahNote").value=ayahNotes[vk]||"";
+  document.getElementById("noteStatus").textContent=ayahNotes[vk]?"· catatan tersimpan":"· belum ada catatan";
   const set=(id,v)=>document.getElementById(id).textContent=v;
   set("s-ar","…"); set("s-lt",""); set("s-id","Memuat…"); set("s-tf","");
   document.getElementById("sheet").classList.add("show");
@@ -362,6 +674,60 @@ async function openAyat(vk){
 }
 function hideSheet(){ document.getElementById("sheet").classList.remove("show"); syncBackdrop();
   document.querySelectorAll(".w.active").forEach(e=>e.classList.remove("active")); }
+function saveAyahNote(){
+  if(!curAyat) return;
+  const text=document.getElementById("ayahNote").value.trim();
+  const next={...ayahNotes};
+  if(text) next[curAyat.vk]=text.slice(0,2000); else delete next[curAyat.vk];
+  try{
+    localStorage.setItem(AYAH_NOTES_KEY,JSON.stringify(next));
+    ayahNotes=next;
+    document.getElementById("noteStatus").textContent=text?"· catatan tersimpan":"· catatan kosong";
+    toast(text?"Catatan ayat tersimpan di perangkat ini.":"Catatan kosong dihapus.");
+    if(document.getElementById("notesPanel").classList.contains("show")) renderNotesPanel();
+  }catch(_){ toast("Catatan tidak dapat disimpan. Periksa ruang penyimpanan perangkat."); }
+}
+function deleteAyahNote(){
+  if(!curAyat || !ayahNotes[curAyat.vk]) return;
+  const next={...ayahNotes}; delete next[curAyat.vk];
+  try{
+    localStorage.setItem(AYAH_NOTES_KEY,JSON.stringify(next));
+    ayahNotes=next; document.getElementById("ayahNote").value="";
+    document.getElementById("noteStatus").textContent="· belum ada catatan";
+    toast("Catatan ayat dihapus.");
+    if(document.getElementById("notesPanel").classList.contains("show")) renderNotesPanel();
+  }catch(_){ toast("Catatan tidak dapat dihapus. Coba lagi."); }
+}
+function renderNotesPanel(){
+  const list=document.getElementById("notesList");
+  const items=Object.entries(ayahNotes).filter(([,text])=>text.trim()).sort(([a],[b])=>{
+    const [as,aa]=a.split(":").map(Number),[bs,ba]=b.split(":").map(Number);
+    return as-bs||aa-ba;
+  });
+  list.innerHTML="";
+  if(!items.length){ list.innerHTML='<div class="bk-empty">Belum ada catatan. Buka ayat lalu tulis renungan atau pengingat pribadi.</div>'; return; }
+  items.forEach(([vk,text])=>{
+    const [s,a]=vk.split(":").map(Number);
+    const row=document.createElement("div"); row.className="bk-item";
+    const open=document.createElement("button"); open.type="button"; open.className="note-open"; open.setAttribute("aria-label","Buka catatan QS "+vk);
+    const ref=document.createElement("span"); ref.className="n"; ref.textContent="QS "+vk;
+    const title=document.createElement("span"); title.className="note-title"; title.textContent="Catatan pribadi";
+    const excerpt=document.createElement("small"); excerpt.textContent=text.length>110?text.slice(0,110)+"…":text; title.appendChild(excerpt);
+    open.append(ref,title); open.onclick=()=>{ hideNotesPanel(); gotoAyat(s,a); };
+    const remove=document.createElement("button"); remove.type="button"; remove.className="del"; remove.title="Hapus catatan"; remove.setAttribute("aria-label","Hapus catatan QS "+vk); remove.textContent="×";
+    remove.onclick=()=>{
+      const next={...ayahNotes}; delete next[vk];
+      try{ localStorage.setItem(AYAH_NOTES_KEY,JSON.stringify(next)); ayahNotes=next; renderNotesPanel(); toast("Catatan ayat dihapus."); }
+      catch(_){ toast("Catatan tidak dapat dihapus. Coba lagi."); }
+    };
+    row.append(open,remove); list.appendChild(row);
+  });
+}
+function openNotesPanel(){
+  hideSheet(); hideBk(); hideNav(); hideSettings();
+  renderNotesPanel(); document.getElementById("notesPanel").classList.add("show"); syncBackdrop();
+}
+function hideNotesPanel(){ document.getElementById("notesPanel").classList.remove("show"); syncBackdrop(); }
 async function copyAyat(){
   if(!curAyat) return;
   try{
@@ -434,10 +800,14 @@ async function openBkPanel(){
     let nama = "Surah "+it.s, preview = "";
     try{ const su = await loadSurah(it.s); nama = su.nama; const ay = su.ayat.find(x=>x.n===it.a); if(ay) preview = (ay.id||"").slice(0,60)+"…"; }catch(_){}
     const row = document.createElement("div"); row.className="bk-item";
-    row.innerHTML = `<span class="n">${it.s}:${it.a}</span><div class="t">${nama}<small>${preview}</small></div><button class="del" title="Hapus">🗑</button>`;
+    const reference=document.createElement("span"); reference.className="n"; reference.textContent=it.s+":"+it.a;
+    const title=document.createElement("div"); title.className="t"; title.textContent=nama;
+    const excerpt=document.createElement("small"); excerpt.textContent=preview; title.appendChild(excerpt);
+    const remove=document.createElement("button"); remove.className="del"; remove.type="button"; remove.title="Hapus bookmark"; remove.setAttribute("aria-label","Hapus bookmark QS "+it.s+":"+it.a); remove.textContent="🗑";
+    row.append(reference,title,remove);
     const jump = ()=>gotoAyat(it.s,it.a);
-    row.querySelector(".t").onclick = jump; row.querySelector(".n").onclick = jump;
-    row.querySelector(".del").onclick = async(e)=>{ e.stopPropagation(); await removeBk(it); openBkPanel(); };
+    title.onclick = jump; reference.onclick = jump;
+    remove.onclick = async(e)=>{ e.stopPropagation(); await removeBk(it); openBkPanel(); };
     list.appendChild(row);
   }
 }
@@ -452,7 +822,7 @@ async function removeBk(it){
   if(i>=0){ bk.splice(i,1); localStorage.setItem(bkKey(), JSON.stringify(bk)); }
 }
 async function gotoAyat(s,a){
-  hideBk();
+  hideBk(); hideNotesPanel();
   let index;
   try{
     index = await loadIndex();
@@ -469,16 +839,14 @@ function toast(msg){
   const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show");
   clearTimeout(window._tt); window._tt=setTimeout(()=>t.classList.remove("show"),3200);
 }
-// layar penuh browser (chrome browser). Mode immersive (chrome kita) selalu aktif.
+// Layar penuh browser diaktifkan secara eksplisit dari kontrol pengaturan.
 function toggleFS(){
   try{
     if(!document.fullscreenElement && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(()=>{});
     else if(document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(()=>{});
   }catch(_){}
 }
-function toggleControls(){ document.body.classList.toggle("controls"); }
-
-// Gestur: ketuk sekali → menu · tekan lama (~0,5s) ayat → terjemah · geser → ganti halaman
+// Gestur: ketuk ayat → terjemah · tekan lama di ponsel → terjemah · geser → ganti halaman
 function setupGestures(){
   const stage=document.querySelector(".stage");
   stage.addEventListener("contextmenu", e=>e.preventDefault());   // cegah popup copy saat tekan lama
@@ -505,7 +873,8 @@ function setupGestures(){
       if(window.visualViewport && window.visualViewport.scale<=1.01){ if(dx>0) go(page+1); else go(page-1); }
       return;
     }   // RTL: geser kanan = maju; saat diperbesar, geser untuk menjelajah halaman
-    if(Math.abs(dx)<MOVE && Math.abs(dy)<MOVE && dt<500){ toggleControls(); }
+    if(Math.abs(dx)<MOVE && Math.abs(dy)<MOVE && dt<LP && lpWord) openAyat(lpWord.dataset.v);
+    // Ketukan pada ruang kosong tidak menyembunyikan kontrol baca yang selalu terlihat.
   },{passive:true});
   stage.addEventListener("touchcancel",e=>{
     clearTimeout(lpTimer); moved=true; if(e.touches.length) multiTouch=true; else multiTouch=false;
@@ -513,7 +882,31 @@ function setupGestures(){
   },{passive:true});
   stage.addEventListener("click",e=>{                 // desktop
     if(suppress) return;
-    const w=e.target.closest(".w"); if(w) openAyat(w.dataset.v); else toggleControls();
+    const w=e.target.closest(".w"); if(w) openAyat(w.dataset.v);
+  });
+}
+
+function setupKeyboard(){
+  document.addEventListener("keydown",e=>{
+    if(e.key==="Escape"){
+      hideSheet(); hideBk(); hideNav(); hideNotesPanel(); hideSettings();
+      if(document.getElementById("confirmModal").classList.contains("show")) cmResolve(false);
+      return;
+    }
+    const dialog=document.querySelector(".modal.show,.sheet.show");
+    if(e.key==="Tab" && dialog){
+      const focusable=[...dialog.querySelectorAll("button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),a[href],[tabindex]:not([tabindex='-1'])")].filter(el=>el.getClientRects().length);
+      if(!focusable.length){ e.preventDefault(); return; }
+      const first=focusable[0], last=focusable[focusable.length-1];
+      if(e.shiftKey && (document.activeElement===first || !dialog.contains(document.activeElement))){ e.preventDefault(); last.focus(); }
+      else if(!e.shiftKey && (document.activeElement===last || !dialog.contains(document.activeElement))){ e.preventDefault(); first.focus(); }
+      return;
+    }
+    const target=e.target;
+    if(target.matches("input,textarea,select,[contenteditable='true']") || e.altKey || e.ctrlKey || e.metaKey) return;
+    if(dialog) return;
+    if(e.key==="ArrowRight"){ e.preventDefault(); go(page+1); }
+    if(e.key==="ArrowLeft"){ e.preventDefault(); go(page-1); }
   });
 }
 
@@ -550,7 +943,9 @@ async function checkUdzur(){
     const u = d && d.profile && d.profile.udzurStatus;
     if(u){ udzurActive=true;
       const b=document.getElementById("markBtn");
-      b.disabled=true; b.textContent="🌙 Sedang Udzur ("+u+") — pencatatan dinonaktifkan";
+      b.disabled=true; b.textContent="Udzur · nonaktif";
+      b.title="Sedang Udzur ("+u+") — pencatatan dinonaktifkan";
+      b.setAttribute("aria-label",b.title);
     }
   }catch(_){}
 }
@@ -652,38 +1047,44 @@ function doSearch(qraw){
   if(!list.children.length) list.innerHTML='<div class="bk-empty">Tak ada hasil.</div>';
 }
 
-// auto-skala font agar tiap baris pas selebar wadah (anti meluber horizontal).
-// baseFontPx menyusut monoton (tak pernah membesar lagi di sesi yang sama) supaya
-// ukuran huruf tidak melompat-lompat drastis saat pindah antar halaman.
-let baseFontPx = 28;
+// Skala setiap halaman dari ukuran pilihan pengguna; ukuran tidak menyusut permanen
+// ketika berganti halaman atau bertambah lagi tanpa batas saat jendela diubah.
 function fitPage(){
   const box=document.getElementById("mushaf");
   const lines=box.querySelectorAll(".line");
   if(!lines.length) return;
-  const avail=box.clientWidth-34;
-  lines.forEach(l=> l.style.fontSize=baseFontPx+"px");
+  const style=getComputedStyle(box);
+  const avail=box.clientWidth-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight)-8;
+  lines.forEach(l=> l.style.fontSize=readerPrefs.fontSize+"px");
   let maxW=0;
   lines.forEach(l=>{ let w=0; l.querySelectorAll(".w").forEach(s=> w+=s.getBoundingClientRect().width); if(w>maxW) maxW=w; });
-  if(maxW>avail){
-    baseFontPx = Math.max(13, baseFontPx*avail/maxW);
-    lines.forEach(l=> l.style.fontSize=baseFontPx+"px");
-  }
+  const fittedSize=maxW>avail ? Math.max(13,readerPrefs.fontSize*avail/maxW) : readerPrefs.fontSize;
+  lines.forEach(l=> l.style.fontSize=fittedSize+"px");
 }
 let _rz=null;
-window.addEventListener("resize", ()=>{ clearTimeout(_rz); _rz=setTimeout(()=>{ baseFontPx=28; fitPage(); },150); });
+window.addEventListener("resize", ()=>{ clearTimeout(_rz); _rz=setTimeout(fitPage,150); });
 
-document.getElementById("jump").addEventListener("change",e=>{ const p=parseInt(e.target.value); if(p) go(p); });
+document.getElementById("jump").addEventListener("change",e=>{
+  if(e.target.value.trim()===""){ updateNav(); return; }
+  const requested=Number(e.target.value);
+  if(!Number.isFinite(requested)){ updateNav(); return; }
+  const p=Math.min(604,Math.max(1,Math.round(requested)));
+  e.target.value=p; go(p);
+});
+document.getElementById("pageSlider").addEventListener("input",e=>{
+  const p=Number(e.target.value), progress=((p-1)/603)*100;
+  e.target.style.setProperty("--progress",progress+"%");
+  document.getElementById("currentPageOutput").textContent=String(p).padStart(3,"0")+" / 604";
+});
+document.getElementById("pageSlider").addEventListener("change",e=>go(Number(e.target.value)));
+applyReaderPreferences();
 go(page);
 initBookmarks().catch(()=>toast("Bookmark akun belum dapat disinkronkan. Periksa koneksi."));
 loadIndex().catch(()=>{});
 checkUdzur();
-// immersive (fullscreen fokus) sebagai default; kontrol tampil sebentar lalu sembunyi
-document.body.classList.add("immersive","controls");
 setupGestures();
-setTimeout(()=>{
-  document.body.classList.remove("controls");
-  const h=document.getElementById("tapHint"); if(h){ h.classList.add("show"); setTimeout(()=>h.classList.remove("show"),4200); }
-}, 1600);
+setupKeyboard();
+setTimeout(()=>{ const h=document.getElementById("tapHint"); if(h){ h.classList.add("show"); setTimeout(()=>h.classList.remove("show"),4200); } },700);
 </script>
 </body>
 </html>

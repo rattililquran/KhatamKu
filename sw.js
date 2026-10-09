@@ -1,13 +1,14 @@
 // sw.js — KhatamKu Service Worker
 // Strategi: Cache-first untuk aset statis, Network-first untuk API
 
-const CACHE_NAME = 'khatamku-v33';
+const CACHE_NAME = 'khatamku-v34';
 const BASE = '/KhatamKu';
 
 // Aset yang di-cache saat install (app shell)
 const PRECACHE_URLS = [
   BASE + '/',
   BASE + '/index.html',
+  BASE + '/reader.html',
   BASE + '/api.supabase.js',
   BASE + '/potret-content.js',
   BASE + '/manifest.json',

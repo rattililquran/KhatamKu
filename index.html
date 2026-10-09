@@ -3870,7 +3870,15 @@
       document.getElementById('adCsvReportSuccess').textContent = totalSuccess;
       document.getElementById('adCsvReportSkipped').textContent = totalSkipped;
       document.getElementById('adCsvReportFailed').textContent = totalFailed;
-      document.getElementById('adCsvReportErrors').innerHTML = allErrors.map(e => `<p class="py-1">${e}</p>`).join('');
+      const errorList = document.getElementById('adCsvReportErrors');
+      const errorItems = document.createDocumentFragment();
+      allErrors.forEach(error => {
+        const item = document.createElement('p');
+        item.className = 'py-1';
+        item.textContent = String(error);
+        errorItems.appendChild(item);
+      });
+      errorList.replaceChildren(errorItems);
 
       // Refresh user table
       adminLoadUsers();
