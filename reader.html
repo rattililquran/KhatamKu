@@ -507,7 +507,7 @@ function prefetchAdjacent(p){
   [p+1, p-1].forEach(np=>{
     if(np<1 || np>604 || pageCache[np]) return;
     fetchPageData(np).catch(()=>{});
-    ensureFont(np);
+    ensureFont(np).catch(()=>{});
   });
 }
 
@@ -584,8 +584,18 @@ async function go(p){
   try{ d = await fetchPageData(p); }
   catch(e){ if(stale()) return false; box.classList.remove("fade"); box.innerHTML = '<div class="err">Halaman '+p+' belum diunduh (ingest berjalan). Coba lagi sebentar.</div>'; updateNav(); return false; }
   if(stale()) return false;
-  await Promise.all([ensureFont(p), ensureFont(1),     // tunggu font halaman + basmalah + nama-surat → hindari kedip
-    document.fonts.load("38px 'surahname'").catch(()=>{})]);
+  try{
+    await Promise.all([ensureFont(p), ensureFont(1),   // tunggu font halaman + basmalah + nama-surat → hindari kedip
+      document.fonts.load("38px 'surahname'").catch(()=>{})]);
+  }catch(_){
+    if(stale()) return false;
+    box.classList.remove("fade");
+    const error=document.createElement("div"); error.className="err";
+    error.append(document.createTextNode("Font mushaf gagal dimuat. Periksa koneksi, lalu coba lagi. "));
+    const retry=document.createElement("button"); retry.type="button"; retry.className="footer-button";
+    retry.textContent="Coba lagi"; retry.addEventListener("click",()=>go(p));
+    error.appendChild(retry); box.replaceChildren(error); updateNav(); return false;
+  }
   if(stale()) return false;
   // muat nama semua surah di halaman ini (untuk banner)
   const names = {};
@@ -613,7 +623,6 @@ async function go(p){
       b.append(glyph,latin);
       box.appendChild(b);
       if(S!==9 && S!==1){                               // basmalah kecuali At-Taubah(9) & Al-Fatihah(1: basmalah=ayat 1)
-        ensureFont(1);
         const bs = document.createElement("div"); bs.className="basmalah"; bs.style.fontFamily="'qcf1'";
         bs.textContent = BASMALAH;
         box.appendChild(bs);
@@ -880,7 +889,8 @@ async function toggleBookmark(){
   }
   let bk = getBk(); const i = bk.findIndex(b=>b.v===key);
   if(i>=0) bk.splice(i,1); else bk.push({v:key,s:curAyat.s,a:curAyat.a});
-  localStorage.setItem(bkKey(), JSON.stringify(bk)); refreshBk();
+  try{ localStorage.setItem(bkKey(), JSON.stringify(bk)); refreshBk(); }
+  catch(_){ toast("Bookmark tidak dapat disimpan. Periksa ruang penyimpanan perangkat."); }
 }
 // ── Indeks ayat, posisi baca, dan data penanda ──
 let PAGEIDX = null, _pageIndexPromise = null;

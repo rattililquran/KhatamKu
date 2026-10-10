@@ -2652,6 +2652,7 @@
     // ===== FITUR 8: RIWAYAT BACAAN LENGKAP =====
     let riwayatCache = null;
     let riwayatFilterAktif = null;
+    let riwayatLoadToken = 0;
 
     function openRiwayatModal() {
       openModal('modalRiwayat');
@@ -2672,26 +2673,33 @@
     }
 
     function loadRiwayatData() {
+      const token = ++riwayatLoadToken;
+      const userId = currentUser?.id;
       document.getElementById('riwayatSkeleton').classList.remove('hidden');
       document.getElementById('riwayatList').innerHTML = '<div id="riwayatSkeleton" class="space-y-2"><div class="skeleton h-16 rounded-2xl"></div><div class="skeleton h-16 rounded-2xl"></div><div class="skeleton h-16 rounded-2xl"></div><div class="skeleton h-16 rounded-2xl"></div><div class="skeleton h-16 rounded-2xl"></div></div>';
 
-      if (currentUser) {
-        gscript.getFullHistory(currentUser.id)
+      if (userId) {
+        gscript.getFullHistory(userId)
           .then(data => {
+            if (token !== riwayatLoadToken || currentUser?.id !== userId) return;
             riwayatCache = data;
-            const bulanIni = new Date().toISOString().substring(0, 7);
+            const bulanIni = getLocalDateString().substring(0, 7);
             riwayatFilterAktif = bulanIni;
             buildRiwayatFilterBar(data);
             renderRiwayat(data, bulanIni);
           })
           .catch(err => {
-            document.getElementById('riwayatList').innerHTML = `<p class="text-center text-slate-400 py-8 text-sm font-medium">Gagal memuat riwayat.<br>${err.message || err}</p>`;
+            if (token !== riwayatLoadToken || currentUser?.id !== userId) return;
+            const message = document.createElement('p');
+            message.className = 'text-center text-slate-400 py-8 text-sm font-medium';
+            message.textContent = `Gagal memuat riwayat. ${String(err?.message || err || '')}`;
+            document.getElementById('riwayatList').replaceChildren(message);
           });
       } else {
         // Preview mode dummy
         const dummy = generateRiwayatDummy();
         riwayatCache = dummy;
-        const bulanIni = new Date().toISOString().substring(0, 7);
+        const bulanIni = getLocalDateString().substring(0, 7);
         riwayatFilterAktif = bulanIni;
         buildRiwayatFilterBar(dummy);
         renderRiwayat(dummy, bulanIni);
@@ -2706,7 +2714,7 @@
         d.setDate(d.getDate() - i);
         if (Math.random() > 0.25) {
           logs.push({
-            tanggal: d.toISOString().substring(0, 10),
+            tanggal: getLocalDateString(d),
             halamanDibaca: Math.floor(Math.random() * 12) + 2,
             halamanAkhir: 10 + (45 - i) * 3
           });
@@ -3016,16 +3024,25 @@
 
     // ===== #7 localStorage Cache Keys =====
     const CACHE_KEYS = { profile: 'khatamku_profile', todayProgress: 'khatamku_todayProg' };
+    function getUserCacheKeys(userId = currentUser?.id) {
+      if (userId == null || userId === '') return null;
+      const key = encodeURIComponent(String(userId));
+      return { profile: `khatamku_profile:${key}`, todayProgress: `khatamku_todayProg:${key}` };
+    }
     function saveToCache() {
       try {
-        if (appProfile) localStorage.setItem(CACHE_KEYS.profile, JSON.stringify(appProfile));
-        localStorage.setItem(CACHE_KEYS.todayProgress, todayProgressCount.toString());
+        const keys = getUserCacheKeys();
+        if (!keys) return;
+        if (appProfile) localStorage.setItem(keys.profile, JSON.stringify(appProfile));
+        localStorage.setItem(keys.todayProgress, todayProgressCount.toString());
       } catch(e) {}
     }
     function loadFromCache() {
       try {
-        const p = localStorage.getItem(CACHE_KEYS.profile);
-        const t = localStorage.getItem(CACHE_KEYS.todayProgress);
+        const keys = getUserCacheKeys();
+        if (!keys) return false;
+        const p = localStorage.getItem(keys.profile);
+        const t = localStorage.getItem(keys.todayProgress);
         if (p) appProfile = JSON.parse(p);
         if (t) todayProgressCount = parseInt(t) || 0;
         return !!p;
@@ -3314,12 +3331,19 @@
     }
 
     function doLogout() {
+      studentLoadToken++;
+      riwayatLoadToken++;
+      riwayatCache = null;
+      riwayatFilterAktif = null;
+      const userCacheKeys = getUserCacheKeys();
       const signOut = gscript.logout().catch(err => {
         console.warn('Sesi lokal dibersihkan setelah sign-out gagal:', err);
       });
       localStorage.removeItem('khatamku_user');
       sessionStorage.removeItem('khatamku_user');
-      // #7 Clear cache on logout
+      // Profile cache is user-scoped so another account in a different tab cannot reuse it.
+      if (userCacheKeys) Object.values(userCacheKeys).forEach(k => localStorage.removeItem(k));
+      // Remove legacy unscoped cache entries; they cannot be safely attributed to an account.
       Object.values(CACHE_KEYS).forEach(k => localStorage.removeItem(k));
       currentUser = null;
       appProfile = null;
@@ -3382,11 +3406,8 @@
         .catch(err => {
           hideLoading();
           const adminWa = 'https://wa.me/6282316993233';
-          const msg = (err.message || err).toString();
+          const msg = String(err?.message || err || 'Gagal masuk. Silakan coba lagi.');
           const isWrong = msg.toLowerCase().includes('salah') || msg.toLowerCase().includes('tidak');
-          const detail = isWrong
-            ? `Username atau Password salah, mohon dicoba kembali atau hubungi <a href="${adminWa}" target="_blank" class="font-extrabold text-sky-400 underline">Rattililqur'an</a>.`
-            : msg;
           let errEl = document.getElementById('loginErrorMsg');
           if (!errEl) {
             errEl = document.createElement('p');
@@ -3394,7 +3415,19 @@
             errEl.className = 'text-xs text-red-500 font-semibold text-center mt-1 leading-snug';
             document.getElementById('loginForm').appendChild(errEl);
           }
-          errEl.innerHTML = detail;
+          errEl.replaceChildren();
+          if (isWrong) {
+            errEl.append(document.createTextNode('Username atau Password salah, mohon dicoba kembali atau hubungi '));
+            const link = document.createElement('a');
+            link.href = adminWa;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            link.className = 'font-extrabold text-sky-400 underline';
+            link.textContent = "Rattililqur'an";
+            errEl.append(link, document.createTextNode('.'));
+          } else {
+            errEl.textContent = msg;
+          }
           errEl.classList.remove('hidden');
           setTimeout(() => errEl.classList.add('hidden'), 15000);
         });
@@ -3596,13 +3629,19 @@
       }
     }
 
+    let studentLoadToken = 0;
+
     function loadStudentData() {
+      if (!currentUser || currentUser.role !== 'murid') { hideSkeleton(); return; }
+      const userId = currentUser.id;
+      const token = ++studentLoadToken;
       showSkeleton();
       const today = getLocalDateString();
       document.getElementById('progressDate').value = today;
 
-      gscript.getInitialData(currentUser.id)
+      gscript.getInitialData(userId)
         .then(data => {
+          if (token !== studentLoadToken || currentUser?.id !== userId || currentUser?.role !== 'murid') return;
           appProfile = data.profile;
           todayProgressCount = data.todayProgress || 0;
           saveToCache();
@@ -3615,16 +3654,23 @@
           }
           document.getElementById('pullRefreshIndicator').classList.remove('visible');
         })
-        .catch(err => { hideSkeleton(); onError(err); });
+        .catch(err => {
+          if (token !== studentLoadToken || currentUser?.id !== userId || currentUser?.role !== 'murid') return;
+          hideSkeleton(); onError(err);
+        });
     }
 
     // #7 Silent background refresh (no skeleton, just update data)
     function loadStudentDataSilent() {
+      if (!currentUser || currentUser.role !== 'murid') return;
+      const userId = currentUser.id;
+      const token = ++studentLoadToken;
       const today = getLocalDateString();
       document.getElementById('progressDate').value = today;
 
-      gscript.getInitialData(currentUser.id)
+      gscript.getInitialData(userId)
         .then(data => {
+          if (token !== studentLoadToken || currentUser?.id !== userId || currentUser?.role !== 'murid') return;
           appProfile = data.profile;
           todayProgressCount = data.todayProgress || 0;
           saveToCache();
@@ -3752,9 +3798,13 @@
     let adUserPage = 0;
     const AD_PAGE_SIZE = 50;
     let adUserTotal = 0;
+    let adUserLoadToken = 0;
     let adSearchTimer = null;
     let adCsvParsedData = null;
     let adHalaqahCache = [];
+    let adHalaqahCacheLoaded = false;
+    let adHalaqahCachePromise = null;
+    let adHalaqahCacheVersion = 0;
 
     function adminSearchUsersDebounced() {
       clearTimeout(adSearchTimer);
@@ -3762,15 +3812,17 @@
     }
 
     function adminLoadUsers() {
+      const token = ++adUserLoadToken;
       const role = document.getElementById('adUserRoleFilter').value || null;
       const search = document.getElementById('adUserSearch').value.trim() || null;
       gscript.adminListUsers({ role, search, limit: AD_PAGE_SIZE, offset: adUserPage * AD_PAGE_SIZE })
         .then(d => {
+          if (token !== adUserLoadToken) return;
           adUserTotal = d.total;
           renderAdminUserTable(d.users || []);
           updateAdminUserPagination();
         })
-        .catch(onError);
+        .catch(err => { if (token === adUserLoadToken) onError(err); });
     }
 
     function renderAdminUserTable(users) {
@@ -3819,24 +3871,44 @@
 
     // Populate halaqah dropdown cache
     async function adminEnsureHalaqahCache() {
-      if (adHalaqahCache.length) return;
-      try {
-        const { data } = await sb.from('halaqah').select('id, nama').order('id');
-        adHalaqahCache = data || [];
-      } catch (_) {}
+      if (adHalaqahCacheLoaded) return;
+      if (adHalaqahCachePromise) return adHalaqahCachePromise;
+      const version = adHalaqahCacheVersion;
+      const request = sb.from('halaqah').select('id, nama').order('id')
+        .then(({ data, error }) => {
+          if (error) throw error;
+          if (version === adHalaqahCacheVersion) {
+            adHalaqahCache = data || [];
+            adHalaqahCacheLoaded = true;
+          }
+        })
+        .finally(() => {
+          if (adHalaqahCachePromise === request) adHalaqahCachePromise = null;
+        });
+      adHalaqahCachePromise = request;
+      return request;
+    }
+
+    function adminInvalidateHalaqahCache() {
+      adHalaqahCacheVersion++;
+      adHalaqahCache = [];
+      adHalaqahCacheLoaded = false;
+      adHalaqahCachePromise = null;
     }
 
     function adminPopulateHalaqahDropdown(selectId, selected) {
       const sel = document.getElementById(selectId);
-      sel.innerHTML = '<option value="">Tanpa Halaqah (Publik)</option>';
+      sel.replaceChildren(new Option('Tanpa Halaqah (Publik)', ''));
       adHalaqahCache.forEach(h => {
-        sel.innerHTML += `<option value="${h.id}" ${h.id === selected ? 'selected' : ''}>${h.nama || h.id}</option>`;
+        const id = String(h.id ?? '');
+        sel.add(new Option(String(h.nama || id), id, false, id === String(selected || '')));
       });
     }
 
     // Modal: Tambah Akun
     async function adminOpenUserModal(editData) {
-      await adminEnsureHalaqahCache();
+      try { await adminEnsureHalaqahCache(); }
+      catch (err) { onError(err); return; }
       adminPopulateHalaqahDropdown('adHalaqahInput', editData?.id_halaqah || '');
       document.getElementById('adUserModalTitle').textContent = editData ? 'Edit Akun' : 'Tambah Akun Baru';
       document.getElementById('adUserIdInput').value = editData?.user_id || '';
@@ -4060,13 +4132,19 @@
     let adHalaqahList = [];
     let adGuruCache = [];
     let adCurrentHalaqah = null;   // detail sedang dibuka
+    let adHalaqahLoadToken = 0;
 
     function adminLoadHalaqah() {
+      const token = ++adHalaqahLoadToken;
       const grid = document.getElementById('adHalaqahGrid');
       grid.innerHTML = '<div class="col-span-full text-center py-10 text-slate-400 text-sm font-bold">Memuat halaqah...</div>';
       gscript.adminListHalaqah()
-        .then(list => { adHalaqahList = list || []; renderAdminHalaqahGrid(); })
-        .catch(onError);
+        .then(list => {
+          if (token !== adHalaqahLoadToken) return;
+          adHalaqahList = list || [];
+          renderAdminHalaqahGrid();
+        })
+        .catch(err => { if (token === adHalaqahLoadToken) onError(err); });
     }
 
     function renderAdminHalaqahGrid() {
@@ -4076,32 +4154,40 @@
         return;
       }
       grid.innerHTML = adHalaqahList.map(h => {
-        const pct = h.jumlah_murid ? Math.round((h.setor_hari_ini / h.jumlah_murid) * 100) : 0;
+        const jumlahMurid = Math.max(0, Number(h.jumlah_murid) || 0);
+        const jumlahGuru = Math.max(0, Number(h.jumlah_guru) || 0);
+        const atRiskCount = Math.max(0, Number(h.at_risk_count) || 0);
+        const pct = jumlahMurid ? Math.min(100, Math.max(0, Math.round((Number(h.setor_hari_ini) / jumlahMurid) * 100) || 0)) : 0;
+        const id = String(h.id ?? '');
+        const nama = String(h.nama || id);
         let badge, badgeCls;
-        if (h.jumlah_murid === 0) { badge = 'Kosong'; badgeCls = 'bg-slate-100 text-slate-500'; }
-        else if (h.at_risk_count > h.jumlah_murid * 0.2) { badge = 'Perlu Perhatian'; badgeCls = 'bg-red-50 text-red-600'; }
+        if (jumlahMurid === 0) { badge = 'Kosong'; badgeCls = 'bg-slate-100 text-slate-500'; }
+        else if (atRiskCount > jumlahMurid * 0.2) { badge = 'Perlu Perhatian'; badgeCls = 'bg-red-50 text-red-600'; }
         else { badge = 'Aktif'; badgeCls = 'bg-emerald-50 text-emerald-600'; }
         const guruTxt = (h.guru && h.guru.length) ? h.guru.join(', ') : 'Belum ada guru';
         return `
-        <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 hover:border-amber-200 transition-all cursor-pointer" onclick="adminOpenHalaqahDetail('${h.id.replace(/'/g,"\\'")}')">
+        <div data-halaqah-id="${escHtml(id)}" class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 hover:border-amber-200 transition-all cursor-pointer">
           <div class="flex items-start justify-between mb-2">
             <div class="min-w-0">
-              <p class="font-black text-slate-800 truncate">${h.nama || h.id}</p>
-              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">${h.id}</p>
+              <p class="font-black text-slate-800 truncate">${escHtml(nama)}</p>
+              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">${escHtml(id)}</p>
             </div>
             <span class="shrink-0 px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${badgeCls}">${badge}</span>
           </div>
           <div class="flex gap-4 text-xs mb-2">
-            <span class="text-slate-600"><b>${h.jumlah_murid}</b> murid</span>
-            <span class="text-slate-600"><b>${h.jumlah_guru}</b> guru</span>
-            ${h.at_risk_count ? `<span class="text-red-500"><b>${h.at_risk_count}</b> at-risk</span>` : ''}
+            <span class="text-slate-600"><b>${jumlahMurid}</b> murid</span>
+            <span class="text-slate-600"><b>${jumlahGuru}</b> guru</span>
+            ${atRiskCount ? `<span class="text-red-500"><b>${atRiskCount}</b> at-risk</span>` : ''}
           </div>
           <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden mb-1">
             <div class="h-full bg-gradient-to-r from-emerald-400 to-emerald-600" style="width:${pct}%"></div>
           </div>
-          <p class="text-[10px] text-slate-400 font-bold">${pct}% setor hari ini · <span class="text-slate-500">👨‍🏫 ${guruTxt}</span></p>
+          <p class="text-[10px] text-slate-400 font-bold">${pct}% setor hari ini · <span class="text-slate-500">👨‍🏫 ${escHtml(guruTxt)}</span></p>
         </div>`;
       }).join('');
+      grid.querySelectorAll('[data-halaqah-id]').forEach(card => {
+        card.addEventListener('click', () => adminOpenHalaqahDetail(card.dataset.halaqahId));
+      });
     }
 
     let adGuruCacheFailed = false;
@@ -4129,7 +4215,7 @@
       try {
         showLoading('MENYIMPAN HALAQAH...');
         await gscript.adminUpsertHalaqah(id, nama);
-        adHalaqahCache = [];  // invalidate dropdown cache di tab Akun
+        adminInvalidateHalaqahCache();
         closeModal('adminModalHalaqah');
         hideLoading();
         adminLoadHalaqah();
@@ -4141,7 +4227,7 @@
       try {
         showLoading('MENGHAPUS HALAQAH...');
         await gscript.adminDeleteHalaqah(id);
-        adHalaqahCache = [];
+        adminInvalidateHalaqahCache();
         closeModal('adminModalHalaqahDetail');
         hideLoading();
         adminLoadHalaqah();
@@ -4253,7 +4339,8 @@
 
     // Pindah murid ke halaqah lain
     async function adminOpenMoveStudent(username, nama) {
-      await adminEnsureHalaqahCache();
+      try { await adminEnsureHalaqahCache(); }
+      catch (err) { onError(err); return; }
       const target = prompt(`Pindahkan "${nama}" ke halaqah mana?\n\nKetik ID halaqah tujuan (kosongkan = tanpa halaqah):\n\n` +
         adHalaqahCache.map(h => `• ${h.id} — ${h.nama || ''}`).join('\n'), adCurrentHalaqah?.id || '');
       if (target === null) return;  // batal
@@ -4299,6 +4386,7 @@
     // ── ADMIN: Tab Analytics — JS ───────────────────────────
     let adAnCache = null;
     let adAnLoaded = false;
+    let adAnLoadToken = 0;
 
     function adminInitAnalytics() {
       if (adAnLoaded) return;
@@ -4310,7 +4398,7 @@
       const to = getLocalDateString();
       const fromD = new Date();
       fromD.setDate(fromD.getDate() - (days - 1));
-      const from = fromD.toISOString().split('T')[0];
+      const from = getLocalDateString(fromD);
       document.getElementById('adAnFrom').value = from;
       document.getElementById('adAnTo').value = to;
       document.querySelectorAll('.an-period-btn').forEach(b => b.classList.toggle('active', +b.dataset.p === days));
@@ -4327,10 +4415,21 @@
     }
 
     function adminLoadAnalytics(from, to) {
+      const token = ++adAnLoadToken;
       showLoading('MENGANALISIS DATA...');
       gscript.adminAnalytics(from, to)
-        .then(d => { adAnCache = d; renderAnalytics(d); hideLoading(); })
-        .catch(onError);
+        .then(d => {
+          if (token !== adAnLoadToken) return;
+          adAnCache = d;
+          renderAnalytics(d);
+          adAnLoaded = true;
+          hideLoading();
+        })
+        .catch(err => {
+          if (token !== adAnLoadToken) return;
+          adAnLoaded = false;
+          onError(err);
+        });
     }
 
     function renderAnalytics(d) {
@@ -4408,6 +4507,7 @@
     // ── ADMIN: Tab Notifikasi — JS ──────────────────────────
     let adNotifTargets = [];
     let adNotifInit = false;
+    let adNotifTargetsToken = 0;
     const AD_NOTIF_TEMPLATES = {
       setor: "Assalamualaikum {nama} 🌿\nJangan lupa setor bacaan Al-Qur'an hari ini ya. Halaman terakhirmu: {halaman}. Semangat! 📖",
       rekap: "Assalamualaikum {nama} 📊\nRekap bacaanmu:\n• Halaman terakhir: {halaman}\n• Streak: {streak} hari 🔥\nTerus istiqomah ya! 🤲",
@@ -4417,12 +4517,20 @@
 
     async function adminInitNotif() {
       if (adNotifInit) return;
-      adNotifInit = true;
-      await adminEnsureHalaqahCache();
-      const sel = document.getElementById('adNotifHalaqahSel');
-      sel.innerHTML = adHalaqahCache.map(h => `<option value="${h.id}">${h.nama || h.id}</option>`).join('');
-      adminNotifTemplate('setor');
-      adminNotifLoadTargets();
+      try {
+        await adminEnsureHalaqahCache();
+        const sel = document.getElementById('adNotifHalaqahSel');
+        sel.replaceChildren(...adHalaqahCache.map(h => {
+          const id = String(h.id ?? '');
+          return new Option(String(h.nama || id), id);
+        }));
+        adNotifInit = true;
+        adminNotifTemplate('setor');
+        adminNotifLoadTargets();
+      } catch (err) {
+        document.getElementById('adNotifCount').textContent = 'Daftar halaqah gagal dimuat. Buka tab ini lagi untuk mencoba ulang.';
+        onError(err);
+      }
     }
 
     function adminNotifScopeChange() {
@@ -4432,17 +4540,27 @@
     }
 
     function adminNotifLoadTargets() {
+      const token = ++adNotifTargetsToken;
       const scope = document.querySelector('input[name="adNotifScope"]:checked').value;
       const halaqahId = scope === 'halaqah' ? document.getElementById('adNotifHalaqahSel').value : null;
+      adNotifTargets = [];
       document.getElementById('adNotifCount').textContent = 'Memuat target...';
+      document.getElementById('adNotifPreview').textContent = '(memuat target)';
       gscript.adminNotifTargets(scope, halaqahId)
         .then(list => {
+          if (token !== adNotifTargetsToken) return;
           adNotifTargets = list || [];
           const withWa = adNotifTargets.filter(t => t.no_wa).length;
           document.getElementById('adNotifCount').textContent = `${adNotifTargets.length} murid terpilih · ${withWa} punya No. WA`;
           adminNotifPreview();
         })
-        .catch(onError);
+        .catch(err => {
+          if (token !== adNotifTargetsToken) return;
+          adNotifTargets = [];
+          document.getElementById('adNotifCount').textContent = 'Target gagal dimuat. Coba lagi.';
+          document.getElementById('adNotifPreview').textContent = '(target tidak tersedia)';
+          onError(err);
+        });
     }
 
     function adminNotifTemplate(type) {
@@ -4494,6 +4612,7 @@
     let adKontenCache = [];
     let adLogPage = 0;
     let adLogTotal = 0;
+    let adLogLoadToken = 0;
     const AD_LOG_SIZE = 50;
 
     function adminInitSettings() {
@@ -4530,8 +4649,8 @@
       box.innerHTML = adKontenCache.map(k => `
         <div class="bg-white rounded-2xl p-3 shadow-sm border border-slate-100 flex items-start justify-between gap-3">
           <div class="min-w-0 flex-1">
-            <p class="text-[10px] font-black text-amber-600 uppercase tracking-wider mb-1">${k.kunci}</p>
-            <p class="text-sm text-slate-600 break-words line-clamp-3">${(k.nilai || '(kosong)').replace(/</g, '&lt;')}</p>
+            <p class="text-[10px] font-black text-amber-600 uppercase tracking-wider mb-1">${escHtml(k.kunci)}</p>
+            <p class="text-sm text-slate-600 break-words line-clamp-3">${escHtml(k.nilai || '(kosong)')}</p>
           </div>
           <button onclick='adminOpenKontenModal(${JSON.stringify(k).replace(/'/g, "&#39;")})' class="shrink-0 w-9 h-9 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-500 flex items-center justify-center"><i class="fa-solid fa-pen text-xs"></i></button>
         </div>`).join('');
@@ -4561,11 +4680,16 @@
     }
 
     function adminLoadLog() {
+      const token = ++adLogLoadToken;
       const tbody = document.getElementById('adLogTableBody');
       tbody.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-slate-400 font-bold">Memuat...</td></tr>';
       gscript.adminGetLog(AD_LOG_SIZE, adLogPage * AD_LOG_SIZE)
-        .then(d => { adLogTotal = d.total || 0; renderLogTable(d.logs || []); })
-        .catch(onError);
+        .then(d => {
+          if (token !== adLogLoadToken) return;
+          adLogTotal = d.total || 0;
+          renderLogTable(d.logs || []);
+        })
+        .catch(err => { if (token === adLogLoadToken) onError(err); });
     }
 
     function renderLogTable(logs) {
@@ -4575,7 +4699,8 @@
       } else {
         const aksiBadge = a => {
           const map = { create_user: 'bg-emerald-50 text-emerald-600', delete_user: 'bg-red-50 text-red-600', reset_password: 'bg-amber-50 text-amber-600', import_csv_batch: 'bg-sky-50 text-sky-600', set_konten: 'bg-purple-50 text-purple-600' };
-          return `<span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${map[a] || 'bg-slate-100 text-slate-500'}">${a}</span>`;
+          const badgeClass = Object.prototype.hasOwnProperty.call(map, a) ? map[a] : 'bg-slate-100 text-slate-500';
+          return `<span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${badgeClass}">${escHtml(a)}</span>`;
         };
         tbody.innerHTML = logs.map(l => {
           const t = new Date(l.dibuat_pada);
@@ -4583,9 +4708,9 @@
           const detail = l.target_nama || (l.detail ? Object.entries(l.detail).map(([k, v]) => `${k}: ${v}`).join(', ') : '');
           return `<tr class="hover:bg-slate-50/50">
             <td class="p-3 text-slate-400 whitespace-nowrap">${waktu}</td>
-            <td class="p-3 font-bold text-slate-700">${l.admin_nama || '—'}</td>
+            <td class="p-3 font-bold text-slate-700">${escHtml(l.admin_nama || '—')}</td>
             <td class="p-3">${aksiBadge(l.aksi)}</td>
-            <td class="p-3 text-slate-500 text-[11px]">${(detail || '—').toString().replace(/</g, '&lt;')}</td>
+            <td class="p-3 text-slate-500 text-[11px]">${escHtml(detail || '—')}</td>
           </tr>`;
         }).join('');
       }
@@ -6159,8 +6284,8 @@
      */
     const JUZ_MAPPING = [
       { juz: 1, startPage: 1 }, { juz: 2, startPage: 22 }, { juz: 3, startPage: 42 }, { juz: 4, startPage: 62 }, { juz: 5, startPage: 82 },
-      { juz: 6, startPage: 102 }, { juz: 7, startPage: 122 }, { juz: 8, startPage: 142 }, { juz: 9, startPage: 162 }, { juz: 10, startPage: 182 },
-      { juz: 11, startPage: 202 }, { juz: 12, startPage: 222 }, { juz: 13, startPage: 242 }, { juz: 14, startPage: 262 }, { juz: 15, startPage: 282 },
+      { juz: 6, startPage: 102 }, { juz: 7, startPage: 121 }, { juz: 8, startPage: 142 }, { juz: 9, startPage: 162 }, { juz: 10, startPage: 182 },
+      { juz: 11, startPage: 201 }, { juz: 12, startPage: 222 }, { juz: 13, startPage: 242 }, { juz: 14, startPage: 262 }, { juz: 15, startPage: 282 },
       { juz: 16, startPage: 302 }, { juz: 17, startPage: 322 }, { juz: 18, startPage: 342 }, { juz: 19, startPage: 362 }, { juz: 20, startPage: 382 },
       { juz: 21, startPage: 402 }, { juz: 22, startPage: 422 }, { juz: 23, startPage: 442 }, { juz: 24, startPage: 462 }, { juz: 25, startPage: 482 },
       { juz: 26, startPage: 502 }, { juz: 27, startPage: 522 }, { juz: 28, startPage: 542 }, { juz: 29, startPage: 562 }, { juz: 30, startPage: 582 }
@@ -6955,13 +7080,6 @@
 
       pageInput.oninput = () => updateCalibrateFeedback(pageInput.value);
       slider.oninput    = () => { pageInput.value = slider.value; updateCalibrateFeedback(slider.value); };
-    }
-
-    function getJuzFromPage(page) {
-      // Setiap juz ~20 halaman, juz 1 = hal 1-20
-      if (page <= 0) return 1;
-      if (page >= 604) return 30;
-      return Math.min(30, Math.ceil(page / 20));
     }
 
     function handleCalibrateSubmit(e) {
