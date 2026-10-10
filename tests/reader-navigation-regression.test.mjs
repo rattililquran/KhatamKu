@@ -203,11 +203,13 @@ function makeClock() {
 
 function setupGestureHarness() {
   const listeners = {};
+  const documentListeners = {};
   const calls = { pages: [], verses: [], chrome: 0 };
   const stage = { addEventListener(type, callback) { listeners[type] = callback; } };
   const mushaf = { id: "mushaf", dataset: {}, closest: () => null };
   const window = { visualViewport: { scale: 1 }, addEventListener() {} };
   const document = {
+    addEventListener(type, callback) { documentListeners[type] = callback; },
     querySelector(selector) { assert.equal(selector, ".stage"); return stage; },
     getElementById(selector) { assert.equal(selector, "mushaf"); return mushaf; },
   };
@@ -223,7 +225,7 @@ function setupGestureHarness() {
     () => {}, () => {}, () => {}, value => calls.verses.push(value),
     () => { calls.chrome += 1; }, {}, clock.setTimeout, clock.clearTimeout,
   );
-  return { listeners, calls, mushaf, window, clock };
+  return { listeners, documentListeners, calls, mushaf, window, clock };
 }
 
 function setupKeyboardHarness() {
@@ -351,28 +353,29 @@ test("lompat halaman dan slider disinkronkan pada rentang 1 sampai 604", () => {
   assert.match(readerSource, /id="jump" type="number" min="1" max="604"/);
 });
 
-test("ketuk latar mushaf mengganti mode kontrol, ketuk ayat membuka detail", () => {
+test("klik tunggal pada latar atau ayat hanya mengganti mode kontrol", () => {
   const harness = setupGestureHarness();
   const blank = harness.mushaf;
   const verse = { kind: "verse", dataset: { v: "2:255" } };
-  verse.closest = selector => selector === ".w" ? verse : null;
+  verse.closest = selector => selector === "#mushaf" ? harness.mushaf : selector === ".w" ? verse : null;
 
   harness.listeners.click({ target: blank });
   harness.listeners.click({ target: verse });
 
-  assert.equal(harness.calls.chrome, 1);
-  assert.deepEqual(harness.calls.verses, ["2:255"]);
+  assert.equal(harness.calls.chrome, 2);
+  assert.deepEqual(harness.calls.verses, []);
 });
 
-test("ketuk latar di ponsel tidak mengganti mode dua kali setelah event click susulan", () => {
+test("ketuk ayat di ponsel hanya mengganti kontrol sekali setelah event click susulan", () => {
   const harness = setupGestureHarness();
-  tap(harness, harness.mushaf);
-  harness.listeners.click({ target: harness.mushaf });
+  tap(harness, { kind: "verse", v: "2:255" });
+  harness.listeners.click({ target: { closest: () => harness.mushaf } });
 
   assert.equal(harness.calls.chrome, 1);
+  assert.deepEqual(harness.calls.verses, []);
 });
 
-test("ketuk elemen di dalam mushaf selain ayat tidak mengubah mode kontrol", () => {
+test("klik di luar halaman mushaf tidak mengubah mode kontrol", () => {
   const harness = setupGestureHarness();
   const child = { dataset: {}, closest: () => null };
   harness.listeners.click({ target: child });
@@ -407,6 +410,25 @@ test("tekan lama pada ayat membuka detail satu kali tanpa mengubah mode", () => 
   harness.listeners.click({ target });
   assert.deepEqual(harness.calls.verses, ["2:255"]);
   assert.equal(harness.calls.chrome, 0);
+});
+
+test("klik lama pada ayat dengan mouse membuka detail, klik biasa hanya kontrol", () => {
+  const harness = setupGestureHarness();
+  const target = { dataset: { v: "2:255" }, closest: selector => selector === "#mushaf" ? harness.mushaf : selector === ".w" ? target : null };
+  const down = { pointerType: "mouse", button: 0, pointerId: 1, clientX: 100, clientY: 100, target };
+
+  harness.listeners.pointerdown(down);
+  harness.documentListeners.pointerup({ type: "pointerup", pointerId: 1 });
+  harness.listeners.click({ target });
+  assert.equal(harness.calls.chrome, 1);
+  assert.deepEqual(harness.calls.verses, []);
+
+  harness.listeners.pointerdown(down);
+  assert.equal(harness.clock.runNext(), true);
+  harness.documentListeners.pointerup({ type: "pointerup", pointerId: 1 });
+  harness.listeners.click({ target });
+  assert.equal(harness.calls.chrome, 1);
+  assert.deepEqual(harness.calls.verses, ["2:255"]);
 });
 
 test("pinch zoom dan geser saat diperbesar tidak mengganti halaman atau mode", () => {
