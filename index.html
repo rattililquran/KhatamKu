@@ -467,10 +467,11 @@
 
     /* Adaptive shell: thumb navigation on touch screens, reading rail on laptops. */
     @media (min-width: 44rem) {
+      html { scrollbar-gutter: stable both-edges; }
       #appTopNav,
       #appTopNav.app-top-nav--teacher,
       #appTopNav.app-top-nav--admin {
-        width: min(calc(100% - 2.5rem), 960px);
+        width: min(calc(100% - 2.5rem), 1120px);
         max-width: none;
         margin-inline: auto;
         border-radius: 0 0 var(--radius-xl) var(--radius-xl);
@@ -491,7 +492,7 @@
       .bottom-nav {
         left: 50%;
         bottom: max(12px, env(safe-area-inset-bottom, 0px));
-        width: min(calc(100% - 2rem), 760px);
+        width: min(calc(100% - 2.5rem), 760px);
         max-width: none;
         transform: translateX(-50%);
         padding: 8px 12px;
@@ -518,7 +519,7 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 14px;
       }
-      #readingAnalytics > :not(:last-child) { margin-bottom: 0; }
+      #readingAnalytics > * { margin: 0; }
       #readingAnalytics > :last-child { grid-column: 1 / -1; }
       #sectionRekap { margin-top: clamp(22px, 3vw, 36px); margin-bottom: 16px; }
       #sectionSurahMap .surah-grid { grid-template-columns: repeat(14, minmax(0, 1fr)); gap: 5px; }
@@ -532,6 +533,7 @@
         min-height: 100dvh;
         margin-inline: auto;
         padding: clamp(1rem, 3vh, 2.5rem) clamp(1.5rem, 3vw, 3rem) 2rem;
+        --desktop-nav-space: clamp(8rem, 8vw, 10rem);
       }
       #appTopNav,
       #appTopNav.app-top-nav--teacher,
@@ -540,13 +542,17 @@
         max-width: none;
         margin-inline: auto;
       }
+      #appTopNav:not(.app-top-nav--teacher):not(.app-top-nav--admin) {
+        width: calc(100% - var(--desktop-nav-space));
+        margin: 0 0 0 var(--desktop-nav-space);
+      }
       #studentView {
-        width: calc(100% - clamp(8rem, 8vw, 10rem));
+        width: calc(100% - var(--desktop-nav-space));
         max-width: none;
-        margin: 0 0 0 clamp(8rem, 8vw, 10rem);
+        margin: 0 0 0 var(--desktop-nav-space);
         padding: 1.5rem clamp(1rem, 2.2vw, 2rem) 2rem;
       }
-      #teacherView, #adminView { width: 100%; max-width: none !important; margin-inline: auto; }
+      #teacherView, #adminView { width: min(100%, 1120px); max-width: none !important; margin-inline: auto; }
       #bottomNav {
         top: 50%;
         bottom: auto;
@@ -696,7 +702,7 @@
     
     <!-- Top Nav -->
     <header id="appTopNav" class="relative sm:sticky top-0 z-30 pt-4 sm:pt-6 pb-3 sm:pb-4 px-4 sm:px-5 max-w-md mx-auto flex items-center bg-white/95 backdrop-blur-xl border-b border-white/50 shadow-sm">
-      <button id="accountMenuTrigger" type="button" onclick="openAccountMenu()" class="min-w-0 w-full font-bold text-slate-800 text-base sm:text-lg flex items-center gap-2.5 sm:gap-3 text-left rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500" aria-label="Buka menu akun" aria-haspopup="dialog" aria-expanded="false" aria-controls="modalAccount" title="Akun">
+      <button id="accountMenuTrigger" type="button" onclick="openAccountMenu()" class="min-w-0 w-full font-bold text-slate-800 text-base sm:text-lg flex items-center gap-2.5 sm:gap-3 text-left rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500" aria-label="Buka menu akun" aria-haspopup="dialog" aria-expanded="false" aria-controls="modalAccount">
         <span class="w-11 h-11 rounded-full bg-gradient-to-tr from-sky-400 to-blue-600 text-white flex items-center justify-center shadow-md shrink-0">
           <i class="fa-solid fa-user text-sm"></i>
         </span>
