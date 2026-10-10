@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>KhatamKu - Sistem Manajemen Bacaan Al-Quran</title>
   <link rel="icon" type="image/svg+xml" href="icons/khatamku-mark.svg?v=blue-v1" sizes="any">
   <link rel="icon" type="image/png" href="icons/icon-192.png?v=blue-v1" sizes="192x192">
@@ -464,6 +464,119 @@
       to   { opacity: 1; transform: scale(1); }
     }
     .surah-cell { animation: surahCellIn 0.3s ease both; }
+
+    /* Adaptive shell: thumb navigation on touch screens, reading rail on laptops. */
+    @media (min-width: 44rem) {
+      #appTopNav,
+      #appTopNav.app-top-nav--teacher,
+      #appTopNav.app-top-nav--admin {
+        width: min(calc(100% - 2.5rem), 960px);
+        max-width: none;
+        margin-inline: auto;
+        border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+      }
+      #studentView {
+        width: min(calc(100% - 2.5rem), 1120px);
+        max-width: none;
+        padding: 1.5rem clamp(1rem, 3vw, 2rem) calc(8rem + env(safe-area-inset-bottom, 0px));
+      }
+      #teacherView {
+        width: min(calc(100% - 2.5rem), 1040px);
+        max-width: none !important;
+      }
+      #adminView {
+        width: min(calc(100% - 2.5rem), 1120px);
+        max-width: none;
+      }
+      .bottom-nav {
+        left: 50%;
+        bottom: max(12px, env(safe-area-inset-bottom, 0px));
+        width: min(calc(100% - 2rem), 760px);
+        max-width: none;
+        transform: translateX(-50%);
+        padding: 8px 12px;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-xl);
+        background: color-mix(in oklch, var(--color-paper) 92%, transparent);
+      }
+      .bottom-nav-item { min-height: 58px; font-size: 12px; }
+      #dashboardOverview {
+        display: grid;
+        grid-template-columns: minmax(0, 1.3fr) minmax(248px, .9fr);
+        align-items: start;
+        gap: clamp(16px, 2.4vw, 28px);
+      }
+      .dashboard-reading, .dashboard-cycle { min-width: 0; }
+      #cycleActions {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 0;
+      }
+      #cycleActions > button { min-height: 142px; padding: clamp(12px, 1.6vw, 20px); }
+      #readingAnalytics {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+      }
+      #readingAnalytics > :not(:last-child) { margin-bottom: 0; }
+      #readingAnalytics > :last-child { grid-column: 1 / -1; }
+      #sectionRekap { margin-top: clamp(22px, 3vw, 36px); margin-bottom: 16px; }
+      #sectionSurahMap .surah-grid { grid-template-columns: repeat(14, minmax(0, 1fr)); gap: 5px; }
+      #sectionSurahMap .surah-cell { font-size: 10px; }
+    }
+
+    @media (min-width: 80rem) {
+      #mainAppView:not(.hidden) {
+        width: min(100%, 1600px);
+        max-width: 1600px;
+        min-height: 100dvh;
+        margin-inline: auto;
+        padding: clamp(1rem, 3vh, 2.5rem) clamp(1.5rem, 3vw, 3rem) 2rem;
+      }
+      #appTopNav,
+      #appTopNav.app-top-nav--teacher,
+      #appTopNav.app-top-nav--admin {
+        width: min(100%, 1120px);
+        max-width: none;
+        margin-inline: auto;
+      }
+      #studentView {
+        width: calc(100% - clamp(8rem, 8vw, 10rem));
+        max-width: none;
+        margin: 0 0 0 clamp(8rem, 8vw, 10rem);
+        padding: 1.5rem clamp(1rem, 2.2vw, 2rem) 2rem;
+      }
+      #teacherView, #adminView { width: 100%; max-width: none !important; margin-inline: auto; }
+      #bottomNav {
+        top: 50%;
+        bottom: auto;
+        left: max(16px, calc((100% - 1600px) / 2 + 20px));
+        width: 84px;
+        padding: 10px 8px;
+        transform: translateY(-50%);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-xl);
+        max-height: calc(100dvh - 32px);
+        overflow-y: auto;
+        overscroll-behavior: contain;
+      }
+      #bottomNav > .flex { flex-direction: column; gap: 6px; }
+      #bottomNav .bottom-nav-item {
+        width: 100%;
+        min-height: 64px;
+        flex: 0 0 auto;
+        gap: 4px;
+        padding: 8px 3px;
+        font-size: 10px;
+      }
+      #bottomNav .bottom-nav-item i { font-size: 19px; }
+      #dashboardOverview { grid-template-columns: minmax(0, 1.5fr) minmax(300px, 1fr); }
+      #cycleActions > button { min-height: 168px; }
+      #readingAnalytics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      #readingAnalytics > :last-child { grid-column: auto; }
+      #sectionSurahMap .surah-grid { grid-template-columns: repeat(19, minmax(0, 1fr)); gap: 6px; }
+      #sectionSurahMap .surah-cell { font-size: 11px; }
+    }
   </style>
 </head>
 <body class="antialiased selection:bg-sky-200 selection:text-sky-900 min-h-screen">
@@ -628,7 +741,7 @@
       <!-- Actual Student Content (initially hidden, shown after data loads) -->
       <div id="studentContent" class="hidden">
       <!-- KhatamKu Header -->
-      <div class="flex justify-between items-center mb-5">
+      <div id="studentHeading" class="dashboard-heading flex justify-between items-center mb-5">
         <h2 class="text-2xl font-black text-slate-800 flex items-center gap-2">
           <i class="fa-solid fa-book-quran text-sky-500"></i> KhatamKu
         </h2>
@@ -636,7 +749,9 @@
       </div>
 
       <!-- Gabungan: Posisi Bacaan + Progress Hari Ini -->
-      <div class="relative overflow-hidden rounded-[1.75rem] shadow-lg mb-2" style="background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);">
+      <div id="dashboardOverview" class="dashboard-overview">
+        <section class="dashboard-reading" aria-label="Posisi dan progres bacaan">
+          <div id="readingOverview" class="relative overflow-hidden rounded-[1.75rem] shadow-lg mb-2" style="background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);">
         <!-- Decorative circles -->
         <div class="absolute -top-8 -right-8 w-32 h-32 bg-white/10 rounded-full"></div>
         <div class="absolute -bottom-5 -left-5 w-24 h-24 bg-black/10 rounded-full"></div>
@@ -691,11 +806,13 @@
           <button id="btnCatatManual" class="w-full mt-2.5 py-3 rounded-2xl bg-white/15 hover:bg-white/25 border border-white/40 font-extrabold text-white text-sm tracking-widest transition-all flex items-center justify-center gap-2" onclick="handleCatatManual()"><i class="fa-solid fa-pen-to-square text-xs"></i> CATAT MUSHAF FISIK</button>
         </div>
       </div>
-      <p class="text-[11px] text-slate-400 font-medium mb-6 flex items-center gap-1.5 ml-2"><i class="fa-regular fa-clock"></i> Target harian akan direset setiap pukul 00:00 WIB</p>
+          <p id="targetResetHint" class="dashboard-helper text-[11px] text-slate-400 font-medium mb-6 flex items-center gap-1.5 ml-2"><i class="fa-regular fa-clock"></i> Target harian akan direset setiap pukul 00:00 WIB</p>
 
       <!-- Progress khatam ke-X dan pengaturan pendukung -->
-      <h3 class="font-bold text-[12px] text-slate-500 mb-3 tracking-widest uppercase">Progress Khatam Ke-<span id="uiKhatamCycle" class="font-black text-sky-600">1</span></h3>
-      <div class="grid grid-cols-2 gap-4 mb-8">
+        </section>
+        <section class="dashboard-cycle" aria-label="Siklus dan target khatam">
+          <h3 id="cycleHeading" class="font-bold text-[12px] text-slate-500 mb-3 tracking-widest uppercase">Progress Khatam Ke-<span id="uiKhatamCycle" class="font-black text-sky-600">1</span></h3>
+          <div id="cycleActions" class="grid grid-cols-2 gap-4 mb-8">
         <!-- Card Aksi: Udzur -->
         <button id="btnToggleUdzur" onclick="openModal('modalUdzur')" class="glass-card-dark p-5 rounded-3xl relative overflow-hidden text-left w-full transition-all">
           <div class="absolute -right-2 -bottom-2 opacity-10 text-6xl"><i class="fa-solid fa-bed"></i></div>
@@ -710,6 +827,8 @@
           <div class="text-lg font-black text-white mb-1 tracking-tight">Target</div>
           <div class="text-[11px] font-semibold text-sky-100 uppercase tracking-wider">Target Saya</div>
         </button>
+          </div>
+        </section>
       </div>
       <!-- Hidden: preserve JS references -->
       <span id="uiTotalProgressPct" class="hidden"></span>
@@ -721,12 +840,12 @@
 
 
       <!-- DIAGRAM PROGRESS KHATAM -->
-      <div id="sectionRekap" class="flex justify-between items-center mb-6 px-1">
+      <div id="sectionRekap" class="dashboard-section-heading flex justify-between items-center mb-6 px-1">
         <h2 class="text-2xl font-black tracking-tight flex items-center gap-2"><i class="fa-solid fa-chart-pie text-sky-500 text-xl"></i> Rekap Bacaan</h2>
       </div>
 
 
-      <div class="space-y-4 mb-8">
+      <div id="readingAnalytics" class="space-y-4 mb-8">
         <!-- Progress hari ini -->
         <div class="glass-card rounded-[2rem] p-6 flex justify-between items-center">
           <div>

@@ -234,6 +234,18 @@ body.reader-focus .focus-reveal{display:inline-flex}
   .reader-rail{display:none}
   .reader-layout{grid-template-columns:minmax(0,720px)}
 }
+@media(min-width:48rem) and (max-width:63.99rem){
+  .bar{padding-inline:clamp(18px,3vw,30px)}
+  .stage{padding:clamp(18px,2.5vh,30px) clamp(20px,4vw,38px) 30px}
+  .reader-layout{grid-template-columns:minmax(0,760px)}
+  .reader-main{max-width:760px}
+  .mushaf{max-width:760px}
+  #bottombar{padding-inline:clamp(16px,3vw,32px)}
+  .bottom-inner{gap:clamp(14px,2.4vw,24px)}
+  .footer-controls{gap:6px}
+  .footer-button{padding-inline:11px}
+  .footer-button.primary{min-width:132px}
+}
 @media(max-width:47.99rem){
   .bar{padding-inline:12px}
   .bar-inner{gap:7px;min-height:48px}
