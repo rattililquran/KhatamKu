@@ -1171,6 +1171,12 @@
 
       <!-- Panel: Dashboard -->
       <div id="adminPanelDashboard" class="admin-panel">
+        <div class="flex items-center justify-between mb-3">
+          <p id="adDashboardUpdatedAt" class="text-[11px] font-semibold text-slate-400" aria-live="polite">Memuat data dashboard...</p>
+          <button onclick="adminRefreshDashboard()" id="adDashboardRefreshBtn" class="px-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 text-xs font-extrabold flex items-center gap-2 transition-all">
+            <i id="adDashboardRefreshIcon" class="fa-solid fa-rotate"></i> Perbarui
+          </button>
+        </div>
         <!-- KPI Cards 2x2 -->
         <div class="grid grid-cols-2 gap-3 mb-5">
           <div class="rounded-2xl p-4 text-white shadow-lg" style="background:linear-gradient(135deg,#f59e0b,#d97706)">
@@ -1240,7 +1246,7 @@
             </div>
             <select
               id="adUserRoleFilter"
-              onchange="adminLoadUsers()"
+              onchange="adminRoleFilterChanged()"
               class="text-xs font-black text-amber-600 bg-amber-50 border border-amber-100 rounded-2xl px-4 py-3 outline-none cursor-pointer shadow-sm uppercase tracking-wider"
             >
               <option value="">Semua Role</option>
@@ -1373,10 +1379,12 @@
           <div class="bg-white rounded-2xl p-4 shadow-sm border border-emerald-50">
             <p class="text-xs font-black text-emerald-500 uppercase tracking-widest mb-3">✅ Murid Konsisten (≥80% hari)</p>
             <div id="adAnKonsistenList" class="space-y-2 max-h-56 overflow-y-auto"></div>
+            <p id="adAnKonsistenMeta" class="mt-2 text-[10px] font-semibold text-slate-400"></p>
           </div>
           <div class="bg-white rounded-2xl p-4 shadow-sm border border-red-50">
             <p class="text-xs font-black text-red-500 uppercase tracking-widest mb-3">🚫 Tidak Setor Sama Sekali</p>
             <div id="adAnAbsenList" class="space-y-2 max-h-56 overflow-y-auto"></div>
+            <p id="adAnAbsenMeta" class="mt-2 text-[10px] font-semibold text-slate-400"></p>
           </div>
         </div>
 
@@ -1425,6 +1433,10 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <button onclick="adminNotifCopyLinks()" class="py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-2xl text-[11px] tracking-wider uppercase shadow-md flex items-center justify-center gap-2 transition-all"><i class="fa-solid fa-link"></i> Salin Semua Link WA</button>
           <button onclick="adminNotifOpenSequential()" class="py-3 bg-slate-800 hover:bg-slate-900 text-white font-extrabold rounded-2xl text-[11px] tracking-wider uppercase shadow-md flex items-center justify-center gap-2 transition-all"><i class="fa-solid fa-paper-plane"></i> Buka WA Satu-per-satu</button>
+        </div>
+        <div id="adNotifSequencePanel" class="hidden mt-3 rounded-2xl border border-emerald-100 bg-emerald-50 p-3 flex items-center justify-between gap-3">
+          <p id="adNotifSequenceText" class="text-xs font-bold text-emerald-800" aria-live="polite"></p>
+          <button id="adNotifSequenceNext" onclick="adminNotifOpenNext()" class="shrink-0 px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-extrabold">Buka berikutnya</button>
         </div>
       </div>
 
@@ -3685,6 +3697,12 @@
     let adminDataCache = null;
     let adActivityChart = null;
     let adHalaqahChart = null;
+    let adDashboardLoadToken = 0;
+
+    function adminMarkDashboardUpdated() {
+      const label = document.getElementById('adDashboardUpdatedAt');
+      if (label) label.textContent = `Diperbarui ${new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}`;
+    }
 
     function adminSwitchTab(tab) {
       document.querySelectorAll('.admin-tab').forEach(btn => {
@@ -3693,20 +3711,52 @@
       document.querySelectorAll('.admin-panel').forEach(panel => panel.classList.add('hidden'));
       document.getElementById('adminPanel' + tab.charAt(0).toUpperCase() + tab.slice(1))
         ?.classList.remove('hidden');
+      if (tab === 'dashboard' && adminDataCache) {
+        renderAdminDashboard(adminDataCache);
+        adminMarkDashboardUpdated();
+      }
     }
 
     function loadAdminDashboard(data) {
-      if (!data) {
-        showLoading("MEMUAT DASHBOARD ADMIN...");
-        gscript.adminDashboard()
-          .then(d => {
-            renderAdminDashboard(d);
-            hideLoading();
-          })
-          .catch(onError);
+      if (data) {
+        ++adDashboardLoadToken;
+        adminDataCache = data;
+        renderAdminDashboard(data);
+        adminMarkDashboardUpdated();
         return;
       }
-      renderAdminDashboard(data);
+      return adminRefreshDashboard({ silent: false });
+    }
+
+    async function adminRefreshDashboard({ silent = false } = {}) {
+      const token = ++adDashboardLoadToken;
+      const button = document.getElementById('adDashboardRefreshBtn');
+      const icon = document.getElementById('adDashboardRefreshIcon');
+      const label = document.getElementById('adDashboardUpdatedAt');
+      if (!silent) showLoading('MEMUAT DASHBOARD ADMIN...');
+      if (button) button.disabled = true;
+      if (icon) icon.classList.add('fa-spin');
+      if (label) label.textContent = 'Memperbarui data...';
+      try {
+        const data = await gscript.adminDashboard();
+        if (token !== adDashboardLoadToken || currentUser?.role !== 'admin') return;
+        adminDataCache = data;
+        if (!document.getElementById('adminPanelDashboard')?.classList.contains('hidden')) {
+          renderAdminDashboard(data);
+        }
+        adminMarkDashboardUpdated();
+      } catch (err) {
+        if (token !== adDashboardLoadToken) return;
+        if (label) label.textContent = adminDataCache ? 'Gagal memperbarui · menampilkan data terakhir' : 'Dashboard gagal dimuat';
+        if (!silent) onError(err);
+        else showToast('Dashboard belum berhasil diperbarui. Coba lagi.', 'error');
+      } finally {
+        if (token === adDashboardLoadToken) {
+          if (button) button.disabled = false;
+          if (icon) icon.classList.remove('fa-spin');
+          if (!silent) hideLoading();
+        }
+      }
     }
 
     function renderAdminDashboard(d) {
@@ -3719,17 +3769,20 @@
 
       // At-Risk List
       const atRiskEl = document.getElementById('adAtRiskList');
-      atRiskEl.innerHTML = (d.at_risk_list || []).map(u => `
+      atRiskEl.innerHTML = (d.at_risk_list || []).map(u => {
+        const wa = adWaNum(u.no_wa);
+        return `
         <div class="flex items-center justify-between p-2 rounded-xl bg-red-50">
           <div>
             <p class="text-sm font-bold text-slate-700">${escHtml(u.nama)}</p>
             <p class="text-[11px] text-slate-400">${escHtml(u.halaqah) || '—'} · ${u.hari_absen === 999 ? 'Belum pernah setor' : u.hari_absen + ' hari absen'}</p>
           </div>
-          ${u.no_wa ? `<a href="https://wa.me/${encodeURIComponent(u.no_wa)}?text=Assalamualaikum+${encodeURIComponent(u.nama)}" target="_blank"
+          ${wa ? `<a href="https://wa.me/${wa}?text=${encodeURIComponent('Assalamualaikum ' + (u.nama || ''))}" target="_blank" rel="noopener noreferrer"
              class="text-emerald-500 bg-emerald-50 rounded-full w-8 h-8 flex items-center justify-center text-sm">
             <i class="fa-brands fa-whatsapp"></i></a>` : ''}
         </div>
-      `).join('') || '<p class="text-sm text-slate-400 text-center py-4">Semua murid aktif 🎉</p>';
+      `;
+      }).join('') || '<p class="text-sm text-slate-400 text-center py-4">Semua murid aktif 🎉</p>';
 
       // Leaderboard
       const lbEl = document.getElementById('adLeaderboard');
@@ -3811,6 +3864,11 @@
       adSearchTimer = setTimeout(() => { adUserPage = 0; adminLoadUsers(); }, 300);
     }
 
+    function adminRoleFilterChanged() {
+      adUserPage = 0;
+      adminLoadUsers();
+    }
+
     function adminLoadUsers() {
       const token = ++adUserLoadToken;
       const role = document.getElementById('adUserRoleFilter').value || null;
@@ -3818,7 +3876,14 @@
       gscript.adminListUsers({ role, search, limit: AD_PAGE_SIZE, offset: adUserPage * AD_PAGE_SIZE })
         .then(d => {
           if (token !== adUserLoadToken) return;
-          adUserTotal = d.total;
+          const total = Number(d.total) || 0;
+          const lastPage = Math.max(0, Math.ceil(total / AD_PAGE_SIZE) - 1);
+          if (adUserPage > lastPage) {
+            adUserPage = lastPage;
+            adminLoadUsers();
+            return;
+          }
+          adUserTotal = total;
           renderAdminUserTable(d.users || []);
           updateAdminUserPagination();
         })
@@ -3836,7 +3901,7 @@
         if (r === 'admin') return '<span class="px-2 py-0.5 rounded-full bg-red-50 text-red-600 text-[9px] font-black uppercase">Admin</span>';
         return '<span class="px-2 py-0.5 rounded-full bg-sky-50 text-sky-600 text-[9px] font-black uppercase">Murid</span>';
       };
-      tbody.innerHTML = users.map(u => `
+      tbody.innerHTML = users.map((u, index) => `
         <tr class="hover:bg-slate-50/50 transition-colors">
           <td class="p-3">
             <p class="font-bold text-slate-800">${escHtml(u.nama_lengkap)}</p>
@@ -3847,13 +3912,22 @@
           <td class="p-3 text-slate-500">${escHtml(u.no_wa) || '—'}</td>
           <td class="p-3 text-center">
             <div class="flex gap-1 justify-center">
-              <button onclick='adminEditUser(${JSON.stringify(u).replace(/'/g,"&#39;")})' title="Edit" class="w-8 h-8 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-500 flex items-center justify-center transition-colors"><i class="fa-solid fa-pen-to-square text-[11px]"></i></button>
-              <button onclick="adminOpenResetPW('${u.user_id}','${escJsAttr(u.nama_lengkap)}')" title="Reset Password" class="w-8 h-8 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-500 flex items-center justify-center transition-colors"><i class="fa-solid fa-key text-[11px]"></i></button>
-              <button onclick="adminDeleteUser('${u.user_id}','${escJsAttr(u.nama_lengkap)}')" title="Hapus" class="w-8 h-8 rounded-lg bg-red-50 hover:bg-red-100 text-red-500 flex items-center justify-center transition-colors"><i class="fa-solid fa-trash text-[11px]"></i></button>
+              <button data-user-action="edit" data-user-index="${index}" title="Edit" class="w-8 h-8 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-500 flex items-center justify-center transition-colors"><i class="fa-solid fa-pen-to-square text-[11px]"></i></button>
+              <button data-user-action="reset" data-user-index="${index}" title="Reset Password" class="w-8 h-8 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-500 flex items-center justify-center transition-colors"><i class="fa-solid fa-key text-[11px]"></i></button>
+              <button data-user-action="delete" data-user-index="${index}" title="Hapus" class="w-8 h-8 rounded-lg bg-red-50 hover:bg-red-100 text-red-500 flex items-center justify-center transition-colors"><i class="fa-solid fa-trash text-[11px]"></i></button>
             </div>
           </td>
         </tr>
       `).join('');
+      tbody.querySelectorAll('[data-user-action]').forEach(button => {
+        button.addEventListener('click', () => {
+          const user = users[Number(button.dataset.userIndex)];
+          if (!user) return;
+          if (button.dataset.userAction === 'edit') adminEditUser(user);
+          if (button.dataset.userAction === 'reset') adminOpenResetPW(user.user_id, user.nama_lengkap);
+          if (button.dataset.userAction === 'delete') adminDeleteUser(user.user_id, user.nama_lengkap);
+        });
+      });
     }
 
     function updateAdminUserPagination() {
@@ -3926,7 +4000,7 @@
 
     function adminOnUserModalRoleChange() {
       const role = document.getElementById('adRoleInput').value;
-      document.getElementById('adHalaqahContainer').style.display = (role === 'admin') ? 'none' : '';
+      document.getElementById('adHalaqahContainer').style.display = (role === 'murid') ? '' : 'none';
     }
 
     function adminEditUser(u) {
@@ -3956,6 +4030,8 @@
         closeModal('adminModalUser');
         hideLoading();
         adminLoadUsers();
+        adminInvalidateGuruCache();
+        adminRefreshDashboard({ silent: true });
       } catch (err) {
         hideLoading();
         onError(err);
@@ -3999,6 +4075,8 @@
         await gscript.adminAction('delete_user', { user_id: userId });
         hideLoading();
         adminLoadUsers();
+        adminInvalidateGuruCache();
+        adminRefreshDashboard({ silent: true });
       } catch (err) {
         hideLoading();
         onError(err);
@@ -4115,12 +4193,17 @@
 
       // Refresh user table
       adminLoadUsers();
+      if (totalSuccess) {
+        adminInvalidateGuruCache();
+        adminRefreshDashboard({ silent: true });
+      }
     }
 
     // Auto-load data when switching tab
     const origAdminSwitchTab = adminSwitchTab;
     adminSwitchTab = function(tab) {
       origAdminSwitchTab(tab);
+      if (tab === 'dashboard') adminRefreshDashboard({ silent: true });
       if (tab === 'akun') adminLoadUsers();
       if (tab === 'halaqah') adminLoadHalaqah();
       if (tab === 'analytics') adminInitAnalytics();
@@ -4191,6 +4274,11 @@
     }
 
     let adGuruCacheFailed = false;
+    function adminInvalidateGuruCache() {
+      adGuruCache = [];
+      adGuruCacheFailed = false;
+    }
+
     async function adminEnsureGuruCache() {
       if (adGuruCache.length) return;
       try { adGuruCache = await gscript.adminListGuru() || []; adGuruCacheFailed = false; }
@@ -4219,6 +4307,7 @@
         closeModal('adminModalHalaqah');
         hideLoading();
         adminLoadHalaqah();
+        adminRefreshDashboard({ silent: true });
       } catch (err) { hideLoading(); onError(err); }
     }
 
@@ -4231,21 +4320,25 @@
         closeModal('adminModalHalaqahDetail');
         hideLoading();
         adminLoadHalaqah();
+        adminRefreshDashboard({ silent: true });
       } catch (err) { hideLoading(); onError(err); }
     }
 
     // Modal: detail halaqah (drill-down)
+    let adHalaqahDetailToken = 0;
     async function adminOpenHalaqahDetail(id) {
+      const token = ++adHalaqahDetailToken;
       try {
         showLoading('MEMUAT DETAIL HALAQAH...');
         await adminEnsureGuruCache();
         const d = await gscript.adminHalaqahDetail(id);
+        if (token !== adHalaqahDetailToken) return;
         adCurrentHalaqah = d;
         hideLoading();
         renderHalaqahDetail(d);
         adminHalaqahSubTab('murid');
         openModal('adminModalHalaqahDetail');
-      } catch (err) { hideLoading(); onError(err); }
+      } catch (err) { if (token === adHalaqahDetailToken) { hideLoading(); onError(err); } }
     }
 
     function renderHalaqahDetail(d) {
@@ -4258,7 +4351,7 @@
 
       // Sub-tab Murid
       const mBody = document.getElementById('adHdMuridList');
-      mBody.innerHTML = murid.length ? murid.map(m => `
+      mBody.innerHTML = murid.length ? murid.map((m, index) => `
         <div class="flex items-center justify-between p-2 rounded-xl ${m.setor_hari_ini ? 'bg-emerald-50/60' : 'bg-slate-50'}">
           <div class="min-w-0">
             <p class="text-sm font-bold text-slate-700 truncate">${escHtml(m.nama)} ${m.udzur ? `<span class="text-[9px] text-amber-500 font-black">(${escHtml(m.udzur)})</span>` : ''}</p>
@@ -4266,9 +4359,15 @@
           </div>
           <div class="flex items-center gap-1 shrink-0">
             ${m.setor_hari_ini ? '<span class="text-[9px] font-black text-emerald-600 uppercase">✓ Setor</span>' : ''}
-            <button onclick="adminOpenMoveStudent('${m.username}','${escJsAttr(m.nama)}')" title="Pindah halaqah" class="w-7 h-7 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-500 flex items-center justify-center"><i class="fa-solid fa-right-left text-[10px]"></i></button>
+            <button data-move-student-index="${index}" title="Pindah halaqah" class="w-7 h-7 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-500 flex items-center justify-center"><i class="fa-solid fa-right-left text-[10px]"></i></button>
           </div>
         </div>`).join('') : '<p class="text-sm text-slate-400 text-center py-6">Belum ada murid di halaqah ini.</p>';
+      mBody.querySelectorAll('[data-move-student-index]').forEach(button => {
+        button.addEventListener('click', () => {
+          const student = murid[Number(button.dataset.moveStudentIndex)];
+          if (student) adminOpenMoveStudent(student.username, student.nama);
+        });
+      });
 
       // Sub-tab Guru
       renderHalaqahGuruTab(d);
@@ -4325,6 +4424,7 @@
         adCurrentHalaqah = d;
         renderHalaqahDetail(d);
         adminLoadHalaqah();
+        adminRefreshDashboard({ silent: true });
       } catch (err) { hideLoading(); onError(err); }
     }
 
@@ -4353,19 +4453,21 @@
         adCurrentHalaqah = d;
         renderHalaqahDetail(d);
         adminLoadHalaqah();
+        adminRefreshDashboard({ silent: true });
       } catch (err) { hideLoading(); onError(err); }
     }
 
     // WA Blast ke seluruh murid halaqah — salin teks massal
     function adminHalaqahWaBlast() {
       if (!adCurrentHalaqah) return;
-      const murid = (adCurrentHalaqah.murid || []).filter(m => m.no_wa);
+      const murid = (adCurrentHalaqah.murid || []).filter(m => adWaNum(m.no_wa));
       if (!murid.length) return alert('Tidak ada nomor WA murid di halaqah ini.');
       const belum = murid.filter(m => !m.setor_hari_ini);
       const links = murid.map(m => {
         const pesan = `Assalamualaikum ${m.nama}, semoga sehat selalu 🌿\nJangan lupa setor bacaan Al-Qur'an hari ini ya. Halaman terakhirmu: ${m.halaman_terakhir || 0}. Semangat! 📖`;
-        return `https://wa.me/${m.no_wa.replace(/^0/, '62').replace(/\D/g, '')}?text=${encodeURIComponent(pesan)}`;
-      });
+        const wa = adWaNum(m.no_wa);
+        return wa ? `https://wa.me/${wa}?text=${encodeURIComponent(pesan)}` : null;
+      }).filter(Boolean);
       const teks = `Rekap Halaqah ${adCurrentHalaqah.nama || adCurrentHalaqah.id}:\n` +
         `• ${murid.length} murid (nomor WA)\n• ${belum.length} belum setor hari ini\n\nLink WA per murid:\n` + links.join('\n');
       navigator.clipboard?.writeText(teks).then(
@@ -4380,6 +4482,7 @@
     function adWaNum(no) {
       let n = (no || '').replace(/\D/g, '');
       if (n.startsWith('0')) n = '62' + n.slice(1);
+      else if (n.startsWith('8')) n = '62' + n;
       return n;
     }
 
@@ -4410,6 +4513,8 @@
       const to = document.getElementById('adAnTo').value;
       if (!from || !to) return alert('Isi tanggal Dari dan Sampai.');
       if (to < from) return alert('Tanggal "Sampai" harus setelah "Dari".');
+      const days = (Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86400000 + 1;
+      if (!Number.isFinite(days) || days > 366) return alert('Rentang analitik maksimal 366 hari.');
       document.querySelectorAll('.an-period-btn').forEach(b => b.classList.remove('active'));
       adminLoadAnalytics(from, to);
     }
@@ -4435,7 +4540,9 @@
     function renderAnalytics(d) {
       document.getElementById('adAnTotalHal').textContent = (d.total_halaman || 0).toLocaleString('id-ID');
       document.getElementById('adAnAvg').textContent = d.avg_per_murid ?? 0;
-      document.getElementById('adAnKonsisten').textContent = (d.murid_konsisten || []).length;
+      const konsisten = d.murid_konsisten || [];
+      const absen = d.murid_absen || [];
+      document.getElementById('adAnKonsisten').textContent = d.murid_konsisten_count ?? konsisten.length;
       document.getElementById('adAnKhatam').textContent = d.khatam_count || 0;
 
       // Heatmap
@@ -4448,8 +4555,8 @@
       }).join('');
 
       // Konsisten
-      document.getElementById('adAnKonsistenList').innerHTML = (d.murid_konsisten || []).length
-        ? d.murid_konsisten.map(m => `
+      document.getElementById('adAnKonsistenList').innerHTML = konsisten.length
+        ? konsisten.map(m => `
           <div class="flex items-center justify-between p-2 rounded-xl bg-emerald-50/60">
             <div><p class="text-sm font-bold text-slate-700">${escHtml(m.nama)}</p><p class="text-[10px] text-slate-400">${escHtml(m.halaqah) || '—'}</p></div>
             <span class="text-xs font-black text-emerald-600">${m.hari_setor} hari (${m.pct}%)</span>
@@ -4457,22 +4564,37 @@
         : '<p class="text-sm text-slate-400 text-center py-4">Belum ada yang mencapai 80%.</p>';
 
       // Absen
-      document.getElementById('adAnAbsenList').innerHTML = (d.murid_absen || []).length
-        ? d.murid_absen.map(m => `
+      document.getElementById('adAnAbsenList').innerHTML = absen.length
+        ? absen.map(m => `
           <div class="flex items-center justify-between p-2 rounded-xl bg-red-50">
             <div><p class="text-sm font-bold text-slate-700">${escHtml(m.nama)}</p><p class="text-[10px] text-slate-400">${escHtml(m.halaqah) || '—'}</p></div>
-            ${m.no_wa ? `<a href="https://wa.me/${adWaNum(m.no_wa)}?text=${encodeURIComponent('Assalamualaikum ' + m.nama + ', kami menunggu setoran bacaanmu 🤲')}" target="_blank" class="text-emerald-500 bg-emerald-50 rounded-full w-8 h-8 flex items-center justify-center"><i class="fa-brands fa-whatsapp"></i></a>` : ''}
+            ${adWaNum(m.no_wa) ? `<a href="https://wa.me/${adWaNum(m.no_wa)}?text=${encodeURIComponent('Assalamualaikum ' + m.nama + ', kami menunggu setoran bacaanmu 🤲')}" target="_blank" rel="noopener noreferrer" class="text-emerald-500 bg-emerald-50 rounded-full w-8 h-8 flex items-center justify-center"><i class="fa-brands fa-whatsapp"></i></a>` : ''}
           </div>`).join('')
         : '<p class="text-sm text-slate-400 text-center py-4">Semua murid pernah setor 🎉</p>';
+      const konsistenTotal = d.murid_konsisten_count ?? konsisten.length;
+      const absenTotal = d.murid_absen_count ?? absen.length;
+      document.getElementById('adAnKonsistenMeta').textContent = konsistenTotal > konsisten.length ? `Menampilkan ${konsisten.length} dari ${konsistenTotal} murid.` : '';
+      document.getElementById('adAnAbsenMeta').textContent = absenTotal > absen.length ? `Menampilkan ${absen.length} dari ${absenTotal} murid.` : '';
     }
 
     async function adminExportCSV() {
       try {
         showLoading('MENYUSUN CSV...');
-        const res = await gscript.adminListUsers({ role: 'murid', limit: 100000, offset: 0 });
-        const rows = res.users || [];
+        const PAGE_SIZE = 500;
+        const rows = [];
+        let total = null;
+        for (let offset = 0; total === null || offset < total; offset += PAGE_SIZE) {
+          const res = await gscript.adminListUsers({ role: 'murid', limit: PAGE_SIZE, offset });
+          total = Number(res.total) || 0;
+          rows.push(...(res.users || []));
+          if (!res.users?.length) break;
+        }
         const head = ['Nama', 'Username', 'Halaqah', 'No_WA', 'Halaman_Terakhir', 'Total_Khatam', 'Streak', 'Terakhir_Setor'];
-        const esc = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+        const esc = v => {
+          let value = String(v ?? '');
+          if (/^[=+\-@\t\r]/.test(value)) value = `'${value}`;
+          return `"${value.replace(/"/g, '""')}"`;
+        };
         const csv = [head.join(',')].concat(rows.map(u => [
           u.nama_lengkap, u.username, u.id_halaqah || '', u.no_wa || '',
           u.halaman_terakhir ?? 0, u.total_khatam ?? 0, u.streak ?? 0, u.terakhir_setor || ''
@@ -4480,10 +4602,11 @@
         hideLoading();
         const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
         const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
+        const objectUrl = URL.createObjectURL(blob);
+        a.href = objectUrl;
         a.download = `khatamku_murid_${getLocalDateString()}.csv`;
         a.click();
-        URL.revokeObjectURL(a.href);
+        setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
       } catch (err) { hideLoading(); onError(err); }
     }
 
@@ -4493,8 +4616,8 @@
       let teks = `📊 *Rekap khatamku*\nPeriode: ${d.from} s/d ${d.to} (${d.days} hari)\n\n`;
       teks += `• Total halaman dibaca: ${(d.total_halaman || 0).toLocaleString('id-ID')}\n`;
       teks += `• Rata-rata / murid: ${d.avg_per_murid}\n`;
-      teks += `• Murid konsisten (≥80%): ${(d.murid_konsisten || []).length}\n`;
-      teks += `• Tidak setor sama sekali: ${(d.murid_absen || []).length}\n`;
+      teks += `• Murid konsisten (≥80%): ${d.murid_konsisten_count ?? (d.murid_konsisten || []).length}\n`;
+      teks += `• Tidak setor sama sekali: ${d.murid_absen_count ?? (d.murid_absen || []).length}\n`;
       teks += `• Khatam periode ini: ${d.khatam_count}\n\n`;
       teks += `*Per Halaqah:*\n`;
       (d.per_halaqah_stat || []).forEach(h => { teks += `• ${h.nama || h.id}: ${h.total_halaman} hal\n`; });
@@ -4550,7 +4673,7 @@
         .then(list => {
           if (token !== adNotifTargetsToken) return;
           adNotifTargets = list || [];
-          const withWa = adNotifTargets.filter(t => t.no_wa).length;
+          const withWa = adNotifTargets.filter(t => adWaNum(t.no_wa)).length;
           document.getElementById('adNotifCount').textContent = `${adNotifTargets.length} murid terpilih · ${withWa} punya No. WA`;
           adminNotifPreview();
         })
@@ -4585,7 +4708,7 @@
     function adminNotifBuildLinks() {
       const tpl = document.getElementById('adNotifText').value;
       if (!tpl.trim()) { alert('Tulis pesan dulu.'); return null; }
-      const targets = adNotifTargets.filter(t => t.no_wa);
+      const targets = adNotifTargets.filter(t => adWaNum(t.no_wa));
       if (!targets.length) { alert('Tidak ada murid dengan No. WA pada target ini.'); return null; }
       return targets.map(m => `https://wa.me/${adWaNum(m.no_wa)}?text=${encodeURIComponent(adminNotifFill(tpl, m))}`);
     }
@@ -4600,11 +4723,52 @@
       );
     }
 
+    let adNotifSequenceLinks = [];
+    let adNotifSequenceIndex = 0;
+
     function adminNotifOpenSequential() {
       const links = adminNotifBuildLinks();
       if (!links) return;
-      if (!confirm(`Akan membuka ${links.length} tab WhatsApp berurutan.\nPastikan popup diizinkan untuk situs ini. Lanjut?`)) return;
-      links.forEach((url, i) => setTimeout(() => window.open(url, '_blank'), i * 600));
+      adNotifSequenceLinks = links;
+      adNotifSequenceIndex = 0;
+      if (!adminNotifOpenCurrent()) return;
+      document.getElementById('adNotifSequencePanel').classList.remove('hidden');
+      adminNotifUpdateSequencePanel();
+    }
+
+    function adminNotifOpenCurrent() {
+      const url = adNotifSequenceLinks[adNotifSequenceIndex];
+      if (!url) return false;
+      const tab = window.open(url, '_blank');
+      if (!tab) {
+        showToast('Popup diblokir. Izinkan popup untuk membuka WhatsApp.', 'error');
+        return false;
+      }
+      tab.opener = null;
+      return true;
+    }
+
+    function adminNotifUpdateSequencePanel() {
+      const panel = document.getElementById('adNotifSequencePanel');
+      const label = document.getElementById('adNotifSequenceText');
+      const next = document.getElementById('adNotifSequenceNext');
+      const finished = adNotifSequenceIndex >= adNotifSequenceLinks.length - 1;
+      label.textContent = `WhatsApp ${adNotifSequenceIndex + 1} dari ${adNotifSequenceLinks.length} dibuka.`;
+      next.disabled = false;
+      next.textContent = finished ? 'Tutup' : 'Buka berikutnya';
+    }
+
+    function adminNotifOpenNext() {
+      if (adNotifSequenceIndex >= adNotifSequenceLinks.length - 1) {
+        document.getElementById('adNotifSequencePanel').classList.add('hidden');
+        return;
+      }
+      adNotifSequenceIndex++;
+      if (!adminNotifOpenCurrent()) {
+        adNotifSequenceIndex--;
+        return;
+      }
+      adminNotifUpdateSequencePanel();
     }
 
     // ── ADMIN: Tab Pengaturan — JS ──────────────────────────
@@ -4617,9 +4781,8 @@
 
     function adminInitSettings() {
       if (adSettingsInit) return;
-      adSettingsInit = true;
       adminSettingsSubTab('konten');
-      adminLoadKonten();
+      adminLoadKonten().then(loaded => { if (loaded) adSettingsInit = true; });
     }
 
     function adminSettingsSubTab(sub) {
@@ -4632,12 +4795,24 @@
       if (sub === 'log') { adLogPage = 0; adminLoadLog(); }
     }
 
+    let adKontenLoadToken = 0;
     function adminLoadKonten() {
+      const token = ++adKontenLoadToken;
       const box = document.getElementById('adKontenList');
       box.innerHTML = '<p class="text-center py-8 text-slate-400 text-sm font-bold">Memuat konten...</p>';
-      gscript.adminListKonten()
-        .then(list => { adKontenCache = list || []; renderKontenList(); })
-        .catch(onError);
+      return gscript.adminListKonten()
+        .then(list => {
+          if (token !== adKontenLoadToken) return false;
+          adKontenCache = list || [];
+          renderKontenList();
+          return true;
+        })
+        .catch(err => {
+          if (token !== adKontenLoadToken) return false;
+          box.innerHTML = '<div class="text-center py-8"><p class="text-sm text-red-500 font-bold mb-3">Konten gagal dimuat.</p><button onclick="adminLoadKonten()" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-600 text-xs font-extrabold">Coba lagi</button></div>';
+          onError(err);
+          return false;
+        });
     }
 
     function renderKontenList() {
@@ -4646,14 +4821,20 @@
         box.innerHTML = '<p class="text-center py-8 text-slate-400 text-sm font-bold">Belum ada konten. Klik + Kunci.</p>';
         return;
       }
-      box.innerHTML = adKontenCache.map(k => `
+      box.innerHTML = adKontenCache.map((k, index) => `
         <div class="bg-white rounded-2xl p-3 shadow-sm border border-slate-100 flex items-start justify-between gap-3">
           <div class="min-w-0 flex-1">
             <p class="text-[10px] font-black text-amber-600 uppercase tracking-wider mb-1">${escHtml(k.kunci)}</p>
             <p class="text-sm text-slate-600 break-words line-clamp-3">${escHtml(k.nilai || '(kosong)')}</p>
           </div>
-          <button onclick='adminOpenKontenModal(${JSON.stringify(k).replace(/'/g, "&#39;")})' class="shrink-0 w-9 h-9 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-500 flex items-center justify-center"><i class="fa-solid fa-pen text-xs"></i></button>
+          <button data-content-index="${index}" class="shrink-0 w-9 h-9 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-500 flex items-center justify-center"><i class="fa-solid fa-pen text-xs"></i></button>
         </div>`).join('');
+      box.querySelectorAll('[data-content-index]').forEach(button => {
+        button.addEventListener('click', () => {
+          const content = adKontenCache[Number(button.dataset.contentIndex)];
+          if (content) adminOpenKontenModal(content);
+        });
+      });
     }
 
     function adminOpenKontenModal(editData) {
