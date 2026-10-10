@@ -979,6 +979,27 @@ function setupGestures(){
   stage.addEventListener("contextmenu", e=>e.preventDefault());   // cegah popup copy saat tekan lama
   let sx=0,sy=0,st=0,moved=false,longFired=false,lpTimer=null,lpWord=null,touchTarget=null,suppress=false,suppressTimer=null,multiTouch=false;
   const LP=500, MOVE=12, SWIPE=55;
+  let wheelX=0,wheelTimer=null,wheelLocked=false;
+  stage.addEventListener("wheel",e=>{
+    const scale=e.deltaMode===1?16:e.deltaMode===2?(stage.clientWidth||640):1;
+    const dx=e.deltaX*scale,dy=e.deltaY*scale;
+    if(e.ctrlKey||e.metaKey){ wheelX=0; return; } // jangan ganggu pinch zoom
+    const horizontal=Math.abs(dx)>=2 && Math.abs(dx)>Math.abs(dy)*1.2;
+    if(wheelLocked){
+      if(horizontal) e.preventDefault();
+      clearTimeout(wheelTimer);
+      wheelTimer=setTimeout(()=>{ wheelX=0; wheelLocked=false; },220);
+      return;
+    }
+    if(!horizontal){ wheelX=0; clearTimeout(wheelTimer); return; } // scroll vertikal tetap menggulir mushaf
+    e.preventDefault();
+    wheelX+=dx;
+    clearTimeout(wheelTimer);
+    wheelTimer=setTimeout(()=>{ wheelX=0; wheelLocked=false; },220);
+    if(Math.abs(wheelX)<64) return;
+    navigateByPhysicalDirection(wheelX<0?"left":"right");
+    wheelX=0; wheelLocked=true; // tahan inertia agar satu gesture hanya membuka satu halaman
+  },{passive:false});
   stage.addEventListener("touchstart",e=>{
     if(e.touches.length>1){ multiTouch=true; moved=true; clearTimeout(lpTimer); return; }
     if(multiTouch) return;

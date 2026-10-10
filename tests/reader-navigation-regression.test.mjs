@@ -267,6 +267,33 @@ test("geser ke kiri membuka halaman berikutnya dan geser ke kanan membuka sebelu
   assert.deepEqual(harness.calls.pages, [354, 352]);
 });
 
+test("touchpad horizontal membuka satu halaman per gesture tanpa menangkap scroll vertikal atau pinch", () => {
+  const harness = setupGestureHarness();
+  const wheel = (deltaX, deltaY = 0, modifiers = {}) => ({
+    deltaX, deltaY, deltaMode: 0, ctrlKey: false, metaKey: false,
+    ...modifiers, prevented: false,
+    preventDefault() { this.prevented = true; },
+  });
+  const leftStart = wheel(-28);
+  const leftFinish = wheel(-40);
+  harness.listeners.wheel(leftStart);
+  harness.listeners.wheel(leftFinish);
+  assert.deepEqual(harness.calls.pages, [354]);
+  assert.equal(leftFinish.prevented, true);
+
+  harness.listeners.wheel(wheel(38)); // inertia from the same left swipe
+  assert.deepEqual(harness.calls.pages, [354]);
+  harness.clock.runNext(); // a quiet interval ends that gesture
+
+  harness.listeners.wheel(wheel(32));
+  harness.listeners.wheel(wheel(34));
+  assert.deepEqual(harness.calls.pages, [354, 352]);
+
+  harness.listeners.wheel(wheel(0, 90));
+  harness.listeners.wheel(wheel(-90, 0, { ctrlKey: true }));
+  assert.deepEqual(harness.calls.pages, [354, 352]);
+});
+
 test("panah kiri membuka halaman berikutnya dan panah kanan membuka sebelumnya", () => {
   const harness = setupKeyboardHarness();
   harness.key("ArrowLeft");
