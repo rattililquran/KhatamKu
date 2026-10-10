@@ -506,12 +506,15 @@
         grid-template-columns: minmax(0, 1.45fr) minmax(232px, .78fr);
         grid-template-areas:
           "cycle-heading cycle-heading"
-          "reading cycle";
-        grid-template-rows: auto minmax(0, 1fr);
+          "reading cycle"
+          "hint .";
+        grid-template-rows: auto auto auto;
         align-items: stretch;
         gap: clamp(12px, 1.6vw, 18px) clamp(16px, 2.4vw, 28px);
       }
       .dashboard-reading { grid-area: reading; min-width: 0; }
+      #readingOverview { margin-bottom: 0; }
+      #targetResetHint { grid-area: hint; }
       .dashboard-cycle {
         grid-area: cycle;
         min-width: 0;
@@ -837,10 +840,9 @@
           <button id="btnCatatManual" class="w-full mt-2.5 py-3 rounded-2xl bg-white/15 hover:bg-white/25 border border-white/40 font-extrabold text-white text-sm tracking-widest transition-all flex items-center justify-center gap-2" onclick="handleCatatManual()"><i class="fa-solid fa-pen-to-square text-xs"></i> CATAT MUSHAF FISIK</button>
         </div>
       </div>
-          <p id="targetResetHint" class="dashboard-helper text-[11px] text-slate-400 font-medium mb-6 flex items-center gap-1.5 ml-2"><i class="fa-regular fa-clock"></i> Target harian akan direset setiap pukul 00:00 WIB</p>
-
       <!-- Progress khatam ke-X dan pengaturan pendukung -->
         </section>
+        <p id="targetResetHint" class="dashboard-helper text-[11px] text-slate-400 font-medium mb-6 flex items-center gap-1.5 ml-2"><i class="fa-regular fa-clock"></i> Target harian akan direset setiap pukul 00:00 WIB</p>
         <section class="dashboard-cycle" aria-labelledby="cycleHeading">
           <div id="cycleActions" class="grid grid-cols-2 gap-4 mb-8">
         <!-- Card Aksi: Udzur -->
