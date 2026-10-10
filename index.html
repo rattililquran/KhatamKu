@@ -503,17 +503,34 @@
       .bottom-nav-item { min-height: 58px; font-size: 12px; }
       #dashboardOverview {
         display: grid;
-        grid-template-columns: minmax(0, 1.3fr) minmax(248px, .9fr);
-        align-items: start;
+        grid-template-columns: minmax(0, 1.45fr) minmax(232px, .78fr);
+        align-items: stretch;
         gap: clamp(16px, 2.4vw, 28px);
       }
       .dashboard-reading, .dashboard-cycle { min-width: 0; }
+      .dashboard-cycle {
+        display: flex;
+        flex-direction: column;
+      }
+      #cycleHeading {
+        flex: 0 0 auto;
+        min-width: 0;
+        margin-bottom: 12px;
+        line-height: 1.35;
+      }
       #cycleActions {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        flex: 1 1 auto;
+        min-height: 0;
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: repeat(2, minmax(136px, 1fr));
         gap: 10px;
         margin-bottom: 0;
       }
-      #cycleActions > button { min-height: 142px; padding: clamp(12px, 1.6vw, 20px); }
+      #cycleActions > button {
+        min-width: 0;
+        min-height: 136px;
+        padding: clamp(12px, 1.6vw, 20px);
+      }
       #readingAnalytics {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -576,8 +593,8 @@
         font-size: 10px;
       }
       #bottomNav .bottom-nav-item i { font-size: 19px; }
-      #dashboardOverview { grid-template-columns: minmax(0, 1.5fr) minmax(300px, 1fr); }
-      #cycleActions > button { min-height: 168px; }
+      #dashboardOverview { grid-template-columns: minmax(0, 1.75fr) minmax(260px, .8fr); }
+      #cycleActions > button { min-height: 150px; }
       #readingAnalytics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
       #readingAnalytics > :last-child { grid-column: auto; }
       #sectionSurahMap .surah-grid { grid-template-columns: repeat(19, minmax(0, 1fr)); gap: 6px; }
