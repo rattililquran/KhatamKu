@@ -64,7 +64,7 @@ button:disabled{opacity:.55;cursor:not-allowed}
 .bar{position:sticky;top:0;z-index:8;padding: max(10px,env(safe-area-inset-top)) clamp(14px,3vw,36px) 10px;background:color-mix(in oklch,var(--color-canvas) 94%,transparent);border-bottom:1px solid var(--color-rule);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
 .bar-inner{width:min(100%,1360px);margin-inline:auto;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:clamp(12px,2vw,28px);min-height:52px}
 .brand-lockup{display:flex;align-items:center;gap:10px;min-width:0;text-decoration:none;color:var(--color-ink)}
-.back{display:grid;place-items:center;width:40px;height:40px;flex:0 0 40px;border:1px solid var(--color-rule);border-radius:50%;background:var(--color-canvas-raised);color:var(--color-ink);cursor:pointer;transition:background .18s ease,border-color .18s ease,transform .18s ease}
+.back{display:grid;place-items:center;width:44px;height:44px;flex:0 0 44px;border:1px solid var(--color-rule);border-radius:50%;background:var(--color-canvas-raised);color:var(--color-ink);cursor:pointer;transition:background .18s ease,border-color .18s ease,transform .18s ease}
 .back svg,.icon-button svg,.nav-item svg,.footer-button svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .brand-mark{display:grid;place-items:center;width:32px;height:32px;border:1px solid color-mix(in oklch,var(--color-accent) 55%,var(--color-rule));border-radius:50%;color:var(--color-accent);font-size:17px;line-height:1}
 .brand-caption{display:block;margin-top:3px;color:var(--color-muted);font-size:10px;letter-spacing:.04em;white-space:nowrap}
@@ -72,11 +72,13 @@ button:disabled{opacity:.55;cursor:not-allowed}
 .now-reading b{display:block;overflow:hidden;color:var(--color-ink);font-size:14px;font-weight:650;line-height:1.3;text-overflow:ellipsis;white-space:nowrap}
 .now-reading span{display:block;margin-top:3px;color:var(--color-muted);font-size:11px;line-height:1.3}
 .top-actions{display:flex;align-items:center;gap:6px}
-.icon-button{display:grid;place-items:center;width:40px;height:40px;flex:0 0 40px;border:1px solid transparent;border-radius:50%;background:transparent;color:var(--color-muted);cursor:pointer;transition:background .18s ease,color .18s ease,border-color .18s ease,transform .18s ease}
-.focus-reveal{position:relative;z-index:12;align-self:center;display:none;align-items:center;justify-content:center;gap:7px;min-height:40px;margin:0 0 max(8px,env(safe-area-inset-bottom));padding:0 14px;border:1px solid var(--color-rule);border-radius:999px;background:color-mix(in oklch,var(--color-canvas-raised) 92%,transparent);color:var(--color-ink);font-size:11px;font-weight:700;white-space:nowrap;box-shadow:0 8px 24px color-mix(in oklch,var(--color-shadow) 34%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);cursor:pointer}
+.icon-button{display:grid;place-items:center;width:44px;height:44px;flex:0 0 44px;border:1px solid transparent;border-radius:50%;background:transparent;color:var(--color-muted);cursor:pointer;transition:background .18s ease,color .18s ease,border-color .18s ease,transform .18s ease}
+#moreToggle{display:none}
+.more-actions{display:grid;gap:8px}
+.more-action{display:flex;align-items:center;justify-content:space-between;min-height:52px;padding:0 14px;border:1px solid var(--color-rule);border-radius:12px;background:var(--color-canvas);color:var(--color-ink);font-size:14px;font-weight:650;text-align:left;cursor:pointer}
+.focus-reveal{position:relative;z-index:12;align-self:center;display:none;align-items:center;justify-content:center;gap:7px;min-height:44px;margin:0 0 max(8px,env(safe-area-inset-bottom));padding:0 14px;border:1px solid var(--color-rule);border-radius:999px;background:color-mix(in oklch,var(--color-canvas-raised) 92%,transparent);color:var(--color-ink);font-size:11px;font-weight:700;white-space:nowrap;box-shadow:0 8px 24px color-mix(in oklch,var(--color-shadow) 34%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);cursor:pointer}
 .focus-reveal svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 body.reader-focus .bar,body.reader-focus #bottombar{display:none}
-body.reader-focus .stage{padding:clamp(16px,3vw,38px) clamp(12px,3vw,36px) clamp(20px,4vw,40px)}
 body.reader-focus .focus-reveal{display:inline-flex}
 @media(hover:hover) and (pointer:fine){.back:hover,.icon-button:hover{border-color:var(--color-rule);background:var(--color-canvas-raised);color:var(--color-accent)}.footer-button:hover{filter:brightness(1.08)}}
 .back:active,.icon-button:active,.footer-button:active:not(:disabled){transform:scale(.96)}
@@ -105,9 +107,9 @@ body.reader-focus .focus-reveal{display:inline-flex}
 #bottombar{position:sticky;z-index:7;bottom:0;margin-top:auto;padding:12px clamp(14px,3vw,36px) max(12px,env(safe-area-inset-bottom));border-top:1px solid var(--color-rule);background:color-mix(in oklch,var(--color-canvas) 96%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
 .bottom-inner{width:min(100%,1160px);margin-inline:auto;display:grid;grid-template-columns:minmax(220px,1fr) auto;align-items:center;gap:clamp(12px,3vw,32px)}
 .scrubber{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:12px;min-width:0}
-.jump-field{display:inline-flex;align-items:center;gap:5px;color:var(--color-muted);font-size:10px;letter-spacing:0;text-transform:none;white-space:nowrap}
-.jump{width:44px;height:28px;padding:3px 5px;border:1px solid var(--color-rule);border-radius:8px;background:var(--color-canvas-raised);color:var(--color-ink);text-align:center;font-size:12px;font-variant-numeric:tabular-nums}
-.page-slider{grid-column:1;width:100%;height:18px;margin:0;appearance:none;-webkit-appearance:none;background:transparent;direction:rtl;cursor:pointer;touch-action:pan-x}
+.jump-field{display:inline-flex;align-items:center;min-height:44px;gap:5px;color:var(--color-muted);font-size:10px;letter-spacing:0;text-transform:none;white-space:nowrap}
+.jump{width:44px;height:44px;padding:3px 5px;border:1px solid var(--color-rule);border-radius:8px;background:var(--color-canvas-raised);color:var(--color-ink);text-align:center;font-size:12px;font-variant-numeric:tabular-nums}
+.page-slider{grid-column:1;width:100%;height:44px;margin:0;appearance:none;-webkit-appearance:none;background:transparent;direction:rtl;cursor:pointer;touch-action:pan-x}
 .page-slider::-webkit-slider-runnable-track{height:3px;border-radius:99px;background:linear-gradient(to left,var(--color-accent) 0%,var(--color-accent) var(--progress,0%),var(--color-rule) var(--progress,0%),var(--color-rule) 100%)}
 .page-slider::-moz-range-track{height:3px;border-radius:99px;background:var(--color-rule)}
 .page-slider::-moz-range-progress{height:3px;border-radius:99px;background:var(--color-accent)}
@@ -127,7 +129,7 @@ body.reader-focus .focus-reveal{display:inline-flex}
 .sheet .handle{width:38px;height:4px;margin:2px auto 15px;border-radius:4px;background:var(--color-muted);opacity:.55}
 .sheet .row{display:flex;align-items:center;gap:10px;margin-bottom:14px}
 .sheet .tag{color:var(--color-accent);font-size:11px;font-weight:750;letter-spacing:.12em;text-transform:uppercase}
-.sheet .bk,.sheet .close{display:grid;place-items:center;width:40px;height:40px;flex:0 0 40px;border:1px solid var(--color-rule);border-radius:50%;background:transparent;color:var(--color-muted);font-size:18px;cursor:pointer;transition:background .16s ease,color .16s ease}
+.sheet .bk,.sheet .close{display:grid;place-items:center;width:44px;height:44px;flex:0 0 44px;border:1px solid var(--color-rule);border-radius:50%;background:transparent;color:var(--color-muted);font-size:18px;cursor:pointer;transition:background .16s ease,color .16s ease}
 .sheet .bk{color:var(--color-accent)}
 .sheet .bk:active,.sheet .close:active{background:var(--color-canvas);color:var(--color-ink)}
 .sheet .ar{margin:13px 0;color:var(--color-ink);direction:rtl;text-align:right;font-size:27px;line-height:2}
@@ -139,6 +141,7 @@ body.reader-focus .focus-reveal{display:inline-flex}
 .qbox::placeholder{color:var(--color-muted)}
 .qbox:focus-visible{outline-color:var(--color-focus)}
 .nav-item{display:flex;align-items:center;gap:12px;min-height:54px;margin:0 -5px 2px;padding:9px 8px;border-radius:12px;color:var(--color-ink);cursor:pointer;transition:background .14s ease}
+.nav-item{width:calc(100% + 10px);border:0;background:transparent;text-align:left;font:inherit}
 .nav-item:active{background:var(--color-canvas)}
 .nav-item .num{display:grid;place-items:center;min-width:36px;height:36px;padding:0 6px;border:1px solid var(--color-rule);border-radius:50%;color:var(--color-accent);font-size:11px;font-weight:750;flex:0 0 auto}
 .nav-item .t{min-width:0;flex:1;font-size:13px}
@@ -149,8 +152,16 @@ body.reader-focus .focus-reveal{display:inline-flex}
 .bk-item .n{padding:5px 9px;border-radius:999px;background:var(--color-accent);color:var(--color-accent-ink);font-size:10px;font-weight:800;white-space:nowrap}
 .bk-item .t{min-width:0;flex:1;color:var(--color-ink);font-size:13px}
 .bk-item .t small{display:block;overflow:hidden;margin-top:3px;color:var(--color-muted);font-size:11px;text-overflow:ellipsis;white-space:nowrap}
-.bk-item .del{width:38px;height:38px;border:1px solid transparent;border-radius:50%;background:transparent;color:var(--color-muted);font-size:15px;cursor:pointer}
+.bk-item .del{width:44px;height:44px;flex:0 0 44px;border:1px solid transparent;border-radius:50%;background:transparent;color:var(--color-muted);font-size:18px;cursor:pointer}
+.bk-open{display:flex;align-items:center;gap:10px;min-width:0;min-height:44px;flex:1;padding:0;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer}
 .bk-empty{padding:36px 15px;color:var(--color-muted);font-size:13px;line-height:1.6;text-align:center}
+.nav-tools{position:sticky;top:-10px;z-index:2;margin:0 -20px 8px;padding:6px 20px 4px;background:var(--color-canvas-raised)}
+.nav-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin:0 0 9px;padding:4px;border:1px solid var(--color-rule);border-radius:12px;background:var(--color-canvas)}
+.nav-tab{min-height:44px;border:1px solid transparent;border-radius:9px;background:transparent;color:var(--color-muted);font-size:12px;font-weight:700;cursor:pointer}
+.nav-tab[aria-selected="true"]{border-color:color-mix(in oklch,var(--color-accent) 38%,var(--color-rule));background:color-mix(in oklch,var(--color-accent) 14%,var(--color-canvas));color:var(--color-accent)}
+.nav-tools .qbox{margin:0}
+.resume-card{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:64px;margin:4px 0 12px;padding:10px 13px;border:1px solid color-mix(in oklch,var(--color-accent) 50%,var(--color-rule));border-radius:14px;background:color-mix(in oklch,var(--color-accent) 9%,var(--color-canvas));color:var(--color-ink);text-align:left;cursor:pointer}
+.resume-card strong{display:block;font-size:13px}.resume-card small{display:block;margin-top:4px;color:var(--color-muted);font-size:11px}
 .settings-intro{margin:-3px 0 18px;color:var(--color-muted);font-size:12px;line-height:1.6}
 .setting-label{margin:18px 0 9px;color:var(--color-muted);font-size:10px;font-weight:750;letter-spacing:.1em;text-transform:uppercase}
 .theme-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
@@ -169,19 +180,19 @@ body.reader-focus .focus-reveal{display:inline-flex}
 .type-controls p{margin:0;color:var(--color-ink);font-size:13px;font-weight:620}
 .type-controls small{display:block;margin-top:4px;color:var(--color-muted);font-size:10px;font-weight:450}
 .type-stepper{display:flex;align-items:center;gap:8px}
-.type-stepper button{width:40px;height:40px;border:1px solid var(--color-rule);border-radius:50%;background:var(--color-canvas-raised);color:var(--color-ink);font-size:20px;cursor:pointer}
+.type-stepper button{width:44px;height:44px;border:1px solid var(--color-rule);border-radius:50%;background:var(--color-canvas-raised);color:var(--color-ink);font-size:20px;cursor:pointer}
 .type-stepper button:disabled{opacity:.5;cursor:not-allowed}
 .type-stepper output{min-width:42px;color:var(--color-ink);font-size:11px;font-variant-numeric:tabular-nums;text-align:center}
 .settings-secondary{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:15px;padding-top:14px;border-top:1px solid var(--color-rule)}
 .settings-secondary p{margin:0;color:var(--color-muted);font-size:11px}
-.settings-secondary button{min-height:40px;padding:0 12px;border:1px solid var(--color-rule);border-radius:var(--radius-sm);background:transparent;color:var(--color-ink);font-size:11px;white-space:nowrap;cursor:pointer}
+.settings-secondary button{min-height:44px;padding:0 12px;border:1px solid var(--color-rule);border-radius:var(--radius-sm);background:transparent;color:var(--color-ink);font-size:11px;white-space:nowrap;cursor:pointer}
 .note-editor{margin:20px 0;padding:14px;border:1px solid var(--color-rule);border-radius:14px;background:color-mix(in oklch,var(--color-canvas) 72%,transparent)}
 .note-editor label,.plan-card>label{display:block;margin-bottom:9px;color:var(--color-accent);font-size:10px;font-weight:750;letter-spacing:.1em;text-transform:uppercase}
 .note-editor label span{color:var(--color-muted);font-size:9px;font-weight:500;letter-spacing:0;text-transform:none}
 .note-editor textarea{display:block;width:100%;min-height:88px;resize:vertical;padding:11px 12px;border:1px solid var(--color-rule);border-radius:10px;background:var(--color-canvas);color:var(--color-ink);font:12px/1.65 var(--font-ui)}
 .note-editor textarea::placeholder{color:var(--color-muted)}
 .note-actions,.plan-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:10px}
-.note-actions button,.plan-actions button{min-height:40px;padding:0 12px;border:1px solid var(--color-rule);border-radius:var(--radius-sm);background:transparent;color:var(--color-ink);font-size:11px;font-weight:650;cursor:pointer}
+.note-actions button,.plan-actions button{min-height:44px;padding:0 12px;border:1px solid var(--color-rule);border-radius:var(--radius-sm);background:transparent;color:var(--color-ink);font-size:11px;font-weight:650;cursor:pointer}
 .note-actions .note-save,.plan-actions .plan-save{border-color:var(--color-accent);background:var(--color-accent);color:var(--color-accent-ink)}
 .plan-card{padding:14px;border:1px solid var(--color-rule);border-radius:14px;background:color-mix(in oklch,var(--color-canvas) 72%,transparent)}
 .plan-card>label{margin:0 0 8px}
@@ -213,11 +224,9 @@ body.reader-focus .focus-reveal{display:inline-flex}
   .reader-layout{grid-template-columns:minmax(150px,190px) minmax(0,720px)}
   .reader-rail{position:sticky;top:96px;display:block;padding-top:26px}
   .rail-label{margin:0 0 11px;color:var(--color-muted);font-size:10px;font-weight:750;letter-spacing:.12em;text-transform:uppercase}
-  .rail-page{margin:0;color:var(--color-ink);font-size:clamp(38px,4vw,54px);font-weight:520;letter-spacing:-.06em;line-height:1;font-variant-numeric:tabular-nums}
   .rail-caption{margin:7px 0 0;color:var(--color-muted);font-size:12px}
   .rail-progress{height:2px;margin:19px 0 13px;background:var(--color-rule)}
   .rail-progress span{display:block;width:var(--progress,0%);height:100%;background:var(--color-accent);transition:width .25s ease}
-  .rail-juz{display:inline-flex;align-items:center;min-height:30px;padding:0 10px;border:1px solid var(--color-rule);border-radius:999px;color:var(--color-accent);font-size:10px;letter-spacing:.04em}
   .rail-note{max-width:160px;margin:22px 0 0;color:var(--color-muted);font-size:11px;line-height:1.75}
   .page-meta{margin-bottom:14px}
 }
@@ -234,7 +243,7 @@ body.reader-focus .focus-reveal{display:inline-flex}
   .now-reading b{font-size:12px}
   .now-reading span{display:none}
   .top-actions{gap:1px}
-  .icon-button{width:38px;height:40px;flex-basis:38px}
+  .icon-button{width:44px;height:44px;flex-basis:44px}
   .stage{padding:13px 10px 22px}
   .page-meta{margin-inline:2px;margin-bottom:9px;font-size:10px}
   .mushaf{min-height:360px;padding:25px 17px;border-radius:3px}
@@ -243,9 +252,8 @@ body.reader-focus .focus-reveal{display:inline-flex}
   #bottombar{padding:9px 12px max(10px,env(safe-area-inset-bottom))}
   .bottom-inner{grid-template-columns:minmax(0,1fr);gap:8px}
   .scrubber{grid-template-columns:minmax(0,1fr) auto;column-gap:9px}
-  .page-slider{height:16px}
   .footer-controls{display:grid;grid-template-columns:minmax(0,1fr) minmax(116px,1.2fr) minmax(0,1fr);gap:6px;direction:ltr}
-  .footer-button{min-height:42px;gap:5px;padding:0 7px;font-size:10px}
+  .footer-button{min-height:44px;gap:5px;padding:0 7px;font-size:10px}
   .footer-button.primary{min-width:0;padding-inline:8px;font-size:11px}
   .footer-button svg{width:15px;height:15px}
   .toast{bottom:calc(122px + env(safe-area-inset-bottom))}
@@ -254,35 +262,38 @@ body.reader-focus .focus-reveal{display:inline-flex}
 @media(max-width:359px){
   .bar{padding-inline:9px}
   .bar-inner{gap:4px}
-  .back{width:36px;height:36px;flex-basis:36px}
-  .icon-button{width:35px;height:38px;flex-basis:35px}
+  .back{width:44px;height:44px;flex-basis:44px}
+  .icon-button{width:44px;height:44px;flex-basis:44px}
   .top-actions{gap:0}
+  #notesToggle,#settingsToggle{display:none}
+  #moreToggle{display:grid}
   .now-reading b{font-size:11px}
   .mushaf{padding-inline:13px}
-  .footer-button{gap:3px;padding-inline:5px;font-size:9px}
+  .footer-button{min-height:44px;gap:3px;padding-inline:4px;font-size:9px}
   .footer-button.primary{font-size:10px}
-  .jump-field{font-size:9px}
-  .jump{width:40px}
+  .jump-field{min-height:44px;font-size:9px}
+  .jump{width:44px;height:44px}
 }
 /* Keep more of the mushaf visible in short, wide viewports (landscape phones). */
 @media(max-height:520px) and (min-width:640px){
   #bottombar{padding:6px 12px max(6px,env(safe-area-inset-bottom))}
   .bottom-inner{grid-template-columns:minmax(0,1fr) auto;gap:12px}
   .scrubber{column-gap:8px}
-  .page-slider{height:14px}
-  .jump{height:26px}
+  .page-slider{height:44px}
+  .jump{height:44px}
   .footer-controls{display:flex;gap:6px}
-  .footer-button{min-height:38px;gap:5px;padding-inline:8px;font-size:10px}
+  .footer-button{min-height:44px;gap:5px;padding-inline:8px;font-size:10px}
   .footer-button.primary{min-width:128px;padding-inline:8px;font-size:10px}
 }
 @media(max-height:380px) and (min-width:640px){
   .bar{padding:max(2px,env(safe-area-inset-top)) 10px 2px}
   .bar-inner{min-height:32px;gap:6px}
-  .back,.icon-button{width:32px;height:32px;flex-basis:32px}
+  .back,.icon-button{width:44px;height:44px;flex-basis:44px}
   .page-meta{display:none}
   .stage{padding:4px 10px}
   .mushaf{min-height:360px;padding:8px 16px}
 }
+body.reader-focus .page-meta{display:flex}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 </style>
 <!-- Supabase adapter: sesi login dari index.html menular (same-origin, storageKey khatamku_auth) -->
@@ -301,19 +312,19 @@ body.reader-focus .focus-reveal{display:inline-flex}
     <div class="top-actions">
       <button class="icon-button" onclick="openNav()" title="Daftar surat dan pencarian" aria-label="Daftar surat dan cari ayat"><svg viewBox="0 0 24 24"><path d="M4 5.5h6v13H4zM14 5.5h6v13h-6zM6.5 8.5h1M16.5 8.5h1M6.5 11.5h1M16.5 11.5h1"/></svg></button>
       <button class="icon-button" onclick="openBkPanel()" title="Daftar bookmark" aria-label="Daftar bookmark"><svg viewBox="0 0 24 24"><path d="M6.5 4.5h11v16l-5.5-3.7-5.5 3.7z"/></svg></button>
-      <button class="icon-button" onclick="openNotesPanel()" title="Catatan ayat" aria-label="Daftar catatan ayat"><svg viewBox="0 0 24 24"><path d="M5 4.5h9l5 5v10H5zM14 4.5v5h5M8 14h8M8 17h5"/></svg></button>
+      <button class="icon-button" id="notesToggle" onclick="openNotesPanel()" title="Catatan ayat" aria-label="Daftar catatan ayat"><svg viewBox="0 0 24 24"><path d="M5 4.5h9l5 5v10H5zM14 4.5v5h5M8 14h8M8 17h5"/></svg></button>
       <button class="icon-button" id="focusToggle" type="button" onclick="toggleReaderChrome()" aria-label="Sembunyikan bilah atas dan bawah" aria-pressed="false" title="Mode fokus"><svg viewBox="0 0 24 24"><path d="M4 4h16M4 20h16M8 5l4 4 4-4M8 19l4-4 4 4"/></svg></button>
-      <button class="icon-button" onclick="openSettings()" title="Pengaturan mushaf" aria-label="Pengaturan tampilan mushaf"><svg viewBox="0 0 24 24"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"/><path d="m19.4 13.5 1.1.8-1.1 1.9-1.3-.5a7.8 7.8 0 0 1-1.5.9l-.2 1.4h-2.2l-.4-1.3a7.7 7.7 0 0 1-1.7 0l-.7 1.1-1.9-1.1.5-1.3a7.8 7.8 0 0 1-.9-1.5l-1.4-.2v-2.2l1.3-.4a7.7 7.7 0 0 1 0-1.7l-1.1-.7 1.1-1.9 1.3.5a7.8 7.8 0 0 1 1.5-.9l.2-1.4h2.2l.4 1.3a7.7 7.7 0 0 1 1.7 0l.7-1.1 1.9 1.1-.5 1.3a7.8 7.8 0 0 1 .9 1.5l1.4.2v2.2l-1.3.4a7.7 7.7 0 0 1 0 1.7Z"/></svg></button>
+      <button class="icon-button" id="settingsToggle" onclick="openSettings()" title="Pengaturan mushaf" aria-label="Pengaturan tampilan mushaf"><svg viewBox="0 0 24 24"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"/><path d="m19.4 13.5 1.1.8-1.1 1.9-1.3-.5a7.8 7.8 0 0 1-1.5.9l-.2 1.4h-2.2l-.4-1.3a7.7 7.7 0 0 1-1.7 0l-.7 1.1-1.9-1.1.5-1.3a7.8 7.8 0 0 1-.9-1.5l-1.4-.2v-2.2l1.3-.4a7.7 7.7 0 0 1 0-1.7l-1.1-.7 1.1-1.9 1.3.5a7.8 7.8 0 0 1 1.5-.9l.2-1.4h2.2l.4 1.3a7.7 7.7 0 0 1 1.7 0l.7-1.1 1.9 1.1-.5 1.3a7.8 7.8 0 0 1 .9 1.5l1.4.2v2.2l-1.3.4a7.7 7.7 0 0 1 0 1.7Z"/></svg></button>
+      <button class="icon-button" id="moreToggle" type="button" onclick="openMorePanel()" title="Lainnya" aria-label="Catatan dan pengaturan"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></button>
     </div>
   </div>
 </div>
 
 <div class="stage"><div class="reader-layout">
-  <aside class="reader-rail" aria-label="Ringkasan posisi bacaan">
-    <p class="rail-label">Posisi bacaan</p><p class="rail-page" id="railPage">003</p>
+  <aside class="reader-rail" aria-label="Ringkasan kemajuan bacaan">
+    <p class="rail-label">Kemajuan tilawah</p>
     <p class="rail-caption" id="railCaption">dari 604 halaman</p>
     <div class="rail-progress" aria-hidden="true"><span id="railProgress"></span></div>
-    <span class="rail-juz" id="railJuz">Juz 1</span>
     <p class="rail-note">Lanjutkan dengan tenang. Setiap ayat adalah langkah menuju khatam.</p>
   </aside>
   <main class="reader-main" aria-label="Halaman mushaf">
@@ -329,15 +340,15 @@ body.reader-focus .focus-reveal{display:inline-flex}
       <label class="jump-field" for="jump">Buka halaman <input class="jump" id="jump" type="number" min="1" max="604" inputmode="numeric" aria-label="Buka halaman mushaf"> / 604</label>
     </div>
     <div class="footer-controls">
-      <button id="prev" class="footer-button" onclick="go(page-1)" aria-label="Halaman sebelumnya"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg><span>Sebelumnya</span></button>
-      <button id="markBtn" class="footer-button primary" onclick="markRead()"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.2 4.2L19 7"/></svg><span>Catat bacaan</span></button>
       <button id="next" class="footer-button" onclick="go(page+1)" aria-label="Halaman berikutnya"><span>Berikutnya</span><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button>
+      <button id="markBtn" class="footer-button primary" onclick="markRead()"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.2 4.2L19 7"/></svg><span>Catat bacaan</span></button>
+      <button id="prev" class="footer-button" onclick="go(page-1)" aria-label="Halaman sebelumnya"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg><span>Sebelumnya</span></button>
     </div>
   </div>
 </div>
 <button class="focus-reveal" id="focusReveal" type="button" onclick="toggleReaderChrome()" aria-label="Tampilkan bilah dan kontrol baca" title="Tampilkan kontrol"><svg viewBox="0 0 24 24"><path d="m6 14 6-6 6 6"/></svg><span>Tampilkan kontrol</span></button>
 <div id="toast" class="toast"></div>
-<div id="tapHint" class="taphint">Ketuk ayat untuk arti · geser atau gunakan tombol untuk berpindah halaman · tahan ayat di ponsel untuk membuka arti</div>
+<div id="tapHint" class="taphint">Ketuk ayat untuk arti · geser kiri: berikutnya, kanan: sebelumnya · ketuk latar untuk buka/tutup kontrol · tahan ayat di ponsel untuk membuka arti</div>
 
 <div id="confirmModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="cmTitle"><div class="box">
   <h3 id="cmTitle">Tandai Bacaan</h3>
@@ -370,19 +381,28 @@ body.reader-focus .focus-reveal{display:inline-flex}
   <h3>Tafsir (Kemenag)</h3><p class="tafsir" id="s-tf"></p>
 </div>
 
-<div id="bkPanel" class="sheet" role="dialog" aria-modal="true" aria-labelledby="bkPanelTitle">
-  <div class="handle"></div>
-  <div class="row"><span class="tag" id="bkPanelTitle">Bookmark tersimpan</span>
-    <button class="close" onclick="hideBk()" style="margin-left:auto" aria-label="Tutup daftar bookmark">×</button></div>
-  <div id="bkList"><div class="bk-empty">Memuat…</div></div>
-</div>
-
 <div id="navPanel" class="sheet" role="dialog" aria-modal="true" aria-labelledby="navPanelTitle">
   <div class="handle"></div>
-  <div class="row"><span class="tag" id="navPanelTitle">Daftar surat &amp; cari</span>
-    <button class="close" onclick="hideNav()" style="margin-left:auto" aria-label="Tutup daftar surat dan pencarian">×</button></div>
-  <input id="q" class="qbox" placeholder="Cari surat, kata dalam terjemah, atau ketik 2:255…" oninput="doSearch(this.value)">
-  <div id="navList"></div>
+  <div class="row"><span class="tag" id="navPanelTitle">Jelajahi Al-Qur'an</span>
+    <button class="close" onclick="hideNav()" style="margin-left:auto" aria-label="Tutup navigasi mushaf">×</button></div>
+  <div class="nav-tools">
+    <div class="nav-tabs" role="tablist" aria-label="Jenis navigasi">
+      <button type="button" class="nav-tab" id="navTabSurah" role="tab" aria-selected="true" aria-controls="navList" onclick="setNavTab('surah')">Surah</button>
+      <button type="button" class="nav-tab" id="navTabJuz" role="tab" aria-selected="false" aria-controls="navList" tabindex="-1" onclick="setNavTab('juz')">Juz</button>
+      <button type="button" class="nav-tab" id="navTabPenanda" role="tab" aria-selected="false" aria-controls="navList" tabindex="-1" onclick="setNavTab('penanda')">Penanda</button>
+    </div>
+    <input id="q" class="qbox" aria-label="Cari pada daftar navigasi" placeholder="Cari nama, arti, atau 2:255…" oninput="doSearch(this.value)">
+  </div>
+  <div id="navList" role="tabpanel" aria-labelledby="navTabSurah" tabindex="0"></div>
+</div>
+
+<div id="morePanel" class="sheet" role="dialog" aria-modal="true" aria-labelledby="morePanelTitle">
+  <div class="handle"></div>
+  <div class="row"><span class="tag" id="morePanelTitle">Lainnya</span><button class="close" onclick="hideMorePanel()" style="margin-left:auto" aria-label="Tutup menu lainnya">×</button></div>
+  <div class="more-actions">
+    <button type="button" class="more-action" onclick="openNotesPanel()">Catatan ayat <span aria-hidden="true">›</span></button>
+    <button type="button" class="more-action" onclick="openSettings()">Pengaturan mushaf <span aria-hidden="true">›</span></button>
+  </div>
 </div>
 
 <div id="notesPanel" class="sheet" role="dialog" aria-modal="true" aria-labelledby="notesPanelTitle">
@@ -505,7 +525,14 @@ function restoreReadingPosition(position){
 }
 function saveReadingPosition(){
   if(renderedPage!==page) return;
-  const stage=document.querySelector(".stage"), stageRect=stage.getBoundingClientRect();
+  const stage=document.querySelector(".stage");
+  if(chromePositionAnchor&&chromePositionAnchor.page===page&&stage.scrollTop===chromePositionAnchor.scrollTop){
+    lastReadingPosition={page:chromePositionAnchor.page,v:chromePositionAnchor.v};
+    try{ localStorage.setItem(LAST_POSITION_KEY,JSON.stringify(lastReadingPosition)); }catch(_){}
+    return;
+  }
+  chromePositionAnchor=null;
+  const stageRect=stage.getBoundingClientRect();
   const clipTop=stageRect.top+stage.clientTop, clipBottom=clipTop+stage.clientHeight;
   const line=Array.from(document.querySelectorAll("#mushaf .line")).find(item=>{
     const rect=item.getBoundingClientRect(); return rect.bottom>clipTop&&rect.top<clipBottom;
@@ -517,6 +544,7 @@ function saveReadingPosition(){
   try{ localStorage.setItem(LAST_POSITION_KEY,JSON.stringify(position)); }catch(_){}
 }
 let positionSaveTimer=null;
+let chromePositionAnchor=null;
 function scheduleReadingPositionSave(){
   clearTimeout(positionSaveTimer);
   positionSaveTimer=setTimeout(saveReadingPosition,140);
@@ -529,7 +557,7 @@ async function go(p){
   const initialNavigation=renderedPage===null;
   const resumePosition=initialNavigation&&lastReadingPosition&&lastReadingPosition.page===p?lastReadingPosition:null;
   const stage=document.querySelector(".stage");
-  page = p; renderedPage=null; hideSheet(); updateNav();
+  page = p; renderedPage=null; chromePositionAnchor=null; hideSheet(); updateNav();
   if(!resumePosition) stage.scrollTop=0;
   try{ history.replaceState(null,"","?p="+p); }catch(_){}   // simpan posisi → refresh tetap di halaman ini
   const box = document.getElementById("mushaf");
@@ -587,7 +615,7 @@ async function go(p){
     });
     box.appendChild(row);
   });
-  document.getElementById("pageInfo").textContent = "Halaman "+p+" · Juz "+(d.juz||"-");
+  syncPageIndicators();
   fitPage();
   renderedPage = p;
   const restoredPosition=resumePosition&&restoreReadingPosition(resumePosition);
@@ -606,6 +634,10 @@ async function go(p){
   prefetchAdjacent(p);
   return true;
 }
+function syncPageIndicators(){
+  const focused=document.body.classList.contains("reader-focus");
+  document.getElementById("pageInfo").textContent=focused?`Halaman ${page} · Juz ${currentJuz||"-"}`:`Juz ${currentJuz||"-"}`;
+}
 function updateNav(){
   document.getElementById("prev").disabled = page<=1;
   document.getElementById("next").disabled = page>=604;
@@ -614,16 +646,14 @@ function updateNav(){
   if(slider){ slider.value=page; slider.style.setProperty("--progress",progress+"%"); }
   document.documentElement.style.setProperty("--progress",progress+"%");
   document.getElementById("jump").value=page;
-  document.getElementById("railPage").textContent=String(page).padStart(3,"0");
-  document.getElementById("railJuz").textContent="Juz "+currentJuz;
   document.getElementById("railCaption").textContent="dari 604 halaman · "+Math.round(progress)+"%";
 }
 // ── backdrop dim di belakang sheet/panel ──
 function syncBackdrop(){
-  const any = ["sheet","bkPanel","navPanel","notesPanel","settingsPanel"].some(id=>document.getElementById(id).classList.contains("show"));
+  const any = ["sheet","navPanel","notesPanel","settingsPanel","morePanel"].some(id=>document.getElementById(id).classList.contains("show"));
   document.getElementById("backdrop").classList.toggle("show", any);
 }
-document.getElementById("backdrop").addEventListener("click", ()=>{ hideSheet(); hideBk(); hideNav(); hideNotesPanel(); hideSettings(); });
+document.getElementById("backdrop").addEventListener("click", ()=>{ hideSheet(); hideNav(); hideNotesPanel(); hideSettings(); hideMorePanel(); });
 
 function persistReaderPrefs(){ try{ localStorage.setItem(READER_PREFS_KEY,JSON.stringify(readerPrefs)); }catch(_){} }
 function localDateValue(date=new Date()){
@@ -685,7 +715,7 @@ function applyReaderPreferences(){
   if(renderedPage!==null) requestAnimationFrame(fitPage);
 }
 function openSettings(){
-  hideSheet(); hideBk(); hideNav(); hideNotesPanel();
+  hideSheet(); hideNav(); hideNotesPanel(); hideMorePanel();
   const target=document.getElementById("planTargetDate");
   if(!target.value) target.value=readingPlan?.targetDate||defaultPlanTarget();
   renderReadingPlan();
@@ -693,6 +723,11 @@ function openSettings(){
   document.getElementById("settingsPanel").classList.add("show"); syncBackdrop();
 }
 function hideSettings(){ document.getElementById("settingsPanel").classList.remove("show"); syncBackdrop(); }
+function openMorePanel(){
+  hideSheet(); hideNav(); hideNotesPanel(); hideSettings();
+  document.getElementById("morePanel").classList.add("show"); syncBackdrop();
+}
+function hideMorePanel(){ document.getElementById("morePanel").classList.remove("show"); syncBackdrop(); }
 function setReaderTheme(theme){
   if(!["paper","sepia","night"].includes(theme)) return;
   readerPrefs.theme=theme; persistReaderPrefs(); applyReaderPreferences();
@@ -780,7 +815,7 @@ function renderNotesPanel(){
   });
 }
 function openNotesPanel(){
-  hideSheet(); hideBk(); hideNav(); hideSettings();
+  hideSheet(); hideNav(); hideSettings(); hideMorePanel();
   renderNotesPanel(); document.getElementById("notesPanel").classList.add("show"); syncBackdrop();
 }
 function hideNotesPanel(){ document.getElementById("notesPanel").classList.remove("show"); syncBackdrop(); }
@@ -799,7 +834,18 @@ async function copyAyat(){
 // ── Bookmark: Supabase bila login, fallback localStorage bila belum ──
 const bkMap = {};                     // "s:a" → id bookmark (server)
 function bkKey(){ return "khatamku_bk"; }
-function getBk(){ try{return JSON.parse(localStorage.getItem(bkKey())||"[]");}catch(_){return[];} }
+function getBk(){
+  try{
+    const stored=JSON.parse(localStorage.getItem(bkKey())||"[]");
+    if(!Array.isArray(stored)) return [];
+    return stored.reduce((valid,item)=>{
+      if(!item||typeof item!=="object") return valid;
+      const s=Number(item.s),a=Number(item.a);
+      if(Number.isInteger(s)&&s>=1&&s<=114&&Number.isInteger(a)&&a>=1&&a<=286&&item.v===`${s}:${a}`) valid.push({s,a,v:item.v});
+      return valid;
+    },[]);
+  }catch(_){ return []; }
+}
 async function hasSession(){ try{ return !!(window.sb && (await sb.auth.getSession()).data.session); }catch(_){ return false; } }
 async function initBookmarks(){
   if(!(await hasSession()) || !window.gscript) return;
@@ -824,7 +870,7 @@ async function toggleBookmark(){
   if(i>=0) bk.splice(i,1); else bk.push({v:key,s:curAyat.s,a:curAyat.a});
   localStorage.setItem(bkKey(), JSON.stringify(bk)); refreshBk();
 }
-// ── Panel daftar bookmark ──
+// ── Indeks ayat, posisi baca, dan data penanda ──
 let PAGEIDX = null, _pageIndexPromise = null;
 async function loadIndex(){
   if(PAGEIDX) return PAGEIDX;
@@ -838,36 +884,10 @@ async function loadIndex(){
 }
 async function getAllBookmarks(){
   if(window.gscript && await hasSession()){
-    return (await gscript.listBookmarks()||[]).map(b=>({s:b.surah_id,a:b.ayat,id:b.id}));
+    return (await gscript.listBookmarks()||[]).map(b=>({s:Number(b.surah_id),a:Number(b.ayat),id:b.id})).filter(b=>Number.isInteger(b.s)&&b.s>=1&&b.s<=114&&Number.isInteger(b.a)&&b.a>=1);
   }
-  return getBk().map(b=>({s:b.s,a:b.a}));
+  return getBk().map(b=>({s:Number(b.s),a:Number(b.a)})).filter(b=>Number.isInteger(b.s)&&b.s>=1&&b.s<=114&&Number.isInteger(b.a)&&b.a>=1);
 }
-async function openBkPanel(){
-  document.getElementById("bkPanel").classList.add("show");
-  syncBackdrop();
-  const list = document.getElementById("bkList");
-  list.innerHTML = '<div class="bk-empty">Memuat…</div>';
-  let items;
-  try{ items = await getAllBookmarks(); }
-  catch(_){ list.innerHTML = '<div class="bk-empty">Bookmark gagal dimuat. Periksa koneksi lalu buka panel ini lagi.</div>'; return; }
-  if(!items.length){ list.innerHTML = '<div class="bk-empty">Belum ada bookmark. Ketuk ★ pada ayat untuk menyimpan.</div>'; return; }
-  list.innerHTML = "";
-  for(const it of items){
-    let nama = "Surah "+it.s, preview = "";
-    try{ const su = await loadSurah(it.s); nama = su.nama; const ay = su.ayat.find(x=>x.n===it.a); if(ay) preview = (ay.id||"").slice(0,60)+"…"; }catch(_){}
-    const row = document.createElement("div"); row.className="bk-item";
-    const reference=document.createElement("span"); reference.className="n"; reference.textContent=it.s+":"+it.a;
-    const title=document.createElement("div"); title.className="t"; title.textContent=nama;
-    const excerpt=document.createElement("small"); excerpt.textContent=preview; title.appendChild(excerpt);
-    const remove=document.createElement("button"); remove.className="del"; remove.type="button"; remove.title="Hapus bookmark"; remove.setAttribute("aria-label","Hapus bookmark QS "+it.s+":"+it.a); remove.textContent="🗑";
-    row.append(reference,title,remove);
-    const jump = ()=>gotoAyat(it.s,it.a);
-    title.onclick = jump; reference.onclick = jump;
-    remove.onclick = async(e)=>{ e.stopPropagation(); await removeBk(it); openBkPanel(); };
-    list.appendChild(row);
-  }
-}
-function hideBk(){ document.getElementById("bkPanel").classList.remove("show"); syncBackdrop(); }
 async function removeBk(it){
   const key = it.s+":"+it.a;
   if(window.gscript && await hasSession() && it.id!=null){
@@ -877,17 +897,33 @@ async function removeBk(it){
   let bk = getBk(); const i = bk.findIndex(b=>b.v===key);
   if(i>=0){ bk.splice(i,1); localStorage.setItem(bkKey(), JSON.stringify(bk)); }
 }
-async function gotoAyat(s,a){
-  hideBk(); hideNotesPanel();
+function scrollAyatIntoView(vk){
+  const stage=document.querySelector(".stage"), box=document.getElementById("mushaf");
+  const word=Array.from(box.querySelectorAll(".w")).find(item=>item.dataset.v===vk);
+  const line=word&&word.closest(".line");
+  if(!line) return false;
+  const stageRect=stage.getBoundingClientRect(), lineRect=line.getBoundingClientRect();
+  if(lineRect.top<stageRect.top+stage.clientTop) stage.scrollTop-=stageRect.top+stage.clientTop-lineRect.top;
+  else if(lineRect.bottom>stageRect.bottom) stage.scrollTop+=lineRect.bottom-stageRect.bottom;
+  return true;
+}
+async function gotoAyat(s,a,options={}){
+  hideNav(); hideNotesPanel(); hideMorePanel();
   let index;
   try{
     index = await loadIndex();
-  }catch(_){ toast("Gagal memuat indeks ayat. Coba lagi."); return; }
+  }catch(_){ toast("Gagal memuat indeks ayat. Coba lagi."); return false; }
   const targetPage = index[s+":"+a];
-  if(!targetPage){ toast("Referensi QS "+s+":"+a+" tidak ditemukan."); return; }
+  if(!targetPage){ toast("Referensi QS "+s+":"+a+" tidak ditemukan."); return false; }
   try{
-    if(await go(targetPage)) openAyat(s+":"+a);
+    if(await go(targetPage)){
+      const visible=scrollAyatIntoView(s+":"+a);
+      if(!visible) toast("Halaman terbuka, tetapi ayat tujuan tidak ditemukan pada halaman tersebut.");
+      else if(options.openDetails!==false) openAyat(s+":"+a);
+      return visible;
+    }
   }catch(_){ toast("Gagal membuka halaman ayat. Coba lagi."); }
+  return false;
 }
 
 // ── Tandai sudah dibaca (progres → dashboard) ──
@@ -896,9 +932,29 @@ function toast(msg){
   clearTimeout(window._tt); window._tt=setTimeout(()=>t.classList.remove("show"),3200);
 }
 function toggleReaderChrome(){
+  const stage=document.querySelector(".stage");
+  const anchor=Array.from(document.querySelectorAll("#mushaf .line")).find(line=>{
+    const rect=line.getBoundingClientRect(), stageRect=stage.getBoundingClientRect();
+    return rect.bottom>stageRect.top && rect.top<stageRect.bottom;
+  });
+  const anchorTop=anchor&&anchor.getBoundingClientRect().top;
+  const anchorWord=anchor&&anchor.querySelector(".w"),anchorVerse=anchorWord&&anchorWord.dataset.v;
+  const anchorPage=page;
   const focused=document.body.classList.toggle("reader-focus");
+  syncPageIndicators();
   document.getElementById("focusToggle").setAttribute("aria-pressed",String(focused));
   document.getElementById(focused?"focusReveal":"focusToggle").focus({preventScroll:true});
+  if(anchor) requestAnimationFrame(()=>{
+    if(page!==anchorPage||renderedPage!==anchorPage) return;
+    chromePositionAnchor=null;
+    const delta=anchor.getBoundingClientRect().top-anchorTop;
+    if(Number.isFinite(delta)) stage.scrollTop+=delta;
+    if(anchorVerse){
+      chromePositionAnchor={page:anchorPage,v:anchorVerse,scrollTop:stage.scrollTop};
+      lastReadingPosition={page:anchorPage,v:anchorVerse};
+      try{ localStorage.setItem(LAST_POSITION_KEY,JSON.stringify(lastReadingPosition)); }catch(_){}
+    }
+  });
 }
 // Layar penuh browser diaktifkan secara eksplisit dari kontrol pengaturan.
 function toggleFS(){
@@ -907,21 +963,26 @@ function toggleFS(){
     else if(document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(()=>{});
   }catch(_){}
 }
-// Gestur: ketuk ayat → terjemah · tekan lama di ponsel → terjemah · geser → ganti halaman
+function navigateByPhysicalDirection(direction){
+  if(direction==="left") go(page+1);
+  else if(direction==="right") go(page-1);
+}
+// Gestur: ketuk ayat → terjemah · latar kosong → kontrol · geser kiri → maju
 function setupGestures(){
   const stage=document.querySelector(".stage");
+  const mushaf=document.getElementById("mushaf");
   stage.addEventListener("scroll",scheduleReadingPositionSave,{passive:true});
   window.addEventListener("pagehide",()=>{
     clearTimeout(positionSaveTimer);
     saveReadingPosition();
   });
   stage.addEventListener("contextmenu", e=>e.preventDefault());   // cegah popup copy saat tekan lama
-  let sx=0,sy=0,st=0,moved=false,longFired=false,lpTimer=null,lpWord=null,suppress=false,multiTouch=false;
+  let sx=0,sy=0,st=0,moved=false,longFired=false,lpTimer=null,lpWord=null,touchTarget=null,suppress=false,suppressTimer=null,multiTouch=false;
   const LP=500, MOVE=12, SWIPE=55;
   stage.addEventListener("touchstart",e=>{
     if(e.touches.length>1){ multiTouch=true; moved=true; clearTimeout(lpTimer); return; }
     if(multiTouch) return;
-    const t=e.touches[0]; sx=t.clientX; sy=t.clientY; st=Date.now(); moved=false; longFired=false;
+    const t=e.touches[0]; sx=t.clientX; sy=t.clientY; st=Date.now(); moved=false; longFired=false; touchTarget=e.target;
     lpWord=e.target.closest(".w"); clearTimeout(lpTimer);
     lpTimer=setTimeout(()=>{ if(!moved && !multiTouch && lpWord){ longFired=true; if(navigator.vibrate) navigator.vibrate(25); openAyat(lpWord.dataset.v); } }, LP);
   },{passive:true});
@@ -931,31 +992,34 @@ function setupGestures(){
     const t=e.touches[0]; if(Math.abs(t.clientX-sx)>MOVE||Math.abs(t.clientY-sy)>MOVE){ moved=true; clearTimeout(lpTimer); }
   },{passive:true});
   stage.addEventListener("touchend",e=>{
-    clearTimeout(lpTimer); suppress=true; setTimeout(()=>suppress=false,450);
+    clearTimeout(lpTimer); suppress=true; clearTimeout(suppressTimer); suppressTimer=setTimeout(()=>suppress=false,450);
     if(multiTouch){ if(!e.touches.length) multiTouch=false; return; }
     if(longFired) return;
     const t=e.changedTouches[0], dx=t.clientX-sx, dy=t.clientY-sy, dt=Date.now()-st;
     if(Math.abs(dx)>SWIPE && Math.abs(dx)>Math.abs(dy)*1.4){
-      if(window.visualViewport && window.visualViewport.scale<=1.01){ if(dx>0) go(page+1); else go(page-1); }
+      if(window.visualViewport && window.visualViewport.scale<=1.01) navigateByPhysicalDirection(dx<0?"left":"right");
       return;
-    }   // RTL: geser kanan = maju; saat diperbesar, geser untuk menjelajah halaman
-    if(Math.abs(dx)<MOVE && Math.abs(dy)<MOVE && dt<LP && lpWord) openAyat(lpWord.dataset.v);
-    // Ketukan pada ruang kosong tidak menyembunyikan kontrol baca yang selalu terlihat.
+    }   // RTL: geser kiri = maju; saat diperbesar, geser untuk menjelajah halaman
+    if(!moved && Math.abs(dx)<MOVE && Math.abs(dy)<MOVE && dt<LP){
+      if(lpWord) openAyat(lpWord.dataset.v);
+      else if(touchTarget===mushaf) toggleReaderChrome();
+    }
   },{passive:true});
   stage.addEventListener("touchcancel",e=>{
     clearTimeout(lpTimer); moved=true; if(e.touches.length) multiTouch=true; else multiTouch=false;
-    suppress=true; setTimeout(()=>suppress=false,450);
+    suppress=true; clearTimeout(suppressTimer); suppressTimer=setTimeout(()=>suppress=false,450);
   },{passive:true});
   stage.addEventListener("click",e=>{                 // desktop
     if(suppress) return;
     const w=e.target.closest(".w"); if(w) openAyat(w.dataset.v);
+    else if(e.target===mushaf) toggleReaderChrome();
   });
 }
 
 function setupKeyboard(){
   document.addEventListener("keydown",e=>{
     if(e.key==="Escape"){
-      hideSheet(); hideBk(); hideNav(); hideNotesPanel(); hideSettings();
+      hideSheet(); hideNav(); hideNotesPanel(); hideSettings(); hideMorePanel();
       if(document.getElementById("confirmModal").classList.contains("show")) cmResolve(false);
       return;
     }
@@ -971,8 +1035,8 @@ function setupKeyboard(){
     const target=e.target;
     if(target.matches("input,textarea,select,[contenteditable='true']") || e.altKey || e.ctrlKey || e.metaKey) return;
     if(dialog) return;
-    if(e.key==="ArrowRight"){ e.preventDefault(); go(page+1); }
-    if(e.key==="ArrowLeft"){ e.preventDefault(); go(page-1); }
+    if(e.key==="ArrowLeft"){ e.preventDefault(); navigateByPhysicalDirection("left"); }
+    if(e.key==="ArrowRight"){ e.preventDefault(); navigateByPhysicalDirection("right"); }
   });
 }
 
@@ -1051,66 +1115,203 @@ async function markRead(){
   }finally{ markFlowActive=false; if(!udzurActive) btn.disabled=false; }
 }
 
-// ── Daftar surat & pencarian ──
-let SURAHS=null, SEARCH=null, _searchT=null, _searchToken=0;
+// ── Navigasi bertab: Surah, Juz, dan Penanda ──
+let SURAHS=null, SEARCH=null, JUZS=null, _juzIndexPromise=null, _searchT=null, _searchToken=0;
+let ACTIVE_NAV_TAB="surah";
 async function loadSurahs(){
-  if(!SURAHS){ const r=await fetch("quran/surah_index.json"); if(!r.ok) throw new Error("Daftar surat gagal dimuat."); SURAHS=await r.json(); }
+  if(!SURAHS){ const r=await fetch("quran/surah_index.json"); if(!r.ok) throw new Error("Daftar surah gagal dimuat."); SURAHS=await r.json(); }
   return SURAHS;
 }
 async function loadSearch(){
   if(!SEARCH){ const r=await fetch("quran/search.json"); if(!r.ok) throw new Error("Indeks pencarian gagal dimuat."); SEARCH=await r.json(); }
   return SEARCH;
 }
-async function openNav(){
-  document.getElementById("navPanel").classList.add("show"); syncBackdrop();
-  const list=document.getElementById("navList"); list.innerHTML='<div class="bk-empty">Memuat…</div>';
-  try{ await loadSurahs(); doSearch(document.getElementById("q").value||""); }
-  catch(_){ list.innerHTML='<div class="bk-empty">Daftar surat gagal dimuat. Periksa koneksi lalu coba lagi.</div>'; }
+function validateJuzIndex(data,surahs,pages){
+  if(!data||data.schemaVersion!==1||data.mushafLayout!=="Madinah 604-page"||!Array.isArray(data.juzs)||data.juzs.length!==30) return false;
+  let previous=0;
+  return data.juzs.every((item,index)=>{
+    const match=typeof item.start==="string"&&item.start.match(/^(\d{1,3}):(\d{1,3})$/);
+    if(item.juz!==index+1||!match||!Number.isInteger(item.page)||item.page<1||item.page>604) return false;
+    const surah=Number(match[1]),ayah=Number(match[2]),meta=surahs.find(entry=>entry.n===surah);
+    const ordinal=surah*1000+ayah;
+    if(!meta||ayah<1||ayah>meta.jml||pages[item.start]!==item.page||ordinal<=previous) return false;
+    previous=ordinal;
+    return true;
+  })&&data.juzs[3].start==="3:93"&&data.juzs[3].page===62&&data.juzs[25].start==="46:1"&&data.juzs[25].page===502;
 }
+async function loadJuzIndex(){
+  if(JUZS) return JUZS;
+  if(!_juzIndexPromise){
+    _juzIndexPromise=Promise.all([
+      fetch("quran/juz_index.json").then(response=>{ if(!response.ok) throw new Error("Indeks Juz gagal dimuat."); return response.json(); }),
+      loadSurahs(),loadIndex()
+    ]).then(([data,surahs,pages])=>{
+      if(!validateJuzIndex(data,surahs,pages)) throw new Error("Indeks Juz tidak cocok dengan data mushaf.");
+      JUZS=data.juzs; return JUZS;
+    }).catch(error=>{ _juzIndexPromise=null; throw error; });
+  }
+  return _juzIndexPromise;
+}
+function makeNavItem(number,title,detail,onClick){
+  const button=document.createElement("button"); button.type="button"; button.className="nav-item";
+  const badge=document.createElement("span"); badge.className="num"; badge.textContent=number;
+  const text=document.createElement("span"); text.className="t"; text.append(document.createTextNode(title));
+  if(detail){ const small=document.createElement("small"); small.textContent=detail; text.appendChild(small); }
+  button.append(badge,text); button.addEventListener("click",onClick); return button;
+}
+function appendNavSection(list,label){
+  const heading=document.createElement("div"); heading.className="sec"; heading.textContent=label; list.appendChild(heading);
+}
+function showNavError(message,retry){
+  const list=document.getElementById("navList"); list.innerHTML="";
+  const wrapper=document.createElement("div"); wrapper.className="bk-empty"; wrapper.textContent=message;
+  const button=document.createElement("button"); button.type="button"; button.className="more-action"; button.textContent="Coba lagi"; button.addEventListener("click",retry);
+  wrapper.appendChild(button); list.appendChild(wrapper);
+}
+function setNavTab(tab,focus=false){
+  if(!["surah","juz","penanda"].includes(tab)) return;
+  ACTIVE_NAV_TAB=tab;
+  const ids={surah:"navTabSurah",juz:"navTabJuz",penanda:"navTabPenanda"};
+  Object.entries(ids).forEach(([key,id])=>{
+    const button=document.getElementById(id),selected=key===tab;
+    button.setAttribute("aria-selected",String(selected)); button.tabIndex=selected?0:-1;
+  });
+  document.getElementById("navPanel").scrollTop=0;
+  document.getElementById("navList").setAttribute("aria-labelledby",ids[tab]);
+  document.getElementById("q").placeholder=tab==="surah"?"Cari surah, arti, terjemah, atau 2:255…":tab==="juz"?"Cari nomor Juz atau QS:ayat awal…":"Cari penanda atau referensi QS:ayat…";
+  if(focus) document.getElementById(ids[tab]).focus({preventScroll:true});
+  doSearch(document.getElementById("q").value||"");
+}
+async function openNav(tab="surah"){
+  hideSheet(); hideNotesPanel(); hideSettings(); hideMorePanel();
+  const panel=document.getElementById("navPanel"),query=document.getElementById("q");
+  panel.classList.add("show"); query.value=""; syncBackdrop();
+  setNavTab(tab,false);
+}
+function openBkPanel(){ openNav("penanda"); }
 function hideNav(){ document.getElementById("navPanel").classList.remove("show"); syncBackdrop(); }
 function gotoSurah(pg){ hideNav(); go(pg); }
-function esc(s){ return (s||"").replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])); }
-
-function doSearch(qraw){
-  clearTimeout(_searchT);
-  const searchToken=++_searchToken;
-  const q=(qraw||"").trim().toLowerCase();
-  const list=document.getElementById("navList"); list.innerHTML="";
-  const m=q.match(/^(\d{1,3})[:\s.](\d{1,3})$/);      // a) referensi langsung s:a
-  if(m){ const s=+m[1],a=+m[2];
-    const d=document.createElement("div"); d.className="nav-item";
-    d.innerHTML=`<span class="num">↗</span><div class="t">Buka QS ${s}:${a}</div>`;
-    d.onclick=()=>{ hideNav(); gotoAyat(s,a); }; list.appendChild(d);
-  }
-  const sur=(SURAHS||[]).filter(x=> !q || (''+x.n)===q || x.nama.toLowerCase().includes(q) || (x.arti||'').toLowerCase().includes(q));
-  if(sur.length){                                     // b) daftar / filter surat
-    const h=document.createElement("div"); h.className="sec"; h.textContent = q? "Surat" : "Semua Surat (114)"; list.appendChild(h);
-    sur.forEach(x=>{
-      const d=document.createElement("div"); d.className="nav-item";
-      d.innerHTML=`<span class="num">${x.n}</span><div class="t">${esc(x.nama)} <small>${esc(x.arti)} · ${x.jml} ayat · hal ${x.hal}</small></div>`;
-      d.onclick=()=>gotoSurah(x.hal); list.appendChild(d);
+function resumeReading(){
+  const position=lastReadingPosition;
+  if(position){
+    const [surah,ayah]=position.v.split(":").map(Number);
+    gotoAyat(surah,ayah,{openDetails:false}).then(ok=>{
+      if(!ok&&Number.isInteger(position.page)&&position.page>=1&&position.page<=604){ hideNav(); go(position.page); }
     });
+    return;
   }
-  if(q.length>=3 && !m){                               // c) cari dalam terjemah
-    const h=document.createElement("div"); h.className="sec"; h.textContent="Dalam Terjemah";
-    const holder=document.createElement("div"); list.appendChild(h); list.appendChild(holder);
-    holder.innerHTML='<div class="bk-empty">mencari…</div>';
-    _searchT=setTimeout(async()=>{
-      try{ await loadSearch(); }
-      catch(_){ if(searchToken===_searchToken && holder.isConnected) holder.innerHTML='<div class="bk-empty">Pencarian gagal dimuat. Periksa koneksi lalu coba lagi.</div>'; return; }
-      if(searchToken!==_searchToken || !holder.isConnected) return;
-      const hits=[]; for(const it of SEARCH){ if(it.t.toLowerCase().includes(q)){ hits.push(it); if(hits.length>=40) break; } }
-      holder.innerHTML="";
-      if(!hits.length){ holder.innerHTML='<div class="bk-empty">Tak ada ayat cocok.</div>'; return; }
-      hits.forEach(it=>{
-        const [s,a]=it.k.split(":").map(Number);
-        const d=document.createElement("div"); d.className="nav-item";
-        d.innerHTML=`<span class="num">${it.k}</span><div class="t"><small>${esc(it.t.slice(0,90))}…</small></div>`;
-        d.onclick=()=>{ hideNav(); gotoAyat(s,a); }; holder.appendChild(d);
-      });
-    },250);
+  const target=Number.isInteger(lastReadPage)&&lastReadPage>=1&&lastReadPage<=604?lastReadPage:page;
+  hideNav(); go(target);
+}
+async function renderBookmarkTab(query,token,referenceQuery,direct){
+  const list=document.getElementById("navList"),position=lastReadingPosition;
+  const resumeDetail=position?`QS ${position.v} · halaman ${position.page}`:`Halaman ${lastReadPage||page}`;
+  const resumeMatch=!query||"lanjutkan bacaan".includes(query)||resumeDetail.toLowerCase().includes(query);
+  if(resumeMatch){
+    const card=document.createElement("button"); card.type="button"; card.className="resume-card";
+    const copy=document.createElement("span"),title=document.createElement("strong"); title.textContent="Lanjutkan bacaan"; copy.appendChild(title);
+    const detail=document.createElement("small"); detail.textContent=resumeDetail; copy.appendChild(detail);
+    const arrow=document.createElement("span"); arrow.textContent="←"; arrow.setAttribute("aria-hidden","true"); card.append(copy,arrow); card.addEventListener("click",resumeReading); list.appendChild(card);
   }
-  if(!list.children.length) list.innerHTML='<div class="bk-empty">Tak ada hasil.</div>';
+  appendNavSection(list,"Penanda Ayat");
+  let items;
+  try{ items=await getAllBookmarks(); }
+  catch(_){ if(token===_searchToken) showNavError("Bookmark gagal dimuat. Periksa koneksi lalu coba lagi.",()=>doSearch(query)); return; }
+  if(token!==_searchToken) return;
+  if(direct) items=items.filter(item=>`${item.s}:${item.a}`===referenceQuery);
+  const surahDetails=new Map();
+  const surahIds=[...new Set(items.map(item=>Number(item.s)).filter(Number.isInteger))];
+  for(let index=0;index<surahIds.length;index+=8){
+    await Promise.all(surahIds.slice(index,index+8).map(async surahId=>{
+      try{ surahDetails.set(surahId,await loadSurah(surahId)); }catch(_){}
+    }));
+    if(token!==_searchToken) return;
+  }
+  let matched=0;
+  for(const item of items){
+    const reference=`${item.s}:${item.a}`;
+    const surah=surahDetails.get(Number(item.s));
+    const name=surah?.nama||`Surah ${item.s}`,ayah=surah?.ayat.find(entry=>entry.n===Number(item.a));
+    const preview=ayah?.id||"";
+    const haystack=`${reference} ${name} ${preview}`.toLowerCase();
+    if(query&&!haystack.includes(direct?referenceQuery:query)) continue;
+    const row=document.createElement("div"); row.className="bk-item";
+    const open=document.createElement("button"); open.type="button"; open.className="bk-open"; open.setAttribute("aria-label",`Buka QS ${reference}`);
+    const badge=document.createElement("span"); badge.className="n"; badge.textContent=reference;
+    const text=document.createElement("span"); text.className="t"; text.append(document.createTextNode(name));
+    const excerpt=document.createElement("small"); excerpt.textContent=preview.length>90?preview.slice(0,90)+"…":preview; text.appendChild(excerpt);
+    open.append(badge,text); open.addEventListener("click",()=>gotoAyat(item.s,item.a));
+    const remove=document.createElement("button"); remove.type="button"; remove.className="del"; remove.title="Hapus bookmark"; remove.setAttribute("aria-label",`Hapus bookmark QS ${reference}`); remove.textContent="×";
+    remove.addEventListener("click",async event=>{ event.stopPropagation(); await removeBk(item); if(token===_searchToken) doSearch(document.getElementById("q").value||""); });
+    row.append(open,remove); list.appendChild(row); matched++;
+  }
+  if(!matched){
+    const empty=document.createElement("div"); empty.className="bk-empty";
+    empty.textContent=items.length&&query?"Tak ada penanda yang cocok.":"Belum ada bookmark. Ketuk ☆ pada ayat untuk menyimpan.";
+    list.appendChild(empty);
+  }
+}
+function setupNavigationTabs(){
+  document.getElementById("navPanel").addEventListener("keydown",event=>{
+    if(!event.target.matches("[role='tab']")||!["ArrowLeft","ArrowRight","Home","End"].includes(event.key)) return;
+    event.preventDefault();
+    const tabs=["surah","juz","penanda"],current=tabs.indexOf(ACTIVE_NAV_TAB);
+    const next=event.key==="Home"?0:event.key==="End"?tabs.length-1:(current+(event.key==="ArrowRight"?1:-1)+tabs.length)%tabs.length;
+    setNavTab(tabs[next],true);
+  });
+}
+
+async function doSearch(qraw){
+  clearTimeout(_searchT);
+  const token=++_searchToken,q=(qraw||"").trim().toLowerCase(),list=document.getElementById("navList");
+  list.innerHTML="";
+  const direct=q.replace(/^qs\s*/,"").match(/^(\d{1,3})[:\s.](\d{1,3})$/);
+  const referenceQuery=direct?`${direct[1]}:${direct[2]}`:q;
+  if(direct){
+    const surah=Number(direct[1]),ayah=Number(direct[2]);
+    list.appendChild(makeNavItem("↗",`Buka QS ${surah}:${ayah}`,"Pindah ke ayat",()=>gotoAyat(surah,ayah)));
+  }
+  if(ACTIVE_NAV_TAB==="surah"){
+    const loading=SURAHS?null:document.createElement("div");
+    if(loading){ loading.className="bk-empty"; loading.textContent="Memuat daftar surah…"; list.appendChild(loading); }
+    try{ await loadSurahs(); }catch(_){ if(token===_searchToken) showNavError("Daftar surah gagal dimuat. Periksa koneksi lalu coba lagi.",()=>doSearch(q)); return; }
+    if(token!==_searchToken) return;
+    if(loading) loading.remove();
+    const surahs=SURAHS.filter(item=>!q||String(item.n)===q||item.nama.toLowerCase().includes(q)||(item.arti||"").toLowerCase().includes(q));
+    if(surahs.length){
+      appendNavSection(list,q?"Surah":"Semua Surah (114)");
+      surahs.forEach(item=>list.appendChild(makeNavItem(item.n,item.nama,`${item.arti} · ${item.jml} ayat · halaman ${item.hal}`,()=>gotoSurah(item.hal))));
+    }
+    if(q.length>=3&&!direct){
+      appendNavSection(list,"Dalam Terjemah");
+      const holder=document.createElement("div"); list.appendChild(holder); holder.innerHTML='<div class="bk-empty">Mencari dalam terjemah…</div>';
+      _searchT=setTimeout(async()=>{
+        try{ await loadSearch(); }catch(_){ if(token===_searchToken) holder.innerHTML='<div class="bk-empty">Pencarian gagal dimuat. Periksa koneksi lalu coba lagi.</div>'; return; }
+        if(token!==_searchToken) return;
+        const hits=SEARCH.filter(item=>item.t.toLowerCase().includes(q)).slice(0,40); holder.innerHTML="";
+        if(!hits.length){ holder.innerHTML='<div class="bk-empty">Tak ada ayat cocok.</div>'; return; }
+        hits.forEach(item=>{
+          const [surah,ayah]=item.k.split(":").map(Number);
+          holder.appendChild(makeNavItem(`QS ${item.k}`,"Hasil terjemah",item.t.slice(0,110)+(item.t.length>110?"…":""),()=>gotoAyat(surah,ayah)));
+        });
+      },250);
+    }
+  }else if(ACTIVE_NAV_TAB==="juz"){
+    const loading=JUZS?null:document.createElement("div");
+    if(loading){ loading.className="bk-empty"; loading.textContent="Memvalidasi indeks Juz…"; list.appendChild(loading); }
+    try{ await loadJuzIndex(); }catch(_){ if(token===_searchToken) showNavError("Indeks Juz gagal dimuat atau tidak cocok dengan mushaf.",()=>{ JUZS=null; _juzIndexPromise=null; doSearch(q); }); return; }
+    if(token!==_searchToken) return;
+    if(loading) loading.remove();
+    const juzs=JUZS.filter(item=>!q||String(item.juz)===q||`juz ${item.juz}`.includes(q)||item.start.includes(referenceQuery)||`halaman ${item.page}`.includes(q));
+    if(juzs.length){
+      appendNavSection(list,q?"Juz":"Semua Juz (30)");
+      juzs.forEach(item=>list.appendChild(makeNavItem(`Juz ${item.juz}`,"Mulai bacaan",`QS ${item.start} · halaman ${item.page}`,()=>gotoAyat(...item.start.split(":").map(Number),{openDetails:false}))));
+    }
+  }else{
+    await renderBookmarkTab(q,token,referenceQuery,!!direct);
+    if(token!==_searchToken) return;
+  }
+  if(token===_searchToken&&!list.children.length){ const empty=document.createElement("div"); empty.className="bk-empty"; empty.textContent="Tak ada hasil."; list.appendChild(empty); }
 }
 
 // Skala setiap halaman dari ukuran pilihan pengguna; ukuran tidak menyusut permanen
@@ -1148,8 +1349,9 @@ go(page);
 initBookmarks().catch(()=>toast("Bookmark akun belum dapat disinkronkan. Periksa koneksi."));
 loadIndex().catch(()=>{});
 checkUdzur();
-setupGestures();
-setupKeyboard();
+  setupGestures();
+  setupKeyboard();
+  setupNavigationTabs();
 setTimeout(()=>{ const h=document.getElementById("tapHint"); if(h){ h.classList.add("show"); setTimeout(()=>h.classList.remove("show"),4200); } },700);
 </script>
 </body>

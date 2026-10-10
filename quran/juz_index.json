@@ -1,0 +1,162 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "name": "Quran Foundation Content API — Juz boundary reference",
+    "url": "https://api-docs.quran.com/docs/content_apis_versioned/4.0.0/list-juzs/",
+    "retrievedAt": "2026-10-10",
+    "pageMapping": "Local mushaf/index.json (Madinah 604-page layout)"
+  },
+  "mushafLayout": "Madinah 604-page",
+  "juzs": [
+    {
+      "juz": 1,
+      "start": "1:1",
+      "page": 1
+    },
+    {
+      "juz": 2,
+      "start": "2:142",
+      "page": 22
+    },
+    {
+      "juz": 3,
+      "start": "2:253",
+      "page": 42
+    },
+    {
+      "juz": 4,
+      "start": "3:93",
+      "page": 62
+    },
+    {
+      "juz": 5,
+      "start": "4:24",
+      "page": 82
+    },
+    {
+      "juz": 6,
+      "start": "4:148",
+      "page": 102
+    },
+    {
+      "juz": 7,
+      "start": "5:82",
+      "page": 121
+    },
+    {
+      "juz": 8,
+      "start": "6:111",
+      "page": 142
+    },
+    {
+      "juz": 9,
+      "start": "7:88",
+      "page": 162
+    },
+    {
+      "juz": 10,
+      "start": "8:41",
+      "page": 182
+    },
+    {
+      "juz": 11,
+      "start": "9:93",
+      "page": 201
+    },
+    {
+      "juz": 12,
+      "start": "11:6",
+      "page": 222
+    },
+    {
+      "juz": 13,
+      "start": "12:53",
+      "page": 242
+    },
+    {
+      "juz": 14,
+      "start": "15:1",
+      "page": 262
+    },
+    {
+      "juz": 15,
+      "start": "17:1",
+      "page": 282
+    },
+    {
+      "juz": 16,
+      "start": "18:75",
+      "page": 302
+    },
+    {
+      "juz": 17,
+      "start": "21:1",
+      "page": 322
+    },
+    {
+      "juz": 18,
+      "start": "23:1",
+      "page": 342
+    },
+    {
+      "juz": 19,
+      "start": "25:21",
+      "page": 362
+    },
+    {
+      "juz": 20,
+      "start": "27:56",
+      "page": 382
+    },
+    {
+      "juz": 21,
+      "start": "29:46",
+      "page": 402
+    },
+    {
+      "juz": 22,
+      "start": "33:31",
+      "page": 422
+    },
+    {
+      "juz": 23,
+      "start": "36:28",
+      "page": 442
+    },
+    {
+      "juz": 24,
+      "start": "39:32",
+      "page": 462
+    },
+    {
+      "juz": 25,
+      "start": "41:47",
+      "page": 482
+    },
+    {
+      "juz": 26,
+      "start": "46:1",
+      "page": 502
+    },
+    {
+      "juz": 27,
+      "start": "51:31",
+      "page": 522
+    },
+    {
+      "juz": 28,
+      "start": "58:1",
+      "page": 542
+    },
+    {
+      "juz": 29,
+      "start": "67:1",
+      "page": 562
+    },
+    {
+      "juz": 30,
+      "start": "78:1",
+      "page": 582
+    }
+  ]
+}
