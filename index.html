@@ -504,18 +504,25 @@
       #dashboardOverview {
         display: grid;
         grid-template-columns: minmax(0, 1.45fr) minmax(232px, .78fr);
+        grid-template-areas:
+          "cycle-heading cycle-heading"
+          "reading cycle";
+        grid-template-rows: auto minmax(0, 1fr);
         align-items: stretch;
-        gap: clamp(16px, 2.4vw, 28px);
+        gap: clamp(12px, 1.6vw, 18px) clamp(16px, 2.4vw, 28px);
       }
-      .dashboard-reading, .dashboard-cycle { min-width: 0; }
+      .dashboard-reading { grid-area: reading; min-width: 0; }
       .dashboard-cycle {
+        grid-area: cycle;
+        min-width: 0;
         display: flex;
         flex-direction: column;
       }
       #cycleHeading {
+        grid-area: cycle-heading;
         flex: 0 0 auto;
         min-width: 0;
-        margin-bottom: 12px;
+        margin: 0;
         line-height: 1.35;
       }
       #cycleActions {
@@ -773,6 +780,7 @@
 
       <!-- Gabungan: Posisi Bacaan + Progress Hari Ini -->
       <div id="dashboardOverview" class="dashboard-overview">
+        <h3 id="cycleHeading" class="font-bold text-[12px] text-slate-500 mb-3 tracking-widest uppercase">Progress Khatam Ke-<span id="uiKhatamCycle" class="font-black text-sky-600">1</span></h3>
         <section class="dashboard-reading" aria-label="Posisi dan progres bacaan">
           <div id="readingOverview" class="relative overflow-hidden rounded-[1.75rem] shadow-lg mb-2" style="background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);">
         <!-- Decorative circles -->
@@ -833,8 +841,7 @@
 
       <!-- Progress khatam ke-X dan pengaturan pendukung -->
         </section>
-        <section class="dashboard-cycle" aria-label="Siklus dan target khatam">
-          <h3 id="cycleHeading" class="font-bold text-[12px] text-slate-500 mb-3 tracking-widest uppercase">Progress Khatam Ke-<span id="uiKhatamCycle" class="font-black text-sky-600">1</span></h3>
+        <section class="dashboard-cycle" aria-labelledby="cycleHeading">
           <div id="cycleActions" class="grid grid-cols-2 gap-4 mb-8">
         <!-- Card Aksi: Udzur -->
         <button id="btnToggleUdzur" onclick="openModal('modalUdzur')" class="glass-card-dark p-5 rounded-3xl relative overflow-hidden text-left w-full transition-all">
