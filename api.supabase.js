@@ -213,6 +213,11 @@ const gscript = {
 
   // ── ADMIN ─────────────────────────────────────────────────
   adminDashboard: () => rpc("app_admin_dashboard"),
+  adminAtRiskStudents: (opts = {}) => rpc("app_admin_at_risk_students", {
+    p_halaqah_id: opts.halaqahId || null,
+    p_limit: opts.limit || 25,
+    p_offset: opts.offset || 0,
+  }),
   adminListUsers: (opts = {}) => rpc("app_admin_list_users", {
     p_role: opts.role || null,
     p_halaqah_id: opts.halaqahId || null,

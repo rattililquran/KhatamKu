@@ -1212,7 +1212,15 @@
 
         <!-- At-Risk List -->
         <div class="bg-white rounded-2xl p-4 shadow-sm mb-4 border border-red-50">
-          <p class="text-xs font-black text-red-500 uppercase tracking-widest mb-3">❤️ Butuh Perhatian</p>
+          <div class="flex items-center justify-between gap-3 mb-3">
+            <div>
+              <p class="text-xs font-black text-red-500 uppercase tracking-widest">❤️ Butuh Perhatian</p>
+              <p id="adAtRiskSummary" class="text-[10px] text-slate-400 font-semibold mt-1"></p>
+            </div>
+            <button onclick="adminOpenAtRiskQueue()" class="shrink-0 px-3 py-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 text-[10px] font-extrabold transition-colors">
+              Lihat antrean <i class="fa-solid fa-arrow-right ml-1"></i>
+            </button>
+          </div>
           <div id="adAtRiskList" class="space-y-2"></div>
         </div>
 
@@ -2243,6 +2251,31 @@
           <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Aktivitas 7 Hari</p>
           <canvas id="adHdChart7" height="120"></canvas>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Antrean Tindak Lanjut Murid -->
+  <div id="adminModalAtRisk" class="fixed inset-0 z-50 modal-overlay hidden flex items-end justify-center sm:items-center">
+    <div class="modal-content flex w-full max-w-2xl max-h-[92vh] flex-col overflow-hidden rounded-t-[2rem] sm:rounded-3xl p-5 transform transition-transform translate-y-full text-slate-800" id="adminModalAtRiskContent">
+      <div class="flex items-start justify-between gap-3 border-b border-slate-100 pb-4">
+        <div>
+          <h3 class="text-lg font-black tracking-tight text-slate-800">Antrean Tindak Lanjut</h3>
+          <p class="mt-1 text-[11px] leading-relaxed text-slate-500">Murid yang belum setor minimal 3 hari atau belum pernah setor, di luar status udzur. Yang terlama muncul lebih dulu.</p>
+        </div>
+        <button onclick="closeModal('adminModalAtRisk')" aria-label="Tutup antrean" class="shrink-0 text-slate-400 bg-slate-100 hover:bg-slate-200 w-9 h-9 rounded-full flex items-center justify-center transition-colors"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="flex flex-wrap items-center justify-between gap-2 py-3">
+        <p id="adRiskQueueSummary" class="text-xs font-extrabold text-red-600" aria-live="polite">Memuat antrean...</p>
+        <select id="adRiskHalaqahFilter" onchange="adminAtRiskFilterChanged()" aria-label="Filter halaqah" class="max-w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 outline-none focus:ring-2 focus:ring-red-100">
+          <option value="">Semua halaqah</option>
+        </select>
+      </div>
+      <div id="adRiskQueueList" class="min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain py-1" aria-live="polite"></div>
+      <div class="flex items-center justify-between gap-2 border-t border-slate-100 pt-3 mt-2">
+        <button id="adRiskPrevBtn" onclick="adminAtRiskPrevPage()" class="rounded-xl border border-slate-200 px-3 py-2 text-xs font-extrabold text-slate-600 disabled:cursor-not-allowed disabled:opacity-40">Sebelumnya</button>
+        <span id="adRiskPageInfo" class="text-[10px] font-bold text-slate-400">—</span>
+        <button id="adRiskNextBtn" onclick="adminAtRiskNextPage()" class="rounded-xl border border-slate-200 px-3 py-2 text-xs font-extrabold text-slate-600 disabled:cursor-not-allowed disabled:opacity-40">Berikutnya</button>
       </div>
     </div>
   </div>
@@ -3698,6 +3731,10 @@
     let adActivityChart = null;
     let adHalaqahChart = null;
     let adDashboardLoadToken = 0;
+    let adRiskQueuePage = 0;
+    let adRiskQueueTotal = 0;
+    let adRiskQueueLoadToken = 0;
+    const AD_RISK_QUEUE_SIZE = 25;
 
     function adminMarkDashboardUpdated() {
       const label = document.getElementById('adDashboardUpdatedAt');
@@ -3769,7 +3806,15 @@
 
       // At-Risk List
       const atRiskEl = document.getElementById('adAtRiskList');
-      atRiskEl.innerHTML = (d.at_risk_list || []).map(u => {
+      const riskStudents = d.at_risk_list || [];
+      const riskCount = Number(d.at_risk_count) || 0;
+      const riskSummary = document.getElementById('adAtRiskSummary');
+      if (riskSummary) {
+        riskSummary.textContent = riskCount > riskStudents.length
+          ? `Menampilkan ${riskStudents.length} dari ${riskCount} murid.`
+          : `${riskCount} murid perlu dipantau.`;
+      }
+      atRiskEl.innerHTML = riskStudents.map(u => {
         const wa = adWaNum(u.no_wa);
         return `
         <div class="flex items-center justify-between p-2 rounded-xl bg-red-50">
@@ -3844,6 +3889,130 @@
             scales: { y: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%' } } }
           }
         });
+      }
+    }
+
+    async function adminOpenAtRiskQueue() {
+      const token = ++adRiskQueueLoadToken;
+      const filter = document.getElementById('adRiskHalaqahFilter');
+      document.getElementById('adRiskQueueSummary').textContent = 'Menyiapkan antrean...';
+      document.getElementById('adRiskQueueList').innerHTML = '<p class="py-8 text-center text-xs font-semibold text-slate-400"><i class="fa-solid fa-circle-notch fa-spin mr-2"></i>Memuat daftar murid...</p>';
+      document.getElementById('adRiskPageInfo').textContent = '—';
+      document.getElementById('adRiskPrevBtn').disabled = true;
+      document.getElementById('adRiskNextBtn').disabled = true;
+      openModal('adminModalAtRisk');
+      adRiskQueuePage = 0;
+      try {
+        await adminEnsureHalaqahCache();
+        if (token !== adRiskQueueLoadToken) return;
+        const selected = filter.value;
+        filter.replaceChildren(new Option('Semua halaqah', ''));
+        adHalaqahCache.forEach(h => {
+          const id = String(h.id ?? '');
+          filter.add(new Option(String(h.nama || id), id, false, id === selected));
+        });
+        if (selected && !adHalaqahCache.some(h => String(h.id) === selected)) filter.value = '';
+      } catch (_) {
+        if (token !== adRiskQueueLoadToken) return;
+        filter.replaceChildren(new Option('Semua halaqah', ''));
+        showToast('Filter halaqah belum tersedia; antrean semua murid tetap bisa dibuka.', 'error');
+      }
+      if (token === adRiskQueueLoadToken) adminLoadAtRiskQueue();
+    }
+
+    function adminAtRiskFilterChanged() {
+      adRiskQueuePage = 0;
+      adminLoadAtRiskQueue();
+    }
+
+    async function adminLoadAtRiskQueue() {
+      const token = ++adRiskQueueLoadToken;
+      const filter = document.getElementById('adRiskHalaqahFilter');
+      const summary = document.getElementById('adRiskQueueSummary');
+      const list = document.getElementById('adRiskQueueList');
+      document.getElementById('adRiskPageInfo').textContent = '—';
+      document.getElementById('adRiskPrevBtn').disabled = true;
+      document.getElementById('adRiskNextBtn').disabled = true;
+      summary.textContent = 'Memuat antrean...';
+      list.innerHTML = '<p class="py-8 text-center text-xs font-semibold text-slate-400"><i class="fa-solid fa-circle-notch fa-spin mr-2"></i>Memuat daftar murid...</p>';
+      try {
+        const data = await gscript.adminAtRiskStudents({
+          halaqahId: filter.value || null,
+          limit: AD_RISK_QUEUE_SIZE,
+          offset: adRiskQueuePage * AD_RISK_QUEUE_SIZE,
+        });
+        if (token !== adRiskQueueLoadToken) return;
+        adRiskQueueTotal = Math.max(0, Number(data.total) || 0);
+        const lastPage = Math.max(0, Math.ceil(adRiskQueueTotal / AD_RISK_QUEUE_SIZE) - 1);
+        if (adRiskQueuePage > lastPage) {
+          adRiskQueuePage = lastPage;
+          adminLoadAtRiskQueue();
+          return;
+        }
+        renderAdminAtRiskQueue(data.murid || []);
+      } catch (err) {
+        if (token !== adRiskQueueLoadToken) return;
+        summary.textContent = 'Antrean gagal dimuat.';
+        list.innerHTML = '<div class="py-8 text-center"><p class="text-xs font-semibold text-red-500 mb-3">Data tindak lanjut tidak berhasil dimuat.</p><button onclick="adminLoadAtRiskQueue()" class="rounded-xl bg-slate-100 px-4 py-2 text-xs font-extrabold text-slate-600">Coba lagi</button></div>';
+        onError(err);
+      }
+    }
+
+    function renderAdminAtRiskQueue(murid) {
+      const summary = document.getElementById('adRiskQueueSummary');
+      const list = document.getElementById('adRiskQueueList');
+      const pageInfo = document.getElementById('adRiskPageInfo');
+      const prev = document.getElementById('adRiskPrevBtn');
+      const next = document.getElementById('adRiskNextBtn');
+      const selected = document.getElementById('adRiskHalaqahFilter');
+      const start = adRiskQueueTotal ? adRiskQueuePage * AD_RISK_QUEUE_SIZE + 1 : 0;
+      const end = Math.min((adRiskQueuePage + 1) * AD_RISK_QUEUE_SIZE, adRiskQueueTotal);
+      const pages = Math.max(1, Math.ceil(adRiskQueueTotal / AD_RISK_QUEUE_SIZE));
+      summary.textContent = adRiskQueueTotal
+        ? `${adRiskQueueTotal.toLocaleString('id-ID')} murid perlu ditindaklanjuti`
+        : 'Tidak ada murid yang perlu ditindaklanjuti.';
+      pageInfo.textContent = `${start}–${end} dari ${adRiskQueueTotal.toLocaleString('id-ID')} · ${adRiskQueuePage + 1}/${pages}`;
+      prev.disabled = adRiskQueuePage === 0;
+      next.disabled = end >= adRiskQueueTotal;
+
+      if (!murid.length) {
+        const selectedText = selected?.value ? selected.options[selected.selectedIndex]?.textContent : '';
+        const emptyMessage = selectedText
+          ? `Tidak ada murid yang perlu ditindaklanjuti di ${selectedText}.`
+          : 'Semua murid aktif.';
+        list.innerHTML = `<div class="py-10 text-center"><i class="fa-solid fa-circle-check text-emerald-500 text-2xl"></i><p class="mt-2 text-sm font-bold text-slate-600">${escHtml(emptyMessage)}</p></div>`;
+        return;
+      }
+      list.innerHTML = murid.map(m => {
+        const normalizedWa = adWaNum(m.no_wa);
+        const wa = /^62\d{8,13}$/.test(normalizedWa) ? normalizedWa : '';
+        const inactive = m.belum_pernah_setor ? 'Belum pernah setor' : `${Math.max(0, Number(m.hari_absen) || 0)} hari tanpa setor`;
+        const position = Number(m.halaman_terakhir) > 0 ? `Halaman ${Number(m.halaman_terakhir)}` : 'Posisi bacaan belum dicatat';
+        const halaqah = m.halaqah || m.halaqah_id || 'Tanpa halaqah';
+        const lastRead = m.terakhir_setor
+          ? new Date(`${m.terakhir_setor}T00:00:00`).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+          : 'Belum ada riwayat setoran';
+        const message = encodeURIComponent(`Assalamualaikum ${m.nama || ''}, semoga sehat selalu. Kami ingin menanyakan kabar bacaan Al-Qur'anmu. Terakhir tercatat ${lastRead}. Semoga dimudahkan untuk melanjutkan kembali 🤲`);
+        return `<article class="flex items-center justify-between gap-3 rounded-2xl border border-red-100 bg-red-50/60 p-3">
+          <div class="min-w-0">
+            <p class="truncate text-sm font-extrabold text-slate-700">${escHtml(m.nama)}</p>
+            <p class="mt-0.5 truncate text-[10px] font-semibold text-slate-500">${escHtml(m.username)} · ${escHtml(halaqah)}</p>
+            <p class="mt-1 text-[11px] font-bold text-red-600">${escHtml(inactive)}</p>
+            <p class="mt-0.5 text-[10px] text-slate-500">${escHtml(position)} · ${Number(m.total_khatam) || 0} khatam · streak ${Number(m.streak) || 0} hari</p>
+          </div>
+          ${wa ? `<a href="https://wa.me/${wa}?text=${message}" target="_blank" rel="noopener noreferrer" aria-label="Hubungi ${escHtml(m.nama)} lewat WhatsApp" class="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl bg-emerald-600 px-3 text-xs font-extrabold text-white hover:bg-emerald-700"><i class="fa-brands fa-whatsapp"></i><span>Hubungi</span></a>` : '<span class="shrink-0 rounded-xl bg-slate-100 px-3 py-2 text-[10px] font-bold text-slate-400">Tanpa WA</span>'}
+        </article>`;
+      }).join('');
+    }
+
+    function adminAtRiskPrevPage() {
+      if (adRiskQueuePage > 0) { adRiskQueuePage--; adminLoadAtRiskQueue(); }
+    }
+
+    function adminAtRiskNextPage() {
+      if ((adRiskQueuePage + 1) * AD_RISK_QUEUE_SIZE < adRiskQueueTotal) {
+        adRiskQueuePage++;
+        adminLoadAtRiskQueue();
       }
     }
 
